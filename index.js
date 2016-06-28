@@ -32,7 +32,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
       connectionByBlid[c.blid].push(c);
 
-      pushNotification(c, "Connected", "Connected to Glass Notification server", "star", "5000", "");
+      //pushNotification(c, "Connected", "Connected to Glass Notification server", "star", "5000", "");
       //pushNotification(c, "Blockoworld", "Blockoworld is happening RIGHT NOW! Click me for more information.", "bricks", "0", "");
     }
   });
@@ -73,7 +73,7 @@ const noteServer = net.createServer((c) => { //'connection' listener
   });
 
   c.on('error', (err) => {
-    console.error('Caught error', err);
+    //console.error('Caught error', err);
   });
 });
 
