@@ -32,7 +32,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
       connectionByBlid[c.blid].push(c);
 
-      pushNotification(c, "Glass Beta", "Welcome to the beta! Thanks for testing :)", "star", "5000", "");
+      pushNotification(c, "Connected", "Connected to Glass Notification server", "star", "5000", "");
       //pushNotification(c, "Blockoworld", "Blockoworld is happening RIGHT NOW! Click me for more information.", "bricks", "0", "");
     }
   });
