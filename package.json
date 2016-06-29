@@ -4,6 +4,7 @@
   "description": "my first socket.io app",
   "dependencies": {
     "mysql" : "latest",
-    "sync-request" : "latest"
+    "sync-request" : "latest",
+    "moment" : "latest"
   }
 }

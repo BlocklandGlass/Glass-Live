@@ -1,7 +1,9 @@
 const net = require('net');
-const database = require('./database.js');
+const database = require('./database');
+const Chatroom = require('./chatroom');
+const Client = require('./client');
+const gd = new Chatroom('General Discussion');
 
-var authId = []; //authId[key] = blid
 var connectionByBlid = []; //connectionByBlid[blid] = connections[]
 
 const clientServer = net.createServer((c) => { //'connection' listener
@@ -15,12 +17,12 @@ const clientServer = net.createServer((c) => { //'connection' listener
     if(field[0] == 'auth') {
       console.log('Client connected (' + field[1] + ', ' + field[2] + ')');
 
-      var result = database.checkAuthFromIdent(field[1], c.remoteAddress);
+      var result = c.client.authCheck(field[1]);
 
-      if(result.status == "success") {
+      if(result) {
         c.write('{"type":"auth", "status":"success"}\r\n');
-        c.blid = result.blid;
-      } else if(result.status = "failed") {
+        c.blid = c.client.blid;
+      } else {
         console.log('Failed');
         c.write('{"type":"auth", "status":"failed"}\r\n');
         //c.
@@ -32,6 +34,8 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
       connectionByBlid[c.blid].push(c);
 
+      gd.addUser(c.client);
+      gd.sendMessage(c.client, "hey guys!!!");
       //pushNotification(c, "Connected", "Connected to Glass Notification server", "star", "5000", "");
       //pushNotification(c, "Blockoworld", "Blockoworld is happening RIGHT NOW! Click me for more information.", "bricks", "0", "");
     }
@@ -41,7 +45,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
     console.error('Caught error', err);
   });
 
-  c.write('hello\r\n');
+  c.client = new Client(c);
 });
 
 const noteServer = net.createServer((c) => { //'connection' listener
