@@ -4,11 +4,19 @@ const Chatroom = require('./chatroom');
 const Client = require('./client');
 const Users = require('./user');
 const gd = new Chatroom('General Discussion');
+const moment = require('moment');
 
 const config = require('./config');
 
 const clientServer = net.createServer((c) => { //'connection' listener
   c.on('end', () => {
+    if(c.client != null)
+      c.client.cleanUp();
+
+    console.log('Client disconnected');
+  });
+
+  c.on('close', () => {
     if(c.client != null)
       c.client.cleanUp();
 
@@ -28,6 +36,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
           c.user = Users.getByBlid(c.client.blid);
           c.user.addClient(c.client);
           c.user.setUsername(c.client.username);
+          c.client.sendFriendsList();
         } else {
           console.log('Failed');
           c.write('{"type":"auth", "status":"failed"}\r\n');
@@ -53,6 +62,19 @@ const clientServer = net.createServer((c) => { //'connection' listener
         gd.addUser(c.client);
         break;
 
+      case "message":
+        target = Users.getByBlid(data.target);
+        obj = {
+          "type": "message",
+          "message": data.message,
+          "sender": c.client.username,
+          "sender_id": c.blid,
+          "timestamp": moment().unix(),
+          "datetime": moment().format('h:mm:ss a')
+        };
+        target.messageClients(JSON.stringify(obj));
+        break;
+
       case "locationUpdate":
         if(data.action == "playing") {
           c.client.setLocation(data.action, data.location);
@@ -66,6 +88,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
         target.newFriendRequest(c.user);
         break;
 
+      case "friendAccept":
+        c.user.acceptFriend(data.blid);
+        break;
+
       default:
         console.log("unhandled");
     }
@@ -75,11 +101,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
   c.on('error', (err) => {
     if(err == 'EPIPE') {
-      c.client.cleanUp();
-
     } else {
       console.error('Caught error', err);
     }
+    c.client.cleanUp();
   });
 
   c.client = new Client(c);

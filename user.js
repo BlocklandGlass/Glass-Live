@@ -15,11 +15,12 @@ var getByBlid = function getByBlid(blid) {
 function User(blid) {
   fs = require('fs');
   try {
-    fs.statSync('./config/' + blid + '.json')
-    this._longTerm = require('./config/' + blid + '.json');
+    fs.statSync('./save/' + blid + '.json')
+    this._longTerm = require('./save/' + blid + '.json');
   } catch (e) {
     this._longTerm = {};
     this._longTerm.requests = [];
+    this._longTerm.friends = [];
   }
 
   this.uid = uid;
@@ -49,6 +50,52 @@ User.prototype.newFriendRequest = function(sender) {
   this.messageClients(JSON.stringify(dat));
 
   this.save();
+}
+
+User.prototype.acceptFriend = function (blid) {
+  if(this._longTerm.requests.indexOf(blid) == -1) {
+    dat = {
+      "type": "messageBox",
+      "title": "Uh oh",
+      "text": "You don't have a friend request from that person!"
+    };
+    this.messageClients(JSON.stringify(dat));
+  } else {
+    user = getByBlid(blid);
+
+    idx = this._longTerm.requests.indexOf(blid);
+    this._longTerm.requests.splice(idx, 1);
+
+    this.addFriend(blid, 1);
+    user.addFriend(this.blid, 0);
+  }
+};
+
+User.prototype.addFriend = function(blid, accepter) {
+  u = getByBlid(blid);
+  dat = {
+    "type": "friendAdd",
+    "blid": blid,
+    "username": u.getUsername(),
+    "accepter": accepter
+  };
+  this.messageClients(JSON.stringify(dat));
+
+  if(this._longTerm.friends == null)
+    this._longTerm.friends = [];
+
+  if(this._longTerm.friends.indexOf(blid) == -1) {
+    this._longTerm.friends.push(blid);
+  }
+
+  this.save();
+}
+
+User.prototype.getFriendsList = function() {
+  if(this._longTerm.friends == null)
+    this._longTerm.friends = [];
+
+  return this._longTerm.friends;
 }
 
 User.prototype.addClient = function(client) {

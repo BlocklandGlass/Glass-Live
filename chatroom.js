@@ -1,4 +1,5 @@
 const moment = require('moment');
+const Users = require('./user');
 
 module.exports = Chatroom;
 
@@ -23,25 +24,43 @@ function getFromId(id) {
 }
 
 Chatroom.prototype.addUser = function (c) {
-  if(this.users.indexOf(c) > -1) {
-    return;
-  } else {
-    this.users.push(c);
-  }
-
   dat = {
     "type": "roomJoin",
     "id": this.id,
     "title": this.title,
     "motd": "Welcome to the Glass Live private beta!\nBe nice, have fun, and find bugs\n\nNah but you really shouldn't be here"
   };
+
+  clients = [];
+  for(i = 0; i < this.users.length; i++) {
+    cl = this.users[i];
+    uo = Users.getByBlid(cl.blid)
+    cli = {
+      "username": uo.getUsername(),
+      "blid": uo.blid,
+      "mod": cl.mod,
+      "admin": cl.admin
+    };
+    clients.push(cli);
+  }
+
+  dat.clients = clients;
+
   c.con.write(JSON.stringify(dat) + '\r\n');
+
+  if(this.users.indexOf(c) > -1) {
+    return;
+  } else {
+    this.users.push(c);
+  }
 
   broad = {
     "type": "roomUserJoin",
     "id": this.id,
     "username": c.username,
-    "blid": c.blid
+    "blid": c.blid,
+    "admin": c.admin,
+    "mod": c.mod
   };
   this.transmit(JSON.stringify(broad));
 

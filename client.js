@@ -10,6 +10,9 @@ function Client(con) {
   this.con = con;
   this.cid = connections;
 
+  this.mod = false;
+  this.admin = false;
+
   this.activity = "idle";
 
   this.rooms = [];
@@ -28,6 +31,8 @@ Client.prototype.authCheck = function (ident) {
   if(res.status == "success") {
     this.blid = res.blid;
     this.username = res.username;
+    this.admin = res.admin;
+    this.mod = res.mod;
     return true;
   } else {
     return false;
@@ -43,6 +48,29 @@ Client.prototype.setLocation = function (act, loc) {
     this.location = "";
   }
 };
+
+Client.prototype.sendFriendsList = function () {
+  user = Users.getByBlid(this.blid);
+  fl = user.getFriendsList();
+  friends = [];
+  for(i = 0; i < fl.length; i++) {
+    blid = fl[i];
+    un = Users.getByBlid(fl).getUsername();
+
+    obj = {
+      "blid": blid,
+      "username": un,
+      "status": 1
+    };
+    friends.push(obj);
+  }
+
+  dat = {
+    "type": "friendsList",
+    "friends": friends
+  };
+  this.con.write(JSON.stringify(dat) + '\r\n');
+}
 
 Client.prototype.cleanUp = function () {
   user = Users.getByBlid(this.blid);
