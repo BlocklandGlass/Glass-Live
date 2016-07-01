@@ -1,0 +1,83 @@
+// whereas client manages an individual connection,
+// user deals with longer term data
+
+var users = [];
+var uid = 0;
+
+var getByBlid = function getByBlid(blid) {
+  if(users[blid] != null) {
+    return users[blid];
+  } else {
+    return new User(blid);
+  }
+}
+
+function User(blid) {
+  fs = require('fs');
+  try {
+    fs.statSync('./config/' + blid + '.json')
+    this._longTerm = require('./config/' + blid + '.json');
+  } catch (e) {
+    this._longTerm = {};
+    this._longTerm.requests = [];
+  }
+
+  this.uid = uid;
+  uid++;
+
+  this.blid = blid;
+  this.clients = [];
+
+  users[blid] = this;
+}
+
+User.prototype.save = function() {
+  fs = require('fs');
+  fs.writeFile('./save/' + this.blid + '.json', JSON.stringify(this._longTerm));
+}
+
+User.prototype.newFriendRequest = function(sender) {
+  if(this._longTerm.requests.indexOf(sender.blid) == -1) {
+    this._longTerm.requests.push(sender.blid);
+  }
+
+  dat = {
+    "type": "friendRequest",
+    "sender": sender.getUsername(),
+    "sender_blid": sender.blid
+  };
+  this.messageClients(JSON.stringify(dat));
+
+  this.save();
+}
+
+User.prototype.addClient = function(client) {
+  this.clients.push(client);
+}
+
+User.prototype.removeClient = function (c) {
+  idx = this.clients.indexOf(c);
+  if(idx > -1) {
+    this.clients.splice(idx, 1);
+  } else {
+    return;
+  }
+}
+
+User.prototype.getUsername = function() {
+  return this._longTerm.username;
+}
+
+User.prototype.setUsername = function(usr) {
+  this._longTerm.username = usr;
+  this.save();
+}
+
+User.prototype.messageClients = function (msg) {
+  for(i = 0; i < this.clients.length; i++) {
+    cl = this.clients[i];
+    cl.con.write(msg + '\r\n');
+  }
+}
+
+module.exports = {getByBlid: getByBlid};

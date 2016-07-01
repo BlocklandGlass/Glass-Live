@@ -2,47 +2,84 @@ const net = require('net');
 const database = require('./database');
 const Chatroom = require('./chatroom');
 const Client = require('./client');
+const Users = require('./user');
 const gd = new Chatroom('General Discussion');
 
-var connectionByBlid = []; //connectionByBlid[blid] = connections[]
+const config = require('./config');
 
 const clientServer = net.createServer((c) => { //'connection' listener
   c.on('end', () => {
+    if(c.client != null)
+      c.client.cleanUp();
+
     console.log('Client disconnected');
   });
 
-  c.on('data', (data) => {
-    var field = data.toString().trim().split('\t');
+  c.on('data', (raw) => {
+    var data = JSON.parse(raw);
 
-    if(field[0] == 'auth') {
-      console.log('Client connected (' + field[1] + ', ' + field[2] + ')');
+    switch(data.type) {
+      case "auth":
+        var result = c.client.authCheck(data.ident);
+        if(result) {
+          console.log("Connected (" + c.client.blid + ", " + data.ident + ")");
+          c.write('{"type":"auth", "status":"success"}\r\n');
+          c.blid = c.client.blid;
+          c.user = Users.getByBlid(c.client.blid);
+          c.user.addClient(c.client);
+          c.user.setUsername(c.client.username);
+        } else {
+          console.log('Failed');
+          c.write('{"type":"auth", "status":"failed"}\r\n');
+          return;
+        }
+        gd.addUser(c.client);
 
-      var result = c.client.authCheck(field[1]);
+        // TODO send friend requests
+        // TODO send pub room listing
 
-      if(result) {
-        c.write('{"type":"auth", "status":"success"}\r\n');
-        c.blid = c.client.blid;
-      } else {
-        console.log('Failed');
-        c.write('{"type":"auth", "status":"failed"}\r\n');
-        //c.
-        return;
-      }
+        //gd.sendMessage(c.client, "hey guys!!!");
+        break;
 
-      if(connectionByBlid[c.blid] == undefined)
-        connectionByBlid[c.blid] = [];
+      case "roomChat":
+        gd.sendMessage(c.client, data.message);
+        break;
 
-      connectionByBlid[c.blid].push(c);
+      case "roomLeave":
+        gd.removeUser(c.client, 0);
+        break;
 
-      gd.addUser(c.client);
-      gd.sendMessage(c.client, "hey guys!!!");
+      case "roomJoin":
+        gd.addUser(c.client);
+        break;
+
+      case "locationUpdate":
+        if(data.action == "playing") {
+          c.client.setLocation(data.action, data.location);
+        } else {
+          c.client.setLocation(data.action);
+        }
+        break;
+
+      case "friendRequest":
+        target = Users.getByBlid(data.target);
+        target.newFriendRequest(c.user);
+        break;
+
+      default:
+        console.log("unhandled");
+    }
       //pushNotification(c, "Connected", "Connected to Glass Notification server", "star", "5000", "");
       //pushNotification(c, "Blockoworld", "Blockoworld is happening RIGHT NOW! Click me for more information.", "bricks", "0", "");
-    }
   });
 
   c.on('error', (err) => {
-    console.error('Caught error', err);
+    if(err == 'EPIPE') {
+      c.client.cleanUp();
+
+    } else {
+      console.error('Caught error', err);
+    }
   });
 
   c.client = new Client(c);
@@ -58,21 +95,16 @@ const noteServer = net.createServer((c) => { //'connection' listener
     obj = JSON.parse(data);
 
     if(obj.type == 'notification') {
-
-      if(connectionByBlid[obj.target] == undefined) {
-        console.log('target not found');
-        return;
-      }
-
-      for(var i = 0; i < connectionByBlid[obj.target].length; i++) {
-        con = connectionByBlid[obj.target][i];
-        try {
-          pushNotification(con, obj.title, obj.text, obj.image, obj.duration, obj.callback);
-        } catch(err) {
-          console.error('Caught error sending to client', err);
-        }
-      }
-      console.log('sent notification to ' + i + ' receiptents');
+      user = Users.getByBlid(obj.target);
+      dat = {
+        "type":"notification",
+        "title":obj.title,
+        "text":obj.text,
+        "image":obj.image,
+        "duration":obj.duration,
+        "callback":obj.callback
+      };
+      user.messageClients(JSON.stringify(dat));
     }
   });
 
@@ -81,12 +113,12 @@ const noteServer = net.createServer((c) => { //'connection' listener
   });
 });
 
-clientServer.listen(27000, () => { //'listening' listener
-  console.log('Bound 27000');
+clientServer.listen(config.basePort, () => { //'listening' listener
+  console.log('Bound ' + config.basePort);
 });
 
-noteServer.listen(27001, () => { //'listening' listener
-  console.log('Bound 27001\r\n');
+noteServer.listen(config.basePort+1, () => { //'listening' listener
+  console.log('Bound ' + (config.basePort+1) + '\r\n');
 });
 
 function pushNotification(con, title, text, image, duration, callback) {
