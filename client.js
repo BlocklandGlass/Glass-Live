@@ -53,6 +53,6 @@ Client.prototype.cleanUp = function () {
   }
 }
 
-Client.prototype._addToRoom = function (gid) {
-  this.rooms.push(gid);
+Client.prototype._addToRoom = function (g) {
+  this.rooms.push(g);
 }

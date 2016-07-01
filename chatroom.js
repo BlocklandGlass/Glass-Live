@@ -45,7 +45,7 @@ Chatroom.prototype.addUser = function (c) {
   };
   this.transmit(JSON.stringify(broad));
 
-  c._addToRoom(this.id);
+  c._addToRoom(this);
 }
 
 Chatroom.prototype.removeUser = function (c, reason) {
