@@ -98,7 +98,24 @@ User.prototype.getFriendsList = function() {
   return this._longTerm.friends;
 }
 
+User.prototype.messageFriends = function(msg) {
+  friends = this.getFriendsList();
+  for(i = 0; i < friends.length; i++) {
+    friend_blid = friends[i];
+    user = getByBlid(friend_blid);
+    user.messageClients(msg)
+  }
+}
+
 User.prototype.addClient = function(client) {
+  if(this.clients.length == 0) {
+    dat = {
+      "type": "friendStatus",
+      "status": "online",
+      "blid": this.blid;
+    };
+    this.messageFriends(JSON.stringify(dat));
+  }
   this.clients.push(client);
 }
 
@@ -108,6 +125,15 @@ User.prototype.removeClient = function (c) {
     this.clients.splice(idx, 1);
   } else {
     return;
+  }
+
+  if(this.clients.length == 0) {
+    dat = {
+      "type": "friendStatus",
+      "status": "offline",
+      "blid": this.blid;
+    };
+    this.messageFriends(JSON.stringify(dat));
   }
 }
 
