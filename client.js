@@ -1,6 +1,8 @@
 module.exports = Client;
 
 const Users = require('./user');
+const config = require('./config');
+
 
 connections = 0;
 
@@ -19,7 +21,7 @@ function Client(con) {
 
 Client.prototype.authCheck = function (ident) {
   var request = require('sync-request');
-  var req = request('GET', "http://localhost/api/2/authCheck.php?ident=" + ident)
+  var req = request('GET', "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident)
 
   res = JSON.parse(req.getBody());
 
