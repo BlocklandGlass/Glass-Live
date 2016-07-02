@@ -39,6 +39,20 @@ Client.prototype.authCheck = function (ident) {
   }
 };
 
+Client.prototype.disconnect = function(reason) {
+  if(reason == null) {
+    reason = -1;
+  }
+
+  dat = {
+    "type":"disconnected",
+    "reason": reason
+  };
+
+  this.con.end(JSON.stringify(dat));
+  this.cleanUp();
+}
+
 Client.prototype.setLocation = function (act, loc) {
   this.activity = act;
 
