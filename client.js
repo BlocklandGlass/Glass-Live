@@ -44,6 +44,10 @@ Client.prototype.disconnect = function(reason) {
     reason = -1;
   }
 
+  // 0 - server shutdown
+  // 1 - other sign-in
+  // 2 - barred
+
   dat = {
     "type":"disconnected",
     "reason": reason

@@ -35,7 +35,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
           c.blid = c.client.blid;
           c.user = Users.getByBlid(c.client.blid);
           if(c.user.clients.length > 0) {
-            c.user.clients[0].disconnect();
+            c.user.clients[0].disconnect(1);
           }
           c.user.addClient(c.client);
           c.user.setUsername(c.client.username);
