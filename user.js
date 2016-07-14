@@ -111,8 +111,8 @@ User.prototype.addClient = function(client) {
   if(this.clients.length == 0) {
     dat = {
       "type": "friendStatus",
-      "status": "online",
-      "blid": this.blid;
+      "online": "1",
+      "blid": this.blid
     };
     this.messageFriends(JSON.stringify(dat));
   }
@@ -130,11 +130,15 @@ User.prototype.removeClient = function (c) {
   if(this.clients.length == 0) {
     dat = {
       "type": "friendStatus",
-      "status": "offline",
-      "blid": this.blid;
+      "online": "0",
+      "blid": this.blid
     };
     this.messageFriends(JSON.stringify(dat));
   }
+}
+
+User.prototype.isOnline = function() {
+  return this.clients.length > 0;
 }
 
 User.prototype.getUsername = function() {

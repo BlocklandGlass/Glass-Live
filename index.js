@@ -53,6 +53,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
         //gd.sendMessage(c.client, "hey guys!!!");
         break;
 
+      //================================
+      // rooms
+      //================================
+
       case "roomChat":
         gd.sendMessage(c.client, data.message);
         break;
@@ -65,18 +69,60 @@ const clientServer = net.createServer((c) => { //'connection' listener
         gd.addUser(c.client);
         break;
 
+      //================================
+      // messages
+      //================================
+
       case "message":
         target = Users.getByBlid(data.target);
-        obj = {
-          "type": "message",
-          "message": data.message,
-          "sender": c.client.username,
-          "sender_id": c.blid,
-          "timestamp": moment().unix(),
-          "datetime": moment().format('h:mm:ss a')
-        };
-        target.messageClients(JSON.stringify(obj));
+        if(target.isOnline()) {
+          obj = {
+            "type": "message",
+            "message": data.message,
+            "sender": c.client.username,
+            "sender_id": c.blid,
+            "timestamp": moment().unix(),
+            "datetime": moment().format('h:mm:ss a')
+          };
+          target.messageClients(JSON.stringify(obj));
+        } else {
+          obj = {
+            "type": "messageNotification",
+            "message": "User is offline.",
+            "chat_blid": data.target,
+            "timestamp": moment().unix(),
+            "datetime": moment().format('h:mm:ss a')
+          };
+          c.write(JSON.stringify(obj) + '\r\n');
+        }
         break;
+
+        case "messageTyping":
+          obj = {
+            "type": "messageTyping",
+            "typing": data.typing,
+            "sender": c.blid,
+            "timestamp": moment().unix(),
+            "datetime": moment().format('h:mm:ss a')
+          };
+          c.write(JSON.stringify(obj) + '\r\n');
+          break;
+
+        case "messageClose":
+          target = Users.getByBlid(data.target);
+          obj = {
+            "type": "messageNotification",
+            "message": "User closed chat window.",
+            "chat_blid": data.target,
+            "timestamp": moment().unix(),
+            "datetime": moment().format('h:mm:ss a')
+          };
+          target.messageClients(JSON.stringify(obj));
+          break;
+
+      //================================
+      // friends
+      //================================
 
       case "locationUpdate":
         if(data.action == "playing") {
@@ -96,14 +142,15 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
       default:
-        console.log("unhandled");
+        console.log("unhandled: " + data.type);
     }
       //pushNotification(c, "Connected", "Connected to Glass Notification server", "star", "5000", "");
       //pushNotification(c, "Blockoworld", "Blockoworld is happening RIGHT NOW! Click me for more information.", "bricks", "0", "");
   });
 
   c.on('error', (err) => {
-    if(err == 'EPIPE') {
+    if(err == 'EPIPE' || err == 'ECONNRESET') {
+      //not really an error, just a disconnect we didnt catch
     } else {
       console.error('Caught error', err);
     }

@@ -73,12 +73,12 @@ Client.prototype.sendFriendsList = function () {
   friends = [];
   for(i = 0; i < fl.length; i++) {
     blid = fl[i];
-    un = Users.getByBlid(fl).getUsername();
+    us = Users.getByBlid(fl);
 
     obj = {
       "blid": blid,
-      "username": un,
-      "status": 1
+      "username": us.getUsername(),
+      "online": us.isOnline()
     };
     friends.push(obj);
   }
