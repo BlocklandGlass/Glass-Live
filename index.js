@@ -12,7 +12,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
   c.on('data', (data) => {
     var field = data.toString().trim().split('\t');
 
-    if(field[0] == 'auth') {
+    if(field[0] == 'auth' && field[1] != "") {
       console.log('Client connected (' + field[1] + ', ' + field[2] + ')');
 
       var result = database.checkAuthFromIdent(field[1], c.remoteAddress);
