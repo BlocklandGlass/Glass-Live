@@ -24,6 +24,15 @@ function Client(con) {
 
 Client.prototype.authCheck = function (ident) {
   var request = require('sync-request');
+
+  if(config.authenticator == "bypass") {
+    this.blid = 27323;
+    this.username = "BLG";
+    this.admin = 1;
+    this.mod = 1;
+    return true;
+  }
+
   var req = request('GET', "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident)
 
   res = JSON.parse(req.getBody());

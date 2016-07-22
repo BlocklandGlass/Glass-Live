@@ -79,6 +79,9 @@ Chatroom.prototype.removeUser = function (c, reason) {
     reason = -1;
   }
 
+  // 1 = ?
+  // 2 = kicked
+
   dat = {
     "type": "roomLeave",
     "id": this.id,
@@ -95,6 +98,45 @@ Chatroom.prototype.removeUser = function (c, reason) {
   this.transmit(JSON.stringify(broad));
 }
 
+Chatroom.prototype.onCommand = function (client, cmd) {
+  arg = cmd.split(" ");
+  if(arg[0] == null)
+   return;
+
+  switch(arg[0]) {
+    case "kick":
+      if(client.mod) {
+
+      }
+      break;
+
+    case "kickid":
+      if(arg.length >= 2) {
+        if(client.mod) {
+          for(i = 0; i < this.clients; i++) {
+            cl = this.clients[i];
+            if(cl.blid == arg[1]) {
+              this.removeUser(cl, 2);
+            }
+          }
+        }
+      }
+      break;
+
+    case "help":
+      func = [];
+      func[0] = "help\tLists functions";
+      func[1] = "kick <username>\tKicks user";
+      func[2] = "kickid <blid>\tKicks user by blid";
+
+      for(i = 0; i < func.length; i++) {
+        // TODO ml fields tags
+        client.sendRaw("<color:dd3300> * " + func[i]);
+      }
+      break;
+  }
+}
+
 Chatroom.prototype.transmit = function (msg) {
   for(i = 0; i < this.users.length; i++) {
     c = this.users[i];
@@ -108,6 +150,17 @@ Chatroom.prototype.sendMessage = function (c, msg) {
     "room": this.id,
     "sender": c.username,
     "sender_id": c.blid,
+    "msg": msg,
+    "timestamp": moment().unix(),
+    "datetime": moment().format('h:mm:ss a')
+  };
+  this.transmit(JSON.stringify(dat));
+}
+
+Chatroom.prototype.sendRaw = function (c, msg) {
+  dat = {
+    "type": "roomText",
+    "room": this.id,
     "msg": msg,
     "timestamp": moment().unix(),
     "datetime": moment().format('h:mm:ss a')

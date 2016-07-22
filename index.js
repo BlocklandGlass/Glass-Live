@@ -69,6 +69,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
         gd.addUser(c.client);
         break;
 
+      case "roomComment":
+        gd.onCommand(c.client, data.message);
+        break;
+
       //================================
       // messages
       //================================
@@ -130,6 +134,18 @@ const clientServer = net.createServer((c) => { //'connection' listener
         } else {
           c.client.setLocation(data.action);
         }
+        break;
+
+      case "locationGet":
+        // TODO privacy settings
+        target = Users.getByBlid(data.target);
+        obj = {
+          "type": "location",
+          "blid": c.client.blid,
+          "activity": c.client.activity,
+          "location": c.client.location
+        };
+        target.messageClients(JSON.stringify(obj));
         break;
 
       case "friendRequest":
