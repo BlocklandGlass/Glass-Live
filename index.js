@@ -40,6 +40,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
           c.user.addClient(c.client);
           c.user.setUsername(c.client.username);
           c.client.sendFriendsList();
+          c.client.sendFriendRequests();
         } else {
           console.log('Failed');
           c.write('{"type":"auth", "status":"failed"}\r\n');

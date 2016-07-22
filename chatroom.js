@@ -79,15 +79,18 @@ Chatroom.prototype.removeUser = function (c, reason) {
     reason = -1;
   }
 
-  // 1 = ?
+  // 0 = left
+  // 1 = disconnected
   // 2 = kicked
 
-  dat = {
-    "type": "roomLeave",
-    "id": this.id,
-    "reason": reason
-  };
-  c.con.write(JSON.stringify(dat) + '\r\n');
+  if(reason != 1) {
+    dat = {
+      "type": "roomLeave",
+      "id": this.id,
+      "reason": reason
+    };
+    c.con.write(JSON.stringify(dat) + '\r\n');
+  }
 
   broad = {
     "type": "roomUserLeave",

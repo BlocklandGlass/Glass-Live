@@ -98,6 +98,13 @@ User.prototype.getFriendsList = function() {
   return this._longTerm.friends;
 }
 
+User.prototype.getFriendRequests = function() {
+  if(this._longTerm.requests == null)
+    this._longTerm.requests = [];
+
+  return this._longTerm.requests;
+}
+
 User.prototype.messageFriends = function(msg) {
   friends = this.getFriendsList();
   for(i = 0; i < friends.length; i++) {
