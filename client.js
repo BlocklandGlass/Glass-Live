@@ -42,6 +42,9 @@ Client.prototype.authCheck = function (ident) {
     this.username = res.username;
     this.admin = res.admin;
     this.mod = res.mod;
+
+    if(!res.beta) { return false; }
+
     return true;
   } else {
     return false;

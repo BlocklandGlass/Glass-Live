@@ -102,6 +102,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
         case "messageTyping":
+          target = Users.getByBlid(data.target);
           obj = {
             "type": "messageTyping",
             "typing": data.typing,
@@ -109,7 +110,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
             "timestamp": moment().unix(),
             "datetime": moment().format('h:mm:ss a')
           };
-          c.write(JSON.stringify(obj) + '\r\n');
+          target.messageClients(JSON.stringify(obj));
           break;
 
         case "messageClose":
