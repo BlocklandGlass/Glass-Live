@@ -66,6 +66,9 @@ User.prototype.acceptFriend = function (blid) {
     idx = this._longTerm.requests.indexOf(blid);
     this._longTerm.requests.splice(idx, 1);
 
+    if(this._longTerm.friends.indexOf(blid) > -1)
+      return;
+
     this.addFriend(blid, 1);
     user.addFriend(this.blid, 0);
   }

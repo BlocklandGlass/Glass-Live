@@ -129,7 +129,7 @@ Client.prototype.cleanUp = function () {
   user.removeClient(this);
 
   for(i = 0; i < this.rooms.length; i++) {
-    this.rooms[i].removeUser(this, 0);
+    this.rooms[i].removeUser(this, 1);
   }
 }
 

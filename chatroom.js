@@ -28,7 +28,7 @@ Chatroom.prototype.addUser = function (c) {
     "type": "roomJoin",
     "id": this.id,
     "title": this.title,
-    "motd": "Welcome to the Glass Live private beta!\nBe nice, have fun, and find bugs\n\nNah but you really shouldn't be here"
+    "motd": "Welcome to the Glass Live private beta!\nBe nice, have fun, and find bugs\n"
   };
 
   clients = [];
