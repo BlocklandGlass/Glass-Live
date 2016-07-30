@@ -37,8 +37,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
           if(c.user.clients.length > 0) {
             c.user.clients[0].disconnect(1);
           }
+
           c.user.addClient(c.client);
           c.user.setUsername(c.client.username);
+
           c.client.sendFriendsList();
           c.client.sendFriendRequests();
         } else {
