@@ -102,6 +102,28 @@ Client.prototype.sendFriendsList = function () {
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
+Client.prototype.sendFriendRequests = function () {
+  user = Users.getByBlid(this.blid);
+  fl = user.getFriendRequests();
+  friends = [];
+  for(i = 0; i < fl.length; i++) {
+    blid = fl[i];
+    us = Users.getByBlid(fl);
+
+    obj = {
+      "blid": blid,
+      "username": us.getUsername()
+    };
+    friends.push(obj);
+  }
+
+  dat = {
+    "type": "friendRequests",
+    "requests": friends
+  };
+  this.con.write(JSON.stringify(dat) + '\r\n');
+}
+
 Client.prototype.cleanUp = function () {
   user = Users.getByBlid(this.blid);
   user.removeClient(this);
