@@ -24,7 +24,12 @@ const clientServer = net.createServer((c) => { //'connection' listener
   });
 
   c.on('data', (raw) => {
-    var data = JSON.parse(raw);
+    try {
+      var data = JSON.parse(raw);
+    } catch (e) {
+      console.log("Invalid JSON received: " + raw);
+      return;
+    }
 
     switch(data.type) {
       case "auth":
@@ -166,6 +171,9 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
       case "friendRequest":
+        if(data.target < 0 || data.target = c.blid)
+          return;
+
         target = Users.getByBlid(data.target);
         target.newFriendRequest(c.user);
         break;
