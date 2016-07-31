@@ -13,14 +13,14 @@ var getByBlid = function getByBlid(blid) {
 }
 
 function User(blid) {
-  console.log("[debug] init user " + blid);
+  //console.log("[debug] init user " + blid);
 
   try {
-    console.log("[debug] loading");
+    //console.log("[debug] loading");
     this._longTerm = require('./save/' + blid + '.json');
-    console.log("[debug] loaded");
+    //console.log("[debug] loaded");
   } catch (e) {
-    console.log("[debug] fresh");
+    //console.log("[debug] fresh");
     this._longTerm = {};
     this._longTerm.requests = [];
     this._longTerm.friends = [];
@@ -34,7 +34,7 @@ function User(blid) {
 
   users[blid] = this;
 
-  console.log("[debug] inited");
+  //console.log("[debug] inited");
 }
 
 User.prototype.save = function() {

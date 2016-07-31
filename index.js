@@ -39,9 +39,9 @@ const clientServer = net.createServer((c) => { //'connection' listener
             c.user.clients[0].disconnect(1);
           }
 
-          console.log("[debug] addClient");
+          //console.log("[debug] addClient");
           c.user.addClient(c.client);
-          console.log("[debug] setUsername");
+          //console.log("[debug] setUsername");
           c.user.setUsername(c.client.username);
 
           c.client.sendFriendsList();
@@ -78,6 +78,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
       case "roomAwake":
         dat = {
           "type": "roomAwake",
+          "id": gd.id,
           "user": c.blid,
           "awake": data.bool
         };

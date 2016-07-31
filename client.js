@@ -83,7 +83,7 @@ Client.prototype.setLocation = function (act, loc) {
 };
 
 Client.prototype.sendFriendsList = function () {
-  console.log("[debug] sendFriendsList");
+  //console.log("[debug] sendFriendsList");
   user = Users.getByBlid(this.blid);
   fl = user.getFriendsList();
 
