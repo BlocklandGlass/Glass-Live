@@ -16,8 +16,11 @@ function User(blid) {
   console.log("[debug] init user " + blid);
 
   try {
+    console.log("[debug] loading");
     this._longTerm = require('./save/' + blid + '.json');
+    console.log("[debug] loaded");
   } catch (e) {
+    console.log("[debug] fresh");
     this._longTerm = {};
     this._longTerm.requests = [];
     this._longTerm.friends = [];
@@ -30,6 +33,8 @@ function User(blid) {
   this.clients = [];
 
   users[blid] = this;
+
+  console.log("[debug] inited");
 }
 
 User.prototype.save = function() {
