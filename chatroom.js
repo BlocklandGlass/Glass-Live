@@ -134,7 +134,12 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
       for(i = 0; i < func.length; i++) {
         // TODO ml fields tags
-        client.sendRaw("<color:dd3300> * " + func[i]);
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * " + func[i]
+        };
+        client.sendRaw(dat);
       }
       break;
   }

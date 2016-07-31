@@ -128,6 +128,10 @@ Client.prototype.sendFriendRequests = function () {
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
+Client.prototype.sendRaw = function (dat) {
+  this.con.write(JSON.stringify(dat) + '\r\n');
+}
+
 Client.prototype.cleanUp = function () {
   user = Users.getByBlid(this.blid);
   user.removeClient(this);

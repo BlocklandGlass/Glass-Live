@@ -72,7 +72,16 @@ const clientServer = net.createServer((c) => { //'connection' listener
         gd.addUser(c.client);
         break;
 
-      case "roomComment":
+      case "roomAwake":
+        dat = {
+          "type": "roomAwake",
+          "user": c.blid,
+          "awake": data.bool
+        };
+        gd.transmit(JSON.stringify(dat));
+        break;
+
+      case "roomCommand":
         gd.onCommand(c.client, data.message);
         break;
 
