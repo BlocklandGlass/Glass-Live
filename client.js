@@ -35,7 +35,12 @@ Client.prototype.authCheck = function (ident) {
 
   var req = request('GET', "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident)
 
-  res = JSON.parse(req.getBody());
+  try {
+    res = JSON.parse(req.getBody());
+  } catch (e) {
+    console.log("Error authenticating user");
+    this.con.disconnect();
+  }
 
   if(res.status == "success") {
     this.blid = res.blid;
