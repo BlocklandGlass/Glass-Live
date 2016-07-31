@@ -13,10 +13,12 @@ var getByBlid = function getByBlid(blid) {
 }
 
 function User(blid) {
+  console.log("[debug] init user " + blid)
   fs = require('fs');
   try {
     fs.statSync('./save/' + blid + '.json')
     this._longTerm = require('./save/' + blid + '.json');
+    fs.close();
   } catch (e) {
     this._longTerm = {};
     this._longTerm.requests = [];
