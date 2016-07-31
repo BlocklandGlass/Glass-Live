@@ -124,7 +124,7 @@ User.prototype.getFriendRequests = function() {
 
 User.prototype.messageFriends = function(msg) {
   friends = this.getFriendsList();
-  for(i = 0; i < friends.length; i++) {
+  for(var i = 0; i < friends.length; i++) {
     friend_blid = friends[i];
     user = getByBlid(friend_blid);
     user.messageClients(msg)
@@ -175,7 +175,7 @@ User.prototype.setUsername = function(usr) {
 }
 
 User.prototype.messageClients = function (msg) {
-  for(i = 0; i < this.clients.length; i++) {
+  for(var i = 0; i < this.clients.length; i++) {
     cl = this.clients[i];
     cl.con.write(msg + '\r\n');
   }
