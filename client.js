@@ -88,6 +88,7 @@ Client.prototype.sendFriendsList = function () {
   friends = [];
   for(i = 0; i < fl.length; i++) {
     blid = fl[i];
+    console.log(blid);
     us = Users.getByBlid(blid);
 
     obj = {
