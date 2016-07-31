@@ -103,6 +103,7 @@ Client.prototype.sendFriendsList = function () {
     "type": "friendsList",
     "friends": friends
   };
+  console.log(JSON.stringify(dat));
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
@@ -125,6 +126,7 @@ Client.prototype.sendFriendRequests = function () {
     "type": "friendRequests",
     "requests": friends
   };
+  console.log(JSON.stringify(dat));
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
