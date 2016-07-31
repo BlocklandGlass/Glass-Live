@@ -74,6 +74,15 @@ User.prototype.acceptFriend = function (blid) {
   }
 };
 
+User.prototype.declineFriend = function (blid) {
+  if(this._longTerm.requests.indexOf(blid) > -1) {
+
+    idx = this._longTerm.requests.indexOf(blid);
+    this._longTerm.requests.splice(idx, 1);
+
+  }
+};
+
 User.prototype.addFriend = function(blid, accepter) {
   u = getByBlid(blid);
   dat = {

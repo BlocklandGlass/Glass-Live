@@ -161,6 +161,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
         c.user.acceptFriend(data.blid);
         break;
 
+      case "friendDecline":
+        c.user.declineFriend(data.blid);
+        break;
+
       default:
         console.log("unhandled: " + data.type);
     }
