@@ -20,7 +20,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
     if(c.client != null)
       c.client.cleanUp();
 
-    console.log('Client disconnected');
+    console.log('Client closed');
   });
 
   c.on('data', (raw) => {
