@@ -34,11 +34,14 @@ const clientServer = net.createServer((c) => { //'connection' listener
           c.write('{"type":"auth", "status":"success"}\r\n');
           c.blid = c.client.blid;
           c.user = Users.getByBlid(c.client.blid);
+
           if(c.user.clients.length > 0) {
             c.user.clients[0].disconnect(1);
           }
 
+          console.log("[debug] addClient");
           c.user.addClient(c.client);
+          console.log("[debug] setUsername");
           c.user.setUsername(c.client.username);
 
           c.client.sendFriendsList();
