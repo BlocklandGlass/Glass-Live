@@ -171,7 +171,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
       case "friendRequest":
-        if(data.target < 0 || data.target = c.blid)
+        if(data.target < 0 || data.target == c.blid)
           return;
 
         target = Users.getByBlid(data.target);
