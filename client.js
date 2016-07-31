@@ -43,7 +43,10 @@ Client.prototype.authCheck = function (ident) {
     this.admin = res.admin;
     this.mod = res.mod;
 
-    if(!res.beta) { return false; }
+    if(!res.beta) {
+      console.log("Not beta");
+      return false;
+    }
 
     return true;
   } else {
@@ -86,6 +89,8 @@ Client.prototype.sendFriendsList = function () {
   for(i = 0; i < fl.length; i++) {
     blid = fl[i];
     us = Users.getByBlid(fl);
+
+    console.log("[debug] friend list us: " + us);
 
     obj = {
       "blid": blid,
