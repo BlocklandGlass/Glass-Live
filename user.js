@@ -94,7 +94,8 @@ User.prototype.addFriend = function(blid, accepter) {
     "type": "friendAdd",
     "blid": blid,
     "username": u.getUsername(),
-    "accepter": accepter
+    "accepter": accepter,
+    "online": u.isOnline()
   };
   this.messageClients(JSON.stringify(dat));
 

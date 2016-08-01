@@ -8,6 +8,8 @@ const moment = require('moment');
 
 const config = require('./config');
 
+global.uptime = moment().unix();
+
 const clientServer = net.createServer((c) => { //'connection' listener
   c.on('end', () => {
     if(c.client != null)

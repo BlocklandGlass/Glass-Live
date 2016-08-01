@@ -142,6 +142,19 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         client.sendRaw(dat);
       }
       break;
+
+    case "uptime":
+      dat = {
+        "type": "roomText",
+        "id": this.id,
+        "text": "<color:dd3300> * " + (moment().unix()-global.uptime)
+      };
+      client.sendRaw(dat);
+      break;
+
+    default:
+      console.log("unrecognized command: " + arg[0]);
+      break;
   }
 }
 
