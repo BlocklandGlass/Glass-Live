@@ -1,8 +1,28 @@
 // whereas client manages an individual connection,
 // user deals with longer term data
 
+const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
+
 var users = [];
 var uid = 0;
+
+/*
+Users.get('9789', function(user) {
+
+});
+*/
+
+var get = function get(blid, callback) {
+  var url = 'mongodb://localhost:27017/glassLive';
+  MongoClient.connect(url, function(err, db) {
+    assert.equal(null, err);
+    db.collection('users').findOne({"blid":blid}, function(err, data) {
+      callback(new User(data, blid));
+    }.bind({blid: blid, callback: callback}));
+    db.close();
+  }.bind({blid: blid, callback: callback}));
+}
 
 var getByBlid = function getByBlid(blid) {
   if(users[blid] != null) {
@@ -12,34 +32,41 @@ var getByBlid = function getByBlid(blid) {
   }
 }
 
-function User(blid) {
-  //console.log("[debug] init user " + blid);
-
-  try {
-    //console.log("[debug] loading");
-    this._longTerm = require('./save/' + blid + '.json');
-    //console.log("[debug] loaded");
-  } catch (e) {
-    //console.log("[debug] fresh");
+function User(data, blid) {
+  if(data == null || data._longTerm == null) {
     this._longTerm = {};
     this._longTerm.requests = [];
     this._longTerm.friends = [];
+    this._dbId = null;
+  } else {
+    this._longTerm = data.data;
+    this._dbId = data._id;
   }
-
-  this.uid = uid;
-  uid++;
 
   this.blid = blid;
   this.clients = [];
 
   users[blid] = this;
 
-  //console.log("[debug] inited");
+  console.log("[debug] inited " + blid);
+  console.log(data);
 }
 
 User.prototype.save = function() {
-  fs = require('fs');
-  fs.writeFile('./save/' + this.blid + '.json', JSON.stringify(this._longTerm));
+  var url = 'mongodb://localhost:27017/glassLive';
+  MongoClient.connect(url, function(err, db) {
+    assert.equal(null, err);
+    db.collection('users').save( {
+        "_id": user._dbId,
+        "blid": user.blid,
+        "data": user._longTerm
+     }, function(err, result) {
+      assert.equal(err, null);
+      console.log("Saved user");
+    }.bind({user: user}));
+    db.close();
+  }.bind({user: this}));
+
 }
 
 User.prototype.newFriendRequest = function(sender) {
@@ -66,16 +93,16 @@ User.prototype.acceptFriend = function (blid) {
     };
     this.messageClients(JSON.stringify(dat));
   } else {
-    user = getByBlid(blid);
+    get(blid, function(user) {
+      idx = this._longTerm.requests.indexOf(blid);
+      this._longTerm.requests.splice(idx, 1);
 
-    idx = this._longTerm.requests.indexOf(blid);
-    this._longTerm.requests.splice(idx, 1);
+      if(this._longTerm.friends.indexOf(blid) > -1)
+        return;
 
-    if(this._longTerm.friends.indexOf(blid) > -1)
-      return;
-
-    this.addFriend(blid, 1);
-    user.addFriend(this.blid, 0);
+      this.addFriend(blid, 1);
+      user.addFriend(this.blid, 0);
+    });
   }
 };
 
@@ -89,24 +116,25 @@ User.prototype.declineFriend = function (blid) {
 };
 
 User.prototype.addFriend = function(blid, accepter) {
-  u = getByBlid(blid);
-  dat = {
-    "type": "friendAdd",
-    "blid": blid,
-    "username": u.getUsername(),
-    "accepter": accepter,
-    "online": u.isOnline()
-  };
-  this.messageClients(JSON.stringify(dat));
+  get(blid, function(u) {
+    dat = {
+      "type": "friendAdd",
+      "blid": blid,
+      "username": u.getUsername(),
+      "accepter": accepter,
+      "online": u.isOnline()
+    };
+    this.messageClients(JSON.stringify(dat));
 
-  if(this._longTerm.friends == null)
-    this._longTerm.friends = [];
+    if(this._longTerm.friends == null)
+      this._longTerm.friends = [];
 
-  if(this._longTerm.friends.indexOf(blid) == -1) {
-    this._longTerm.friends.push(blid);
-  }
+    if(this._longTerm.friends.indexOf(blid) == -1) {
+      this._longTerm.friends.push(blid);
+    }
 
-  this.save();
+    this.save();
+  }.bind({this: this, blid: blid, accepter: accepter}));
 }
 
 User.prototype.getFriendsList = function() {
@@ -127,8 +155,9 @@ User.prototype.messageFriends = function(msg) {
   friends = this.getFriendsList();
   for(var i = 0; i < friends.length; i++) {
     friend_blid = friends[i];
-    user = getByBlid(friend_blid);
-    user.messageClients(msg)
+    get(friend_blid, function(user) {
+      user.messageClients(msg)
+    });
   }
 }
 
@@ -182,4 +211,4 @@ User.prototype.messageClients = function (msg) {
   }
 }
 
-module.exports = {getByBlid: getByBlid};
+module.exports = {getByBlid: getByBlid, get: get};

@@ -5,6 +5,7 @@
   "dependencies": {
     "mysql" : "latest",
     "sync-request" : "latest",
-    "moment" : "latest"
+    "moment" : "latest",
+    "mongodb" : "latest"
   }
 }

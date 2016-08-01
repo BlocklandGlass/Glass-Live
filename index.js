@@ -40,19 +40,20 @@ const clientServer = net.createServer((c) => { //'connection' listener
           console.log("Connected (" + c.client.blid + ", " + data.ident + ")");
           c.write('{"type":"auth", "status":"success"}\r\n');
           c.blid = c.client.blid;
-          c.user = Users.getByBlid(c.client.blid);
+          Users.get(c.client.blid, function(user) {
+            c.user = user;
+            if(c.user.clients.length > 0) {
+              c.user.clients[0].disconnect(1);
+            }
 
-          if(c.user.clients.length > 0) {
-            c.user.clients[0].disconnect(1);
-          }
+            //console.log("[debug] addClient");
+            c.user.addClient(c.client);
+            //console.log("[debug] setUsername");
+            c.user.setUsername(c.client.username);
 
-          //console.log("[debug] addClient");
-          c.user.addClient(c.client);
-          //console.log("[debug] setUsername");
-          c.user.setUsername(c.client.username);
-
-          c.client.sendFriendsList();
-          c.client.sendFriendRequests();
+            c.client.sendFriendsList();
+            c.client.sendFriendRequests();
+          }.bind({c: c}));
         } else {
           console.log('Failed');
           c.write('{"type":"auth", "status":"failed"}\r\n');
@@ -101,51 +102,54 @@ const clientServer = net.createServer((c) => { //'connection' listener
       //================================
 
       case "message":
-        target = Users.getByBlid(data.target);
-        if(target.isOnline()) {
-          obj = {
-            "type": "message",
-            "message": data.message,
-            "sender": c.client.username,
-            "sender_id": c.blid,
-            "timestamp": moment().unix(),
-            "datetime": moment().format('h:mm:ss a')
-          };
-          target.messageClients(JSON.stringify(obj));
-        } else {
-          obj = {
-            "type": "messageNotification",
-            "message": "User is offline.",
-            "chat_blid": data.target,
-            "timestamp": moment().unix(),
-            "datetime": moment().format('h:mm:ss a')
-          };
-          c.write(JSON.stringify(obj) + '\r\n');
-        }
+        Users.get(data.target, function(target) {
+          if(target.isOnline()) {
+            obj = {
+              "type": "message",
+              "message": data.message,
+              "sender": c.client.username,
+              "sender_id": c.blid,
+              "timestamp": moment().unix(),
+              "datetime": moment().format('h:mm:ss a')
+            };
+            target.messageClients(JSON.stringify(obj));
+          } else {
+            obj = {
+              "type": "messageNotification",
+              "message": "User is offline.",
+              "chat_blid": data.target,
+              "timestamp": moment().unix(),
+              "datetime": moment().format('h:mm:ss a')
+            };
+            c.write(JSON.stringify(obj) + '\r\n');
+          }
+        }.bind({c: c, data: data}));
         break;
 
         case "messageTyping":
-          target = Users.getByBlid(data.target);
-          obj = {
-            "type": "messageTyping",
-            "typing": data.typing,
-            "sender": c.blid,
-            "timestamp": moment().unix(),
-            "datetime": moment().format('h:mm:ss a')
-          };
-          target.messageClients(JSON.stringify(obj));
+          Users.get(data.target, function(target) {
+            obj = {
+              "type": "messageTyping",
+              "typing": data.typing,
+              "sender": c.blid,
+              "timestamp": moment().unix(),
+              "datetime": moment().format('h:mm:ss a')
+            };
+            target.messageClients(JSON.stringify(obj));
+          }.bind({c: c, data: data}));
           break;
 
         case "messageClose":
-          target = Users.getByBlid(data.target);
-          obj = {
-            "type": "messageNotification",
-            "message": "User closed chat window.",
-            "chat_blid": data.target,
-            "timestamp": moment().unix(),
-            "datetime": moment().format('h:mm:ss a')
-          };
-          target.messageClients(JSON.stringify(obj));
+          Users.get(data.target, function(target) {
+            obj = {
+              "type": "messageNotification",
+              "message": "User closed chat window.",
+              "chat_blid": data.target,
+              "timestamp": moment().unix(),
+              "datetime": moment().format('h:mm:ss a')
+            };
+            target.messageClients(JSON.stringify(obj));
+          }.bind({c: c, data: data}));
           break;
 
       //================================
@@ -162,22 +166,24 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
       case "locationGet":
         // TODO privacy settings
-        target = Users.getByBlid(data.target);
-        obj = {
-          "type": "location",
-          "blid": c.client.blid,
-          "activity": c.client.activity,
-          "location": c.client.location
-        };
-        target.messageClients(JSON.stringify(obj));
+        Users.get(data.target, function(target) {
+          obj = {
+            "type": "location",
+            "blid": c.client.blid,
+            "activity": c.client.activity,
+            "location": c.client.location
+          };
+          target.messageClients(JSON.stringify(obj));
+        }.bind({c: c, data: data}));
         break;
 
       case "friendRequest":
         if(data.target < 0 || data.target == c.blid)
           return;
 
-        target = Users.getByBlid(data.target);
-        target.newFriendRequest(c.user);
+        Users.get(data.target, function(target) {
+          target.newFriendRequest(c.user);
+        }.bind({c: c, data: data}));
         break;
 
       case "friendAccept":
@@ -217,16 +223,17 @@ const noteServer = net.createServer((c) => { //'connection' listener
     obj = JSON.parse(data);
 
     if(obj.type == 'notification') {
-      user = Users.getByBlid(obj.target);
-      dat = {
-        "type":"notification",
-        "title":obj.title,
-        "text":obj.text,
-        "image":obj.image,
-        "duration":obj.duration,
-        "callback":obj.callback
-      };
-      user.messageClients(JSON.stringify(dat));
+      Users.get(obj.target, function(user) {
+        dat = {
+          "type":"notification",
+          "title":obj.title,
+          "text":obj.text,
+          "image":obj.image,
+          "duration":obj.duration,
+          "callback":obj.callback
+        };
+        user.messageClients(JSON.stringify(dat));
+      }.bind({obj, obj}));
     }
   });
 
