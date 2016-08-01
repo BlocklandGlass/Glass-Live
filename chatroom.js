@@ -110,16 +110,29 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
   switch(arg[0]) {
     case "kick":
-      if(client.mod) {
+      if(arg.length >= 2) {
+        if(client.mod) {
+          name = "";
+          for(var i = 1; i < arg.length; i++) {
+            name = name + " " + arg[i];
+          }
+          name = name.trim();
 
+          for(var i = 0; i < this.users; i++) {
+            cl = this.users[i];
+            if(cl.username == name) {
+              this.removeUser(cl, 2);
+            }
+          }
+        }
       }
       break;
 
     case "kickid":
       if(arg.length >= 2) {
         if(client.mod) {
-          for(i = 0; i < this.clients; i++) {
-            cl = this.clients[i];
+          for(var i = 0; i < this.users; i++) {
+            cl = this.users[i];
             if(cl.blid == arg[1]) {
               this.removeUser(cl, 2);
             }
