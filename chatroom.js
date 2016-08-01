@@ -103,8 +103,10 @@ Chatroom.prototype.removeUser = function (c, reason) {
 
 Chatroom.prototype.onCommand = function (client, cmd) {
   arg = cmd.split(" ");
-  if(arg[0] == null)
+  if(arg[0] == null && arg[0] != "/")
    return;
+
+  arg[0] = arg[0].substring(1);
 
   switch(arg[0]) {
     case "kick":
