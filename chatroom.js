@@ -159,10 +159,38 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       break;
 
     case "uptime":
+      seconds = (moment().unix()-global.uptime);
+      minutes = Math.floor(seconds/60);
+      hours = Math.floor(minutes/60);
+      days = Math.floor(hours/24);
+
+      seconds = seconds % 60;
+      minutes = minutes % 60;
+      hours = hours % 24;
+
+      str = "";
+      if(days > 0) {
+        str += " " + days + "d";
+      }
+
+      if(hours > 0) {
+        str += " " + hours + "h";
+      }
+
+      if(minutes > 0) {
+        str += " " + minutes + "m";
+      }
+
+      if(seconds > 0) {
+        str += " " + seconds + "s";
+      }
+
+      str = str.trim();
+
       dat = {
         "type": "roomText",
         "id": this.id,
-        "text": "<color:dd3300> * " + (moment().unix()-global.uptime)
+        "text": "<color:dd3300> * Uptime: " + str
       };
       client.sendRaw(dat);
       break;

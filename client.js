@@ -94,12 +94,9 @@ Client.prototype.sendFriendsList = function () {
   user = Users.getByBlid(this.blid);
   fl = user.getFriendsList();
 
-  console.log("[fl.length] " + fl.length);
-
   friends = [];
   for(i = 0; i < fl.length; i++) {
     blid = fl[i];
-    console.log(blid);
     us = Users.getByBlid(blid);
 
     obj = {
@@ -114,7 +111,6 @@ Client.prototype.sendFriendsList = function () {
     "type": "friendsList",
     "friends": friends
   };
-  console.log(JSON.stringify(dat));
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
@@ -137,7 +133,6 @@ Client.prototype.sendFriendRequests = function () {
     "type": "friendRequests",
     "requests": friends
   };
-  console.log(JSON.stringify(dat));
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
