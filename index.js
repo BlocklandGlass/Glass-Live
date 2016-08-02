@@ -13,14 +13,14 @@ global.uptime = moment().unix();
 
 const clientServer = net.createServer((c) => { //'connection' listener
   c.on('end', () => {
-    if(c.client != null)
+    if(c.client != null && c.blid != null)
       c.client.cleanUp();
 
     console.log('Client disconnected');
   });
 
   c.on('close', () => {
-    if(c.client != null)
+    if(c.client != null && c.blid != null)
       c.client.cleanUp();
 
     console.log('Client closed');

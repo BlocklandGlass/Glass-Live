@@ -14,7 +14,7 @@ Users.get('9789', function(user) {
 
 var get = function get(blid, callback) {
   if(module.users[blid] != null) {
-    console.log("user " + blid + " already exists");
+    //console.log("user " + blid + " already exists");
     callback(module.users[blid]);
   } else {
     var url = 'mongodb://localhost:27017/glassLive';
@@ -53,7 +53,7 @@ function User(data, blid) {
   module.users[blid] = this;
 
   console.log("[debug] inited " + blid);
-  console.log(data);
+  //console.log(data);
 }
 
 User.prototype.save = function() {
@@ -67,8 +67,8 @@ User.prototype.save = function() {
         "data": user._longTerm
      }, function(err, result) {
       assert.equal(err, null);
-      console.log("Saved user " + user.blid);
-      console.log(user._longTerm)
+      //console.log("Saved user " + user.blid);
+      //console.log(user._longTerm)
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
@@ -80,7 +80,7 @@ User.prototype.newFriendRequest = function(sender) {
     this._longTerm.requests.push(sender.blid);
   }
 
-  console.log("new friend request from " + sender.blid);
+  //console.log("new friend request from " + sender.blid);
 
   dat = {
     "type": "friendRequest",
