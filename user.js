@@ -4,8 +4,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 
-var users = [];
-var uid = 0;
+module.users = [];
 
 /*
 Users.get('9789', function(user) {
@@ -14,26 +13,23 @@ Users.get('9789', function(user) {
 */
 
 var get = function get(blid, callback) {
-  var url = 'mongodb://localhost:27017/glassLive';
-  MongoClient.connect(url, function(err, db) {
-    assert.equal(null, err);
-    db.collection('users').findOne({"blid":blid}, function(err, data) {
-      callback(new User(data, blid));
-    }.bind({blid: blid, callback: callback}));
-    db.close();
-  }.bind({blid: blid, callback: callback}));
-}
-
-var getByBlid = function getByBlid(blid) {
-  if(users[blid] != null) {
-    return users[blid];
+  if(module.users[blid] != null) {
+    console.log("user " + blid + " already exists");
+    callback(module.users[blid]);
   } else {
-    return new User(blid);
+    var url = 'mongodb://localhost:27017/glassLive';
+    MongoClient.connect(url, function(err, db) {
+      assert.equal(null, err);
+      db.collection('users').findOne({"blid":blid}, function(err, data) {
+        callback(new User(data, blid));
+      }.bind({blid: blid, callback: callback}));
+      db.close();
+    }.bind({blid: blid, callback: callback}));
   }
 }
 
 function User(data, blid) {
-  if(data == null || data._longTerm == null) {
+  if(data == null || data.data == null) {
     this._longTerm = {};
     this._longTerm.requests = [];
     this._longTerm.friends = [];
@@ -46,14 +42,15 @@ function User(data, blid) {
   this.blid = blid;
   this.clients = [];
 
-  users[blid] = this;
+  module.users[blid] = this;
 
   console.log("[debug] inited " + blid);
-  console.log(data);
+  //console.log(data);
 }
 
 User.prototype.save = function() {
   var url = 'mongodb://localhost:27017/glassLive';
+  var user = this;
   MongoClient.connect(url, function(err, db) {
     assert.equal(null, err);
     db.collection('users').save( {
@@ -62,10 +59,11 @@ User.prototype.save = function() {
         "data": user._longTerm
      }, function(err, result) {
       assert.equal(err, null);
-      console.log("Saved user");
+      console.log("Saved user " + user.blid);
+      //console.log(user._longTerm);
     }.bind({user: user}));
     db.close();
-  }.bind({user: this}));
+  }.bind({user: user}));
 
 }
 
@@ -73,6 +71,8 @@ User.prototype.newFriendRequest = function(sender) {
   if(this._longTerm.requests.indexOf(sender.blid) == -1) {
     this._longTerm.requests.push(sender.blid);
   }
+
+  console.log("new friend request from " + sender.blid);
 
   dat = {
     "type": "friendRequest",
@@ -211,4 +211,4 @@ User.prototype.messageClients = function (msg) {
   }
 }
 
-module.exports = {getByBlid: getByBlid, get: get};
+module.exports = {get: get};

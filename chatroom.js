@@ -11,6 +11,8 @@ function Chatroom(title) {
   this.title = title;
   this.users = [];
 
+  this.clientList = [];
+
   chatroom[chatrooms] = this;
   chatrooms++;
 }
@@ -31,21 +33,16 @@ Chatroom.prototype.addUser = function (c) {
     "motd": "Welcome to the Glass Live private beta!\nBe nice, have fun, and find bugs\n"
   };
 
-  clients = [];
-  for(i = 0; i < this.users.length; i++) {
-    cl = this.users[i];
-    uo = Users.getByBlid(cl.blid)
-    cli = {
-      "username": uo.getUsername(),
-      "blid": uo.blid,
-      "mod": cl.mod,
-      "admin": cl.admin
-    };
-    clients.push(cli);
-  }
+  cli = {
+    "username": c.username,
+    "blid": c.blid,
+    "mod": c.mod,
+    "admin": c.admin
+  };
 
-  dat.clients = clients;
+  this.clientList.push(cli);
 
+  dat.clients = this.clientList;
   c.con.write(JSON.stringify(dat) + '\r\n');
 
   if(this.users.indexOf(c) > -1) {
@@ -73,6 +70,13 @@ Chatroom.prototype.removeUser = function (c, reason) {
     this.users.splice(idx, 1);
   } else {
     return;
+  }
+
+  for(var i = 0; i < this.clientList.length; i++) {
+    obj = this.clientList[i];
+    if(obj.blid == c.blid) {
+      this.clientList.splice(i, 1);
+    }
   }
 
   if(reason == null) {

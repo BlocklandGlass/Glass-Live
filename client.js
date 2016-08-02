@@ -90,50 +90,62 @@ Client.prototype.setLocation = function (act, loc) {
 };
 
 Client.prototype.sendFriendsList = function () {
-  //console.log("[debug] sendFriendsList");
-  user = Users.getByBlid(this.blid);
-  fl = user.getFriendsList();
+  console.log("[debug] sendFriendsList");
+  var cl = this;
+  Users.get(this.blid, function(user) {
+    fl = user.getFriendsList();
 
-  friends = [];
-  for(i = 0; i < fl.length; i++) {
-    blid = fl[i];
-    us = Users.getByBlid(blid);
+    var friends = [];
+    var friendCount = fl.length;
 
-    obj = {
-      "blid": blid,
-      "username": us.getUsername(),
-      "online": us.isOnline()
-    };
-    friends.push(obj);
-  }
-
-  dat = {
-    "type": "friendsList",
-    "friends": friends
-  };
-  this.con.write(JSON.stringify(dat) + '\r\n');
+    for(i = 0; i < fl.length; i++) {
+      blid = fl[i];
+      Users.get(blid, function(us) {
+        obj = {
+          "blid": blid,
+          "username": us.getUsername(),
+          "online": us.isOnline()
+        };
+        friends.push(obj);
+        if(friends.length == friendCount) {
+          dat = {
+            "type": "friendsList",
+            "friends": friends
+          };
+          cl.con.write(JSON.stringify(dat) + '\r\n');
+        }
+      }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
+    }
+  }.bind({cl: cl}));
 }
 
 Client.prototype.sendFriendRequests = function () {
-  user = Users.getByBlid(this.blid);
-  fl = user.getFriendRequests();
-  friends = [];
-  for(i = 0; i < fl.length; i++) {
-    blid = fl[i];
-    us = Users.getByBlid(blid);
+  var cl = this;
+  Users.get(this.blid, function(user) {
+    fl = user.getFriendRequests();
 
-    obj = {
-      "blid": blid,
-      "username": us.getUsername()
-    };
-    friends.push(obj);
-  }
+    var friends = [];
+    var friendCount = fl.length;
 
-  dat = {
-    "type": "friendRequests",
-    "requests": friends
-  };
-  this.con.write(JSON.stringify(dat) + '\r\n');
+    for(i = 0; i < fl.length; i++) {
+      blid = fl[i];
+      console.log("[fl.length] " + fl.length);
+      Users.get(blid, function(us) {
+        obj = {
+          "blid": blid,
+          "username": us.getUsername()
+        };
+        friends.push(obj);
+        if(friends.length == friendCount) {
+          dat = {
+            "type": "friendRequests",
+            "requests": friends
+          };
+          cl.con.write(JSON.stringify(dat) + '\r\n');
+        }
+      }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
+    }
+  }.bind({cl: cl}));
 }
 
 Client.prototype.sendRaw = function (dat) {
@@ -141,12 +153,14 @@ Client.prototype.sendRaw = function (dat) {
 }
 
 Client.prototype.cleanUp = function () {
-  user = Users.getByBlid(this.blid);
-  user.removeClient(this);
+  var cl = this;
+  Users.get(this.blid, function(user) {
+    user.removeClient(cl);
 
-  for(i = 0; i < this.rooms.length; i++) {
-    this.rooms[i].removeUser(this, 1);
-  }
+    for(i = 0; i < cl.rooms.length; i++) {
+      cl.rooms[i].removeUser(cl, 1);
+    }
+  }.bind({cl: cl}));
 }
 
 Client.prototype._addToRoom = function (g) {
