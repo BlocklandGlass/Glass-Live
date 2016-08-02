@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "my first socket.io app",
   "dependencies": {
-    "mysql" : "latest",
+    "request" : "latest",
     "sync-request" : "latest",
     "moment" : "latest",
     "mongodb" : "latest"

@@ -5,6 +5,7 @@ const Client = require('./client');
 const Users = require('./user');
 const gd = new Chatroom('General Discussion');
 const moment = require('moment');
+const serverlist = require('./serverlist');
 
 const config = require('./config');
 
@@ -210,7 +211,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
     c.client.cleanUp();
   });
 
-  c.client = new Client(c);
+  c.client = Client.create(c);
 });
 
 const noteServer = net.createServer((c) => { //'connection' listener

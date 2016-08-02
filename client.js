@@ -6,6 +6,8 @@ const config = require('./config');
 
 connections = 0;
 
+var clients = [];
+
 function Client(con) {
   this.con = con;
   this.cid = connections;
@@ -19,7 +21,20 @@ function Client(con) {
 
   //todo: friends loading
 
+  clients.push(this);
+
   connections++;
+}
+
+var create = function (con) {
+  return new Client(con);
+}
+
+var broadcast = function (str) {
+  for(var i = 0; i < clients.length; i++) {
+    client = clients[i];
+    client.con.write(str + '\r\n');
+  }
 }
 
 Client.prototype.authCheck = function (ident) {
@@ -166,3 +181,5 @@ Client.prototype.cleanUp = function () {
 Client.prototype._addToRoom = function (g) {
   this.rooms.push(g);
 }
+
+module.exports = {broadcast: broadcast, create: create}

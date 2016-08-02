@@ -28,8 +28,16 @@ var get = function get(blid, callback) {
   }
 }
 
+var getByBlid = function getByBlid(blid) {
+  if(users[blid] != null) {
+    return users[blid];
+  } else {
+    return new User(blid);
+  }
+}
+
 function User(data, blid) {
-  if(data == null || data.data == null) {
+  if(data == null || data._longTerm == null) {
     this._longTerm = {};
     this._longTerm.requests = [];
     this._longTerm.friends = [];
@@ -45,7 +53,7 @@ function User(data, blid) {
   module.users[blid] = this;
 
   console.log("[debug] inited " + blid);
-  //console.log(data);
+  console.log(data);
 }
 
 User.prototype.save = function() {
@@ -60,7 +68,7 @@ User.prototype.save = function() {
      }, function(err, result) {
       assert.equal(err, null);
       console.log("Saved user " + user.blid);
-      //console.log(user._longTerm);
+      console.log(user._longTerm)
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
@@ -211,4 +219,4 @@ User.prototype.messageClients = function (msg) {
   }
 }
 
-module.exports = {get: get};
+module.exports = {getByBlid: getByBlid, get: get};
