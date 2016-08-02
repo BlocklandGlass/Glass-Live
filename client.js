@@ -6,7 +6,7 @@ const config = require('./config');
 
 connections = 0;
 
-var clients = [];
+var clientGroup = [];
 
 function Client(con) {
   this.con = con;
@@ -21,7 +21,7 @@ function Client(con) {
 
   //todo: friends loading
 
-  clients.push(this);
+  clientGroup.push(this);
 
   connections++;
 }
@@ -31,9 +31,9 @@ var create = function (con) {
 }
 
 var broadcast = function (str) {
-  for(var i = 0; i < clients.length; i++) {
-    client = clients[i];
-    client.con.write(str + '\r\n');
+  for(var i = 0; i < clientGroup.length; i++) {
+    cl = clientGroup[i];
+    cl.con.write(str + '\r\n');
   }
 }
 
@@ -176,8 +176,8 @@ Client.prototype.cleanUp = function () {
       cl.rooms[i].removeUser(cl, 1);
     }
   }.bind({cl: cl}));
-  idx = clients.indexOf(this);
-  clients.splice(idx, 1);
+  idx = clientGroup.indexOf(this);
+  clientGroup.splice(idx, 1);
 }
 
 Client.prototype._addToRoom = function (g) {
