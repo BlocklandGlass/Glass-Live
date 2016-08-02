@@ -135,13 +135,18 @@ Chatroom.prototype.onCommand = function (client, cmd) {
     case "kickid":
       if(arg.length >= 2) {
         if(client.mod) {
-          for(var i = 0; i < this.users; i++) {
+          for(var i = 0; i < this.users.length; i++) {
             cl = this.users[i];
             if(cl.blid == arg[1]) {
+              console.log("kicking");
               this.removeUser(cl, 2);
             }
           }
+        } else {
+          console.log("not mod");
         }
+      } else {
+        console.log("too few arguments");
       }
       break;
 
