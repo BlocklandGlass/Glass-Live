@@ -13,6 +13,10 @@ Users.get('9789', function(user) {
 */
 
 var get = function get(blid, callback) {
+  if(blid == undefined || blid == null) {
+    return;
+  }
+
   if(module.users[blid] != null) {
     //console.log("user " + blid + " already exists");
     callback(module.users[blid]);
@@ -49,6 +53,7 @@ function User(data, blid) {
 
   this.blid = blid;
   this.clients = [];
+  this.initialized = true;
 
   module.users[blid] = this;
 
@@ -57,6 +62,11 @@ function User(data, blid) {
 }
 
 User.prototype.save = function() {
+  if(this.initialized != true) {
+    console.log("could not save uninitialized user");
+    return;
+  }
+
   var url = 'mongodb://localhost:27017/glassLive';
   var user = this;
   MongoClient.connect(url, function(err, db) {
