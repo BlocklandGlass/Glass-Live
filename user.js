@@ -125,6 +125,7 @@ User.prototype.declineFriend = function (blid) {
 };
 
 User.prototype.addFriend = function(blid, accepter) {
+  var us = this
   get(blid, function(u) {
     dat = {
       "type": "friendAdd",
@@ -133,17 +134,17 @@ User.prototype.addFriend = function(blid, accepter) {
       "accepter": accepter,
       "online": u.isOnline()
     };
-    this.messageClients(JSON.stringify(dat));
+    us.messageClients(JSON.stringify(dat));
 
-    if(this._longTerm.friends == null)
-      this._longTerm.friends = [];
+    if(us._longTerm.friends == null)
+      us._longTerm.friends = [];
 
-    if(this._longTerm.friends.indexOf(blid) == -1) {
-      this._longTerm.friends.push(blid);
+    if(us._longTerm.friends.indexOf(blid) == -1) {
+      us._longTerm.friends.push(blid);
     }
 
-    this.save();
-  }.bind({this: this, blid: blid, accepter: accepter}));
+    us.save();
+  }.bind({us: us, blid: blid, accepter: accepter}));
 }
 
 User.prototype.getFriendsList = function() {
