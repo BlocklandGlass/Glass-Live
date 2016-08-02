@@ -268,7 +268,11 @@ const infoServer = net.createServer((c) => { //'connection' listener
   });
 
   c.on('data', (data) => {
-    obj = JSON.parse(data);
+    try {
+      obj = JSON.parse(data);
+    } catch (e) {
+      return;
+    }
     var ip = c.remoteAddress;
     var idx = ip.lastIndexOf(':');
     ip = ip.substring(idx+1);
