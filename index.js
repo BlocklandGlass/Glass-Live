@@ -54,13 +54,15 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
             c.client.sendFriendsList();
             c.client.sendFriendRequests();
+
           }.bind({c: c}));
+          gd.addUser(c.client);
         } else {
-          console.log('Failed');
+          console.log('Auth failed for ' + c.client.blid);
           c.write('{"type":"auth", "status":"failed"}\r\n');
+          c.destroy();
           return;
         }
-        gd.addUser(c.client);
 
         // TODO send friend requests
         // TODO send pub room listing
@@ -195,6 +197,22 @@ const clientServer = net.createServer((c) => { //'connection' listener
         c.user.declineFriend(data.blid);
         break;
 
+      case "queryServerList":
+        var servers = serverlist.getAll();
+        for(addr in servers) {
+          server = servers[addr];
+          if(server.hasGlass) {
+            var obj = {
+              "type": "serverListing",
+              "addr": addr,
+              "hasGlass": server.hasGlass,
+              "blid": server.blid
+            };
+            c.write(JSON.stringify(obj) + '\r\n');
+          }
+        }
+        break;
+
       default:
         console.log("unhandled: " + data.type);
     }
@@ -254,7 +272,10 @@ const infoServer = net.createServer((c) => { //'connection' listener
     var ip = c.remoteAddress;
     var idx = ip.lastIndexOf(':');
     ip = ip.substring(idx+1);
-    //ip = "174.62.132.184";
+    if(ip == "127.0.0.1")
+      ip = "174.62.132.184";
+
+    console.log(ip);
 
     if(obj.type == 'identify') {
       listing = serverlist.getServer(ip, obj.port);
@@ -262,8 +283,8 @@ const infoServer = net.createServer((c) => { //'connection' listener
         console.log("listing not found, TODO");
       } else {
         console.log("server identified");
-        listing.onUpdate('hasGlass', true);
-        listing.onUpdate('hostId', obj.blid);
+        listing.update('hasGlass', true);
+        listing.update('hostId', obj.blid);
       }
 
       c.listing = listing;

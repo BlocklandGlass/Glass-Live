@@ -42,6 +42,10 @@ ServerListing.prototype.onUpdate = function(key) {
   Clients.broadcast(JSON.stringify(obj));
 }
 
+var getAll = function() {
+  return serverList;
+}
+
 var getServer = function(ip, port) {
   if(serverList[ip + " " + port] != null) {
     return serverList[ip + " " + port];
@@ -108,7 +112,7 @@ var doUpdate = function () {
   })
 }
 
-setInterval(doUpdate, 10000);
+setInterval(doUpdate, 5000);
 doUpdate();
 
-module.exports = {doUpdate: doUpdate, getServer: getServer}
+module.exports = {doUpdate: doUpdate, getServer: getServer, getAll: getAll}
