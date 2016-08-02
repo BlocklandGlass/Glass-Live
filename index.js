@@ -58,7 +58,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
           }.bind({c: c}));
           gd.addUser(c.client);
         } else {
-          console.log('Auth failed for ' + c.client.blid);
+          console.log('Auth failed for ' + data.ident);
           c.write('{"type":"auth", "status":"failed"}\r\n');
           c.destroy();
           return;
