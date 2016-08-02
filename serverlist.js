@@ -19,10 +19,14 @@ ServerListing.prototype.checkForChanges = function(data) {
   for(var i = 0; i < tracked.length; i++) {
     key = tracked[i];
     if(data[key] != this[key]) {
-      this[key] = data[key];
-      this.onUpdate(key);
+      this.update(key, data[key]);
     }
   }
+}
+
+ServerListing.prototype.update = function(key, value) {
+  this[key] = value;
+  this.onUpdate(key);
 }
 
 ServerListing.prototype.onUpdate = function(key) {
@@ -106,3 +110,5 @@ var doUpdate = function () {
 
 setInterval(doUpdate, 10000);
 doUpdate();
+
+module.exports = {doUpdate: doUpdate, getServer: getServer}

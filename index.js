@@ -243,12 +243,52 @@ const noteServer = net.createServer((c) => { //'connection' listener
   });
 });
 
+const infoServer = net.createServer((c) => { //'connection' listener
+  console.log('server connected: ' + c.remoteAddress);
+  c.on('end', () => {
+    console.log('server disconnected');
+  });
+
+  c.on('data', (data) => {
+    obj = JSON.parse(data);
+    var ip = c.remoteAddress;
+    var idx = ip.lastIndexOf(':');
+    ip = ip.substring(idx+1);
+    //ip = "174.62.132.184";
+
+    if(obj.type == 'identify') {
+      listing = serverlist.getServer(ip, obj.port);
+      if(listing == false) {
+        console.log("listing not found, TODO");
+      } else {
+        console.log("server identified");
+        listing.onUpdate('hasGlass', true);
+        listing.onUpdate('hostId', obj.blid);
+      }
+
+      c.listing = listing;
+    } else if(obj.type == "updateValue") {
+      console.log("update: " + obj.key + " " + obj.value);
+      if(c.listing)
+        c.listing.update(obj.key, obj.value);
+    }
+  });
+
+  c.on('error', (err) => {
+    //console.error('Caught error', err);
+  });
+});
+
 clientServer.listen(config.basePort, () => { //'listening' listener
   console.log('Bound ' + config.basePort);
 });
 
 noteServer.listen(config.basePort+1, () => { //'listening' listener
-  console.log('Bound ' + (config.basePort+1) + '\r\n');
+  console.log('Bound ' + (config.basePort+1));
+});
+
+infoServer.listen(config.basePort+2, () => { //'listening' listener
+  console.log('Bound ' + (config.basePort+2) + '\r\n');
 });
 
 function pushNotification(con, title, text, image, duration, callback) {

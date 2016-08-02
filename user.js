@@ -101,16 +101,17 @@ User.prototype.acceptFriend = function (blid) {
     };
     this.messageClients(JSON.stringify(dat));
   } else {
+    var me = this;
     get(blid, function(user) {
-      idx = this._longTerm.requests.indexOf(blid);
-      this._longTerm.requests.splice(idx, 1);
+      idx = me._longTerm.requests.indexOf(blid);
+      me._longTerm.requests.splice(idx, 1);
 
-      if(this._longTerm.friends.indexOf(blid) > -1)
+      if(me._longTerm.friends.indexOf(blid) > -1)
         return;
 
-      this.addFriend(blid, 1);
-      user.addFriend(this.blid, 0);
-    });
+      me.addFriend(blid, 1);
+      user.addFriend(me.blid, 0);
+    }.bind({me: me}));
   }
 };
 
