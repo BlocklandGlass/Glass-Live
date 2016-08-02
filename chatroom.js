@@ -122,7 +122,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           }
           name = name.trim();
 
-          for(var i = 0; i < this.users; i++) {
+          for(var i = 0; i < this.users.length; i++) {
             cl = this.users[i];
             if(cl.username == name) {
               this.removeUser(cl, 2);
