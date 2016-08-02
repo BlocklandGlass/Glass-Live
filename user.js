@@ -53,7 +53,7 @@ function User(data, blid) {
   module.users[blid] = this;
 
   console.log("[debug] inited " + blid);
-  //console.log(data);
+  console.log(data);
 }
 
 User.prototype.save = function() {
