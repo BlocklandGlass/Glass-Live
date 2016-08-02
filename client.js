@@ -176,6 +176,8 @@ Client.prototype.cleanUp = function () {
       cl.rooms[i].removeUser(cl, 1);
     }
   }.bind({cl: cl}));
+  idx = clients.indexOf(this);
+  clients.splice(idx, 1);
 }
 
 Client.prototype._addToRoom = function (g) {
