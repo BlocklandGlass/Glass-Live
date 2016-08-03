@@ -249,18 +249,19 @@ User.prototype.addForumId = function (id, callback) {
       console.log("success")
       var $ = cheerio.load(body);
       var rows = $('.windowbg').find('tr');
-      console.log(rows);
-      console.log(rows.length);
-      return;
+
       for(var i = 0; i < rows.length; i++) {
         row = rows[i];
-        console.log(row);
-        key = row.closest('td').text();
-        val = row.next().text();
 
-        key = key.replace(":", "").trim();
+        var children = row.children('td')
+        if(children.length >= 2) {
+          key = children[0].text()
+          val = children[1].text;
 
-        console.log("[" + key + "] [" + val + "]");
+          key = key.replace(":", "").trim();
+
+          console.log("[" + key + "] [" + val + "]");
+        }
       }
     } else {
       callback(false);
