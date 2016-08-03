@@ -251,7 +251,7 @@ User.prototype.addForumId = function (id, callback) {
       var rows = $('.windowbg').find('tr');
 
       for(var i = 0; i < rows.length; i++) {
-        row = rows[i];
+        row = $(rows[i]);
 
         var children = row.children('td')
         if(children.length >= 2) {
