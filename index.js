@@ -79,7 +79,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
       //================================
 
       case "roomChat":
-        var cr = Chatrooms.getFromId(data.id);
+        var cr = Chatrooms.getFromId(data.room);
         cr.sendMessage(c.client, data.message);
         break;
 
@@ -105,7 +105,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
       case "roomCommand":
-        var cr = Chatrooms.getFromId(data.id);
+        var cr = Chatrooms.getFromId(data.room);
         cr.onCommand(c.client, data.message);
         break;
 
