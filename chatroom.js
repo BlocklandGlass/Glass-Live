@@ -1,10 +1,12 @@
 const moment = require('moment');
 const Users = require('./user');
 
-module.exports = Chatroom;
-
 var chatrooms = 0;
 var chatroom = [];
+
+var createChatroom = function(title) {
+  return new Chatroom(title);
+}
 
 function Chatroom(title) {
   this.id = chatrooms;
@@ -274,4 +276,4 @@ Chatroom.prototype.broadcast = function (msg) {
   this.transmit(JSON.stringify(dat));
 }
 
-module.exports = {getFromId: getFromId}
+module.exports = {getFromId: getFromId, createChatroom: createChatroom}

@@ -1,10 +1,10 @@
 const net = require('net');
 const database = require('./database');
-const Chatroom = require('./chatroom');
+const Chatrooms = require('./chatroom');
 const Client = require('./client');
 const Users = require('./user');
-const gd = new Chatroom('General Discussion');
-const gdbeta = new Chatroom('Beta');
+const gd = Chatrooms.createChatroom('General Discussion');
+const gdbeta = Chatrooms.createChatroom('Beta');
 const moment = require('moment');
 const serverlist = require('./serverlist');
 
@@ -79,15 +79,15 @@ const clientServer = net.createServer((c) => { //'connection' listener
       //================================
 
       case "roomChat":
-        Chatroom.getFromId(data.id).sendMessage(c.client, data.message);
+        Chatrooms.getFromId(data.id).sendMessage(c.client, data.message);
         break;
 
       case "roomLeave":
-        Chatroom.getFromId(data.id).removeUser(c.client, 0);
+        Chatrooms.getFromId(data.id).removeUser(c.client, 0);
         break;
 
       case "roomJoin":
-        Chatroom.getFromId(data.id).addUser(c.client);
+        Chatrooms.getFromId(data.id).addUser(c.client);
         break;
 
       case "roomAwake":
@@ -97,11 +97,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
           "user": c.blid,
           "awake": data.bool
         };
-        Chatroom.getFromId(data.id).transmit(JSON.stringify(dat));
+        Chatrooms.getFromId(data.id).transmit(JSON.stringify(dat));
         break;
 
       case "roomCommand":
-        Chatroom.getFromId(data.id).onCommand(c.client, data.message);
+        Chatrooms.getFromId(data.id).onCommand(c.client, data.message);
         break;
 
       //================================
