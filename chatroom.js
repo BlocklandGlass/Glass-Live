@@ -86,6 +86,8 @@ Chatroom.prototype.removeUser = function (c, reason) {
   // 0 = left
   // 1 = disconnected
   // 2 = kicked
+  // 3 = connection dropped
+  // 4 = update
 
   if(reason != 1) {
     dat = {

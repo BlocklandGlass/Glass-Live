@@ -33,7 +33,11 @@ var create = function (con) {
 var broadcast = function (str) {
   for(var i = 0; i < clientGroup.length; i++) {
     cl = clientGroup[i];
-    cl.con.write(str + '\r\n');
+    try {
+      cl.con.write(str + '\r\n');
+    } catch (e) {
+
+    }
   }
 }
 
@@ -167,15 +171,19 @@ Client.prototype.sendRaw = function (dat) {
   this.con.write(JSON.stringify(dat) + '\r\n');
 }
 
-Client.prototype.cleanUp = function () {
+Client.prototype.cleanUp = function (reason) {
+  if(reason == null)
+    reason = -1;
+
   var cl = this;
   Users.get(this.blid, function(user) {
     user.removeClient(cl);
 
     for(i = 0; i < cl.rooms.length; i++) {
-      cl.rooms[i].removeUser(cl, 1);
+      cl.rooms[i].removeUser(cl, reason);
     }
   }.bind({cl: cl}));
+
   idx = clientGroup.indexOf(this);
   clientGroup.splice(idx, 1);
 }

@@ -14,14 +14,14 @@ global.uptime = moment().unix();
 const clientServer = net.createServer((c) => { //'connection' listener
   c.on('end', () => {
     if(c.client != null && c.blid != null)
-      c.client.cleanUp();
+      c.client.cleanUp(3);
 
     console.log('Client disconnected');
   });
 
   c.on('close', () => {
     if(c.client != null && c.blid != null)
-      c.client.cleanUp();
+      c.client.cleanUp(1);
 
     console.log('Client closed');
   });
@@ -213,6 +213,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
         }
         break;
 
+      case "disconnect":
+        c.client.cleanUp(data.reason);
+        c.end();
+        break;
+
       default:
         console.log("unhandled: " + data.type);
     }
@@ -222,11 +227,12 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
   c.on('error', (err) => {
     if(err == 'EPIPE' || err == 'ECONNRESET') {
+      c.client.cleanUp(1);
       //not really an error, just a disconnect we didnt catch
     } else {
+      c.client.cleanUp(3);
       console.error('Caught error', err);
     }
-    c.client.cleanUp();
   });
 
   c.client = Client.create(c);
