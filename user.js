@@ -255,8 +255,8 @@ User.prototype.addForumId = function (id, callback) {
 
         var children = row.children('td')
         if(children.length >= 2) {
-          key = children[0].text()
-          val = children[1].text;
+          key = $(children[0]).text()
+          val = $(children[1]).text()
 
           key = key.replace(":", "").trim();
 
