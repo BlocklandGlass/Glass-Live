@@ -77,16 +77,16 @@ User.prototype.save = function() {
   var user = this;
   MongoClient.connect(url, function(err, db) {
     assert.equal(null, err);
-    db.collection('users').save( {
+    obj = {
         "_id": user._dbId,
         "blid": user.blid,
         "data": user._longTerm
-     }, function(err, result) {
+     };
+    db.collection('users').save(obj, function(err, result) {
       assert.equal(err, null);
       console.log("[debug] Saved " + user.blid);
-      console.log(user._longTerm)
-      console.log(result);
-      user._dbId = result._id;
+      console.log(obj);
+      user._dbId = obj._id;
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
