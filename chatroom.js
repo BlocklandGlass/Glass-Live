@@ -153,14 +153,15 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       break;
 
     case "help":
-      func = [];
-      func[0] = "help\tLists functions";
-      func[0] = "uptime\tGive the time the server has been online";
-      func[0] = "time\tGives the local time of the server";
-      func[1] = "kick <username>\tKicks user";
-      func[2] = "kickid <blid>\tKicks user by blid";
+      func = [
+        "help\tLists functions",
+        "uptime\tGives the server's uptime",
+        "time\tGives the local time of the server",
+        "kick <username>\tKicks user",
+        "kickid <blid>\tKicks user by blid"
+      ];
 
-      var str = "<spush><tab:100, 200><color:dd3300>";
+      var str = "<spush><tab:150, 250><color:dd3300>";
       for(i = 0; i < func.length; i++) {
         str = str + "\n * " + func[i]
       }
