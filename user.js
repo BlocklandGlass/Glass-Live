@@ -83,7 +83,9 @@ User.prototype.save = function() {
 
   var url = 'mongodb://localhost:27017/glassLive';
   var user = this;
+  console.log("[debug] saving")
   MongoClient.connect(url, function(err, db) {
+    console.log("[debug] connected: " + err);
     assert.equal(null, err);
     db.collection('users').createIndex( { "blid": 1 }, { unique: true } )
 
@@ -93,6 +95,9 @@ User.prototype.save = function() {
      };
 
     db.collection('users').update(obj, function(err, result) {
+      if(err != null) {
+        console.log("error:" + err);
+      }
       assert.equal(err, null);
       console.log("[debug] Updated " + user.blid);
       console.log(obj);
