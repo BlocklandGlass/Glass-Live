@@ -3,7 +3,8 @@
 
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
-const cheerio = require('cheerio')
+const request = require('request');
+const cheerio = require('cheerio');
 
 module.users = [];
 
