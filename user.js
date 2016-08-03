@@ -248,7 +248,7 @@ User.prototype.addForumId = function (id, callback) {
     if (!error && response.statusCode == 200) {
       console.log("success")
       var $ = cheerio.load(body);
-      var rows = $('.windowbg').find('tr');
+      var rows = $('.windowbg').children('tr');
       for(var i = 0; i < rows.length; i++) {
         row = rows[i];
         console.log(row);
