@@ -95,7 +95,7 @@ User.prototype.save = function() {
     var blid = user.blid;
     var data = user._longTerm;
 
-    db.collection('users').update({"blid": blid}, {"data": data}, {upsert: true} function(err, result) {
+    db.collection('users').update({"blid": blid}, {"data": data}, {upsert: true}, function(err, result) {
       if(err != null) {
         console.log("error:" + err);
       }
