@@ -17,7 +17,7 @@ function Chatroom(title) {
   chatrooms++;
 }
 
-function getFromId(id) {
+var getFromId = function getFromId(id) {
   if(chatroom.indexOf(id) > -1) {
     return chatroom[id];
   } else {
@@ -273,3 +273,5 @@ Chatroom.prototype.broadcast = function (msg) {
   };
   this.transmit(JSON.stringify(dat));
 }
+
+module.exports = {getFromId: getFromId}
