@@ -251,6 +251,7 @@ User.prototype.addForumId = function (id, callback) {
       var rows = $('.windowbg').find('tr');
       for(var i = 0; i < rows.length; i++) {
         row = rows[i];
+        console.log(row);
         key = row.closest('td').text();
         val = row.next().text();
 
