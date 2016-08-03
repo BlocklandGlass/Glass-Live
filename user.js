@@ -38,8 +38,8 @@ var get = function get(blid, callback) {
       db.collection('users').findOne({"blid":blid}, function(err, data) {
         assert.equal(null, err);
         var user = new User(data, blid);
-        var callbacks = module.userLoadCallbacks;
-        console.log("[debug] callbacks:" + callbacks.length);
+        var callbacks = module.userLoadCallbacks[blid];
+        console.log("[debug] callbacks: " + (callbacks.length));
         for(var i = 0; i < callbacks.length; i++) {
           cb = callbacks[i];
           if(typeof cb === "function")
