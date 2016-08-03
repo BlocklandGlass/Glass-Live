@@ -3,22 +3,22 @@ const Users = require('./user');
 
 module.exports = Chatroom;
 
-var chatrooms = 0;
-var chatroom = [];
+var module.chatrooms = 0;
+var module.chatroomList = [];
 
 var createChatroom = function(title) {
   return new Chatroom(title);
 }
 
 function Chatroom(title) {
-  this.id = chatrooms;
+  this.id = module.chatrooms;
   this.title = title;
   this.users = [];
 
   this.clientList = [];
 
-  chatroom[chatrooms] = this;
-  chatrooms++;
+  module.chatroomList[module.chatrooms] = this;
+  module.chatrooms++;
 }
 
 var getFromId = function getFromId(id) {
