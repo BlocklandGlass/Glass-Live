@@ -23,7 +23,7 @@ process.stdin.on('data', function (buffer) {
       console.log("[server] Notifying clients...");
       Clients.broadcast(JSON.stringify(obj));
       console.log("[server] Shutting Down")
-      process.exit()
+      setTimeout(function(){process.exit()}, 1000);
       break;
 
     case "help":
