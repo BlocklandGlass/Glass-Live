@@ -1,6 +1,8 @@
 const moment = require('moment');
 const Users = require('./user');
 
+module.exports = Chatroom;
+
 var chatrooms = 0;
 var chatroom = [];
 
