@@ -4,7 +4,7 @@ const Users = require('./user');
 module.exports = Chatroom;
 
 module.chatrooms = 0;
-module.chatroomList = [];
+module.chatroomList = {};
 
 var createChatroom = function(title) {
   return new Chatroom(title);
@@ -19,11 +19,13 @@ function Chatroom(title) {
 
   module.chatroomList[module.chatrooms] = this;
   module.chatrooms++;
+  console.log("crid: " + this.id);
+  console.log(module.chatroomList)
 }
 
 var getFromId = function getFromId(id) {
   id = parseInt(id);
-  if(module.chatroomList.indexOf(id) > -1) {
+  if(module.chatroomList.hasOwnProperty(id)) {
     return module.chatroomList[id];
   } else {
     return false;
