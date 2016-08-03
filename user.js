@@ -81,8 +81,8 @@ User.prototype.save = function() {
         "data": user._longTerm
      }, function(err, result) {
       assert.equal(err, null);
-      //console.log("Saved user " + user.blid);
-      //console.log(user._longTerm)
+      console.log("[debug] Saved " + user.blid);
+      console.log(user._longTerm)
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
