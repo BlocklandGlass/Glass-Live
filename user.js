@@ -28,7 +28,7 @@ var get = function get(blid, callback) {
       module.userLoadCallbacks[blid].push(callback);
       return;
     } else {
-      module.userLoadCallbacks[blid] = [];
+      module.userLoadCallbacks[blid] = [callback];
       module.usersLoading[blid] = true;
     }
 
@@ -39,9 +39,11 @@ var get = function get(blid, callback) {
         assert.equal(null, err);
         var user = new User(data, blid);
         var callbacks = module.userLoadCallbacks;
+        console.log("[debug] callbacks:" + callbacks.length);
         for(var i = 0; i < callbacks.length; i++) {
           cb = callbacks[i];
-          cb(user);
+          if(typeof cb === "function")
+            cb(user);
         }
       }.bind({blid: blid, callback: callback}));
       db.close();
