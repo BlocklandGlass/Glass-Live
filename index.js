@@ -79,15 +79,18 @@ const clientServer = net.createServer((c) => { //'connection' listener
       //================================
 
       case "roomChat":
-        Chatrooms.getFromId(data.id).sendMessage(c.client, data.message);
+        var cr = Chatrooms.getFromId(data.id);
+        cr.sendMessage(c.client, data.message);
         break;
 
       case "roomLeave":
-        Chatrooms.getFromId(data.id).removeUser(c.client, 0);
+        var cr = Chatrooms.getFromId(data.id);
+        cr.removeUser(c.client, 0);
         break;
 
       case "roomJoin":
-        Chatrooms.getFromId(data.id).addUser(c.client);
+        var cr = Chatrooms.getFromId(data.id);
+        cr.addUser(c.client);
         break;
 
       case "roomAwake":
@@ -97,11 +100,13 @@ const clientServer = net.createServer((c) => { //'connection' listener
           "user": c.blid,
           "awake": data.bool
         };
-        Chatrooms.getFromId(data.id).transmit(JSON.stringify(dat));
+        var cr = Chatrooms.getFromId(data.id);
+        //cr.transmit(JSON.stringify(dat));
         break;
 
       case "roomCommand":
-        Chatrooms.getFromId(data.id).onCommand(c.client, data.message);
+        var cr = Chatrooms.getFromId(data.id);
+        cr.onCommand(c.client, data.message);
         break;
 
       //================================
