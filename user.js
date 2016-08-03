@@ -25,6 +25,8 @@ var get = function get(blid, callback) {
     MongoClient.connect(url, function(err, db) {
       assert.equal(null, err);
       db.collection('users').findOne({"blid":blid}, function(err, data) {
+        console.log("[error] db: " + err);
+        //assert.equal(null, err);
         callback(new User(data, blid));
       }.bind({blid: blid, callback: callback}));
       db.close();
@@ -41,7 +43,7 @@ var getByBlid = function getByBlid(blid) {
 }
 
 function User(data, blid) {
-  if(data == null || data._longTerm == null) {
+  if(data == null || data.data == null) {
     this._longTerm = {};
     this._longTerm.requests = [];
     this._longTerm.friends = [];
