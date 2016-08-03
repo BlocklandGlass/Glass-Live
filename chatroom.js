@@ -22,8 +22,8 @@ function Chatroom(title) {
 }
 
 var getFromId = function getFromId(id) {
-  if(chatroom.indexOf(id) > -1) {
-    return chatroom[id];
+  if(module.chatroomList.indexOf(id) > -1) {
+    return module.chatroomList[id];
   } else {
     return false;
   }
