@@ -17,10 +17,10 @@ var get = function get(blid, callback) {
     return;
   }
 
-  /*if(module.users[blid] != null) {
+  if(module.users[blid] != null) {
     //console.log("user " + blid + " already exists");
     callback(module.users[blid]);
-  } else*/ {
+  } else {
     var url = 'mongodb://localhost:27017/glassLive';
     MongoClient.connect(url, function(err, db) {
       assert.equal(null, err);
@@ -67,7 +67,7 @@ function User(data, blid) {
 
 User.prototype.save = function() {
   if(this.initialized != true) {
-    console.log("could not save uninitialized user");
+    throw "could not save uninitialized user";
     return;
   }
 
@@ -94,7 +94,7 @@ User.prototype.newFriendRequest = function(sender) {
     this._longTerm.requests.push(sender.blid);
   }
 
-  //console.log("new friend request from " + sender.blid);
+  console.log("new friend request from " + sender.blid);
 
   dat = {
     "type": "friendRequest",

@@ -181,8 +181,10 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
       case "friendRequest":
-        if(data.target < 0 || data.target == c.blid)
+        if(data.target < 0 || data.target == c.blid) {
+          console.log("friend request failed, invalid id");
           return;
+        }
 
         Users.get(data.target, function(target) {
           target.newFriendRequest(c.user);
