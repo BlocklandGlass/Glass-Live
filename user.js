@@ -27,8 +27,7 @@ var get = function get(blid, callback) {
     MongoClient.connect(url, function(err, db) {
       assert.equal(null, err);
       db.collection('users').findOne({"blid":blid}, function(err, data) {
-        console.log("[error] db: " + err);
-        //assert.equal(null, err);
+        assert.equal(null, err);
         callback(new User(data, blid));
       }.bind({blid: blid, callback: callback}));
       db.close();
@@ -83,10 +82,15 @@ User.prototype.save = function() {
 
   var url = 'mongodb://localhost:27017/glassLive';
   var user = this;
-  console.log("[debug] saving")
+  console.log("[debug] saving " + user.blid)
   MongoClient.connect(url, function(err, db) {
-    console.log("[debug] connected: " + err);
+    console.log("[debug] connected for " + user.blid);
     assert.equal(null, err);
+
+    if(user.blid == null) {
+      console.error("Null BLID");
+      return;
+    }
 
     db.collection('users').update({"blid": user.blid}, {"data": user._longTerm}, function(err, result) {
       if(err != null) {
