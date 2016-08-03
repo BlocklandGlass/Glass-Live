@@ -67,12 +67,12 @@ function User(data, blid) {
     this.initialized = true;
 
     console.log("[debug] found " + blid);
+    console.log(data.data);
   }
 
   module.users[blid] = this;
 
   console.log("[debug] loaded " + blid);
-  console.log(data.data);
 }
 
 User.prototype.save = function() {
