@@ -46,9 +46,13 @@ function User(data, blid) {
     this._longTerm.requests = [];
     this._longTerm.friends = [];
     this._dbId = null;
+
+    console.log("[debug] creating " + blid);
   } else {
     this._longTerm = data.data;
     this._dbId = data._id;
+
+    console.log("[debug] found " + blid);
   }
 
   this.blid = blid;
@@ -57,7 +61,7 @@ function User(data, blid) {
 
   module.users[blid] = this;
 
-  console.log("[debug] inited " + blid);
+  console.log("[debug] loaded " + blid);
   console.log(data);
 }
 

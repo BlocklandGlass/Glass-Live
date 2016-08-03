@@ -134,13 +134,13 @@ Client.prototype.sendFriendsList = function () {
           cl.con.write(JSON.stringify(dat) + '\r\n');
         }
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
-      if(friendCount == 0) {
-        dat = {
-          "type": "friendsList",
-          "friends": []
-        };
-        cl.con.write(JSON.stringify(dat) + '\r\n');
-      }
+    }
+    if(friendCount == 0) {
+      dat = {
+        "type": "friendsList",
+        "friends": []
+      };
+      cl.con.write(JSON.stringify(dat) + '\r\n');
     }
   }.bind({cl: cl}));
 }
@@ -170,14 +170,14 @@ Client.prototype.sendFriendRequests = function () {
           cl.con.write(JSON.stringify(dat) + '\r\n');
         }
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
+    }
 
-      if(friendCount == 0) {
-        dat = {
-          "type": "friendRequests",
-          "requests": []
-        };
-        cl.con.write(JSON.stringify(dat) + '\r\n');
-      }
+    if(friendCount == 0) {
+      dat = {
+        "type": "friendRequests",
+        "requests": []
+      };
+      cl.con.write(JSON.stringify(dat) + '\r\n');
     }
   }.bind({cl: cl}));
 }
