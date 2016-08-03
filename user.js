@@ -45,28 +45,34 @@ var getByBlid = function getByBlid(blid) {
 }
 
 function User(data, blid) {
-  if(data == null || data.data == null) {
-    this._longTerm = {};
-    this._longTerm.requests = [];
-    this._longTerm.friends = [];
-    this._dbId = null;
-
-    console.log("[debug] creating " + blid);
-  } else {
-    this._longTerm = data.data;
-    this._dbId = data._id;
-
-    console.log("[debug] found " + blid);
+  if(module.users[blid] != null) {
+    console.log("[error] async duplicate user")
+    return module.users[blid];
   }
 
   this.blid = blid;
   this.clients = [];
-  this.initialized = true;
+
+  if(data == null || data.data == null) {
+    this._longTerm = {};
+    this._longTerm.requests = [];
+    this._longTerm.friends = [];
+    this.initialized = true;
+
+    this.firstInsert();
+
+    console.log("[debug] creating " + blid);
+  } else {
+    this._longTerm = data.data;
+    this.initialized = true;
+
+    console.log("[debug] found " + blid);
+  }
 
   module.users[blid] = this;
 
   console.log("[debug] loaded " + blid);
-  console.log(data);
+  console.log(data.data);
 }
 
 User.prototype.save = function() {
@@ -79,20 +85,47 @@ User.prototype.save = function() {
   var user = this;
   MongoClient.connect(url, function(err, db) {
     assert.equal(null, err);
+    db.collection('users').createIndex( { "blid": 1 }, { unique: true } )
+
     obj = {
-        "_id": user._dbId,
         "blid": user.blid,
         "data": user._longTerm
      };
-    db.collection('users').save(obj, function(err, result) {
+
+    db.collection('users').update(obj, function(err, result) {
       assert.equal(err, null);
-      console.log("[debug] Saved " + user.blid);
+      console.log("[debug] Updated " + user.blid);
       console.log(obj);
-      user._dbId = obj._id;
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
 
+}
+
+User.prototype.firstInsert = function() {
+  if(this.initialized != true) {
+    throw "could not save uninitialized user";
+    return;
+  }
+
+  var url = 'mongodb://localhost:27017/glassLive';
+  var user = this;
+  MongoClient.connect(url, function(err, db) {
+    assert.equal(null, err);
+    db.collection('users').createIndex( { "blid": 1 }, { unique: true } )
+
+    obj = {
+        "blid": user.blid,
+        "data": user._longTerm
+     };
+
+    db.collection('users').insert(obj, function(err, result) {
+      assert.equal(err, null);
+      console.log("[debug] Inserted " + user.blid);
+      console.log(obj);
+    }.bind({user: user}));
+    db.close();
+  }.bind({user: user}));
 }
 
 User.prototype.newFriendRequest = function(sender) {
