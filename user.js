@@ -92,7 +92,10 @@ User.prototype.save = function() {
       return;
     }
 
-    db.collection('users').update({"blid": user.blid}, {"data": user._longTerm}, function(err, result) {
+    var blid = user.blid;
+    var data = user._longTerm;
+
+    db.collection('users').update({"blid": blid}, {"data": data}, {upsert: true} function(err, result) {
       if(err != null) {
         console.log("error:" + err);
       }
