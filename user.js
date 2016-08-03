@@ -117,9 +117,12 @@ User.prototype.firstInsert = function() {
      };
 
     db.collection('users').insert(obj, function(err, result) {
-      assert.equal(err, null);
-      console.log("[debug] Inserted " + user.blid);
-      console.log(obj);
+      if(err != null) {
+        console.error("Attempted to insert duplicate row", err);
+      } else {
+        console.log("[debug] Inserted " + user.blid);
+        console.log(obj);
+      }
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
