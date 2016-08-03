@@ -85,6 +85,7 @@ User.prototype.save = function() {
       assert.equal(err, null);
       console.log("[debug] Saved " + user.blid);
       console.log(user._longTerm)
+      console.log(result);
       user._dbId = result._id;
     }.bind({user: user}));
     db.close();
