@@ -243,9 +243,10 @@ User.prototype.messageClients = function (msg) {
 
 User.prototype.addForumId = function (id, callback) {
   var user = this;
-  url = 'https://forum.blockland.us/index.php?action=profile;' + id + ';wap';
+  url = 'https://forum.blockland.us/index.php?action=profile;u=' + id + ';wap';
   request(url, function (error, response, body) {
     if (!error && response.statusCode == 200) {
+      console.log("success")
       var $ = cheerio.load(body);
       var rows = $('.windowbg').find('tr');
       for(var i = 0; i < rows.length; i++) {

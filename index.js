@@ -60,7 +60,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
         } else {
           console.log('Auth failed for ' + data.ident);
           c.write('{"type":"auth", "status":"failed"}\r\n');
-          c.destroy();
+          //c.destroy();
           return;
         }
 
@@ -226,6 +226,8 @@ const clientServer = net.createServer((c) => { //'connection' listener
               }
             }.bind({user: user}));
           })
+        } else {
+          console.log("NaN: " + id);
         }
         break;
 
