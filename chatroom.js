@@ -161,7 +161,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         "kickid <blid>\tKicks user by blid"
       ];
 
-      var str = "<spush><tab:150, 250><color:dd3300>";
+      var str = "<spush><tab:120, 220><color:dd3300>";
       for(i = 0; i < func.length; i++) {
         str = str + "\n * " + func[i]
       }
