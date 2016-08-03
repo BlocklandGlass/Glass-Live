@@ -80,7 +80,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
       case "roomChat":
         var cr = Chatrooms.getFromId(data.room);
-        cr.sendMessage(c.client, data.message);
+        if(cr != false) {
+          cr.sendMessage(c.client, data.message);
+        } else {
+          console.log("failed to find room", data);
+        }
         break;
 
       case "roomLeave":
