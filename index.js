@@ -220,9 +220,14 @@ const clientServer = net.createServer((c) => { //'connection' listener
         id = url.replace("http://", "").replace("https://", "").replace("forum.blockland.us/", "").replace("index.php?", "").replace("action=profile", "").replace("u=", "").replace(";", "");
         if(!isNaN(id)) {
           Users.get(c.blid, function(user) {
-            user.addForumId(id);
+            user.addForumId(id, function(success) {
+              if(success) {
+
+              }
+            }.bind({user:User}));
           })
         }
+        break;
 
       case "disconnect":
         c.client.cleanUp(data.reason);
