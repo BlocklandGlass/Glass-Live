@@ -169,7 +169,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       dat = {
         "type": "roomText",
         "id": this.id,
-        "text": "<color:dd3300> * " + func[i]
+        "text": str
       };
       client.sendRaw(dat);
       break;
