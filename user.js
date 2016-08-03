@@ -87,7 +87,6 @@ User.prototype.save = function() {
   MongoClient.connect(url, function(err, db) {
     console.log("[debug] connected: " + err);
     assert.equal(null, err);
-    db.collection('users').createIndex( { "blid": 1 }, { unique: true } )
 
     db.collection('users').update({"blid": user.blid}, {"data": user._longTerm}, function(err, result) {
       if(err != null) {
@@ -111,7 +110,6 @@ User.prototype.firstInsert = function() {
   var user = this;
   MongoClient.connect(url, function(err, db) {
     assert.equal(null, err);
-    db.collection('users').createIndex( { "blid": 1 }, { unique: true } )
 
     obj = {
         "blid": user.blid,
