@@ -4,6 +4,7 @@ const Chatroom = require('./chatroom');
 const Client = require('./client');
 const Users = require('./user');
 const gd = new Chatroom('General Discussion');
+const gdbeta = new Chatroom('Beta');
 const moment = require('moment');
 const serverlist = require('./serverlist');
 
@@ -59,6 +60,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
           }.bind({c: c}));
           gd.addUser(c.client);
+          gdbeta.addUser(c.client);
         } else {
           console.log('Auth failed for ' + data.ident);
           c.write('{"type":"auth", "status":"failed"}\r\n');
@@ -77,29 +79,29 @@ const clientServer = net.createServer((c) => { //'connection' listener
       //================================
 
       case "roomChat":
-        gd.sendMessage(c.client, data.message);
+        Chatroom.getFromId(data.id).sendMessage(c.client, data.message);
         break;
 
       case "roomLeave":
-        gd.removeUser(c.client, 0);
+        Chatroom.getFromId(data.id).removeUser(c.client, 0);
         break;
 
       case "roomJoin":
-        gd.addUser(c.client);
+        Chatroom.getFromId(data.id).addUser(c.client);
         break;
 
       case "roomAwake":
         dat = {
           "type": "roomAwake",
-          "id": gd.id,
+          "id": data.id,
           "user": c.blid,
           "awake": data.bool
         };
-        gd.transmit(JSON.stringify(dat));
+        Chatroom.getFromId(data.id).transmit(JSON.stringify(dat));
         break;
 
       case "roomCommand":
-        gd.onCommand(c.client, data.message);
+        Chatroom.getFromId(data.id).onCommand(c.client, data.message);
         break;
 
       //================================
