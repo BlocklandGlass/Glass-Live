@@ -126,7 +126,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
           for(var i = 0; i < this.users.length; i++) {
             cl = this.users[i];
-            if(cl.username == name) {
+            if(cl.username.toLowerCase() == name.toLowerCase()) {
               this.removeUser(cl, 2);
             }
           }
@@ -155,18 +155,23 @@ Chatroom.prototype.onCommand = function (client, cmd) {
     case "help":
       func = [];
       func[0] = "help\tLists functions";
+      func[0] = "uptime\tGive the time the server has been online";
+      func[0] = "time\tGives the local time of the server";
       func[1] = "kick <username>\tKicks user";
       func[2] = "kickid <blid>\tKicks user by blid";
 
+      var str = "<spush><tab:100, 200><color:dd3300>";
       for(i = 0; i < func.length; i++) {
-        // TODO ml fields tags
-        dat = {
-          "type": "roomText",
-          "id": this.id,
-          "text": "<color:dd3300> * " + func[i]
-        };
-        client.sendRaw(dat);
+        str = str + "\n * " + func[i]
       }
+      str = str + "<spop>";
+
+      dat = {
+        "type": "roomText",
+        "id": this.id,
+        "text": "<color:dd3300> * " + func[i]
+      };
+      client.sendRaw(dat);
       break;
 
     case "uptime":
@@ -206,6 +211,15 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       client.sendRaw(dat);
       break;
 
+    case "time":
+      dat = {
+        "type": "roomText",
+        "id": this.id,
+        "text": "<color:dd3300> * Local Time: " + moment().format('h:mm:ss a')
+      };
+      client.sendRaw(dat);
+      break;
+
     default:
       console.log("unrecognized command: " + arg[0]);
       break;
@@ -220,6 +234,11 @@ Chatroom.prototype.transmit = function (msg) {
 }
 
 Chatroom.prototype.sendMessage = function (c, msg) {
+  if(this.users.indexOf(c) == -1) {
+    console.log("User attempted chat outside of room");
+    return;
+  }
+
   dat = {
     "type": "roomMessage",
     "room": this.id,
