@@ -58,7 +58,7 @@ function User(data, blid) {
     this._longTerm.friends = [];
     this.initialized = true;
 
-    this.firstInsert();
+    this.save();
 
     console.log("[debug] creating " + blid);
   } else {
@@ -105,34 +105,6 @@ User.prototype.save = function() {
     db.close();
   }.bind({user: user}));
 
-}
-
-User.prototype.firstInsert = function() {
-  if(this.initialized != true) {
-    throw "could not save uninitialized user";
-    return;
-  }
-
-  var url = 'mongodb://localhost:27017/glassLive';
-  var user = this;
-  MongoClient.connect(url, function(err, db) {
-    assert.equal(null, err);
-
-    obj = {
-        "blid": user.blid,
-        "data": user._longTerm
-     };
-
-    db.collection('users').insert(obj, function(err, result) {
-      if(err != null) {
-        console.error("Attempted to insert duplicate row", err);
-      } else {
-        console.log("[debug] Inserted " + user.blid);
-        console.log(obj);
-      }
-    }.bind({user: user}));
-    db.close();
-  }.bind({user: user}));
 }
 
 User.prototype.newFriendRequest = function(sender) {
