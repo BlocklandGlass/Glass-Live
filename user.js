@@ -7,7 +7,8 @@ const request = require('request');
 const cheerio = require('cheerio');
 
 module.users = [];
-
+module.usersLoading = [];
+module.userLoadCallbacks = [];
 /*
 Users.get('9789', function(user) {
 
@@ -20,15 +21,28 @@ var get = function get(blid, callback) {
   }
 
   if(module.users[blid] != null) {
-    //console.log("user " + blid + " already exists");
     callback(module.users[blid]);
   } else {
+    if(module.usersLoading[blid]) {
+      console.log("[ warn] prevented async duplicate");
+      module.userLoadCallbacks[blid].push(callback);
+      return;
+    } else {
+      module.userLoadCallbacks[blid] = [];
+      module.usersLoading[blid] = true;
+    }
+
     var url = 'mongodb://localhost:27017/glassLive';
     MongoClient.connect(url, function(err, db) {
       assert.equal(null, err);
       db.collection('users').findOne({"blid":blid}, function(err, data) {
         assert.equal(null, err);
-        callback(new User(data, blid));
+        var user = new User(data, blid);
+        var callbacks = module.userLoadCallbacks;
+        for(var i = 0; i < callbacks.length; i++) {
+          cb = callbacks[i];
+          cb(user);
+        }
       }.bind({blid: blid, callback: callback}));
       db.close();
     }.bind({blid: blid, callback: callback}));
@@ -58,9 +72,8 @@ function User(data, blid) {
     this._longTerm.friends = [];
     this.initialized = true;
 
-    this.save();
-
     console.log("[debug] creating " + blid);
+    this.save();
   } else {
     this._longTerm = data.data;
     this.initialized = true;
@@ -82,9 +95,7 @@ User.prototype.save = function() {
 
   var url = 'mongodb://localhost:27017/glassLive';
   var user = this;
-  console.log("[debug] saving " + user.blid)
   MongoClient.connect(url, function(err, db) {
-    console.log("[debug] connected for " + user.blid);
     assert.equal(null, err);
 
     if(user.blid == null) {

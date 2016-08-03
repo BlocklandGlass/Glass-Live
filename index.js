@@ -7,6 +7,8 @@ const gd = new Chatroom('General Discussion');
 const moment = require('moment');
 const serverlist = require('./serverlist');
 
+require('./commandline');
+
 const config = require('./config');
 
 global.uptime = moment().unix();
