@@ -95,7 +95,6 @@ User.prototype.save = function() {
       }
       assert.equal(err, null);
       console.log("[debug] Updated " + user.blid);
-      console.log(obj);
     }.bind({user: user}));
     db.close();
   }.bind({user: user}));
