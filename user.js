@@ -89,7 +89,7 @@ User.prototype.save = function() {
     assert.equal(null, err);
     db.collection('users').createIndex( { "blid": 1 }, { unique: true } )
 
-    db.collection('users').update({"blid": blid}, {"data": user._longTerm}, function(err, result) {
+    db.collection('users').update({"blid": user.blid}, {"data": user._longTerm}, function(err, result) {
       if(err != null) {
         console.log("error:" + err);
       }
