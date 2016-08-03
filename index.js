@@ -224,7 +224,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
               if(success) {
 
               }
-            }.bind({user:User}));
+            }.bind({user: user}));
           })
         }
         break;
@@ -247,7 +247,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
       //not really an error, just a disconnect we didnt catch
     } else {
       c.client.cleanUp(3);
-      console.error('Caught error', err);
+      //console.error('Caught error', err);
     }
   });
 
