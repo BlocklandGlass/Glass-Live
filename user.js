@@ -3,6 +3,7 @@
 
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
+const cheerio = require('cheerio')
 
 module.users = [];
 
@@ -237,6 +238,28 @@ User.prototype.messageClients = function (msg) {
     cl = this.clients[i];
     cl.con.write(msg + '\r\n');
   }
+}
+
+User.prototype.addForumId = function (id, callback) {
+  var user = this;
+  url = 'https://forum.blockland.us/index.php?action=profile;' + id + ';wap';
+  request(url, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      var $ = cheerio.load(body);
+      var rows = $('.windowbg').find('tr');
+      for(var i = 0; i < rows.length; i++) {
+        row = rows[i];
+        key = row.closest('td').text();
+        val = row.next().text();
+
+        key = key.replace(":", "").trim();
+
+        console.log("[" + key + "] [" + val + "]");
+      }
+    } else {
+      callback(false);
+    }
+  }.bind({user: user, callback: callback}));
 }
 
 module.exports = {getByBlid: getByBlid, get: get};

@@ -215,6 +215,15 @@ const clientServer = net.createServer((c) => { //'connection' listener
         }
         break;
 
+      case "linkForum":
+        var url = data.url;
+        id = url.replace("http://", "").replace("https://", "").replace("forum.blockland.us/", "").replace("index.php?", "").replace("action=profile", "").replace("u=", "").replace(";", "");
+        if(!isNaN(id)) {
+          Users.get(c.blid, function(user) {
+            user.addForumId(id);
+          })
+        }
+
       case "disconnect":
         c.client.cleanUp(data.reason);
         c.end();
