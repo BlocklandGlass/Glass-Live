@@ -3,8 +3,8 @@ const Users = require('./user');
 
 module.exports = Chatroom;
 
-var module.chatrooms = 0;
-var module.chatroomList = [];
+module.chatrooms = 0;
+module.chatroomList = [];
 
 var createChatroom = function(title) {
   return new Chatroom(title);
