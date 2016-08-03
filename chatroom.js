@@ -22,6 +22,7 @@ function Chatroom(title) {
 }
 
 var getFromId = function getFromId(id) {
+  id = parseInt(id);
   if(module.chatroomList.indexOf(id) > -1) {
     return module.chatroomList[id];
   } else {
