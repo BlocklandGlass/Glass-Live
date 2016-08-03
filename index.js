@@ -105,7 +105,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
           "awake": data.bool
         };
         var cr = Chatrooms.getFromId(data.id);
-        //cr.transmit(JSON.stringify(dat));
+        cr.transmit(JSON.stringify(dat));
         break;
 
       case "roomCommand":
