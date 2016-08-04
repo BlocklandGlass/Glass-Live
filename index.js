@@ -47,7 +47,9 @@ const clientServer = net.createServer((c) => { //'connection' listener
           Users.get(c.client.blid, function(user) {
             c.user = user;
             if(c.user.clients.length > 0) {
-              c.user.clients[0].disconnect(1);
+              console.log("multiclient");
+              return;
+              //c.user.clients[0].disconnect(1);
             }
 
             //console.log("[debug] addClient");
