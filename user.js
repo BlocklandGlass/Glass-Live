@@ -286,11 +286,13 @@ User.prototype.addForumId = function (id, callback) {
           key = key.replace(":", "").trim();
 
           console.log("[" + key + "] [" + val + "]");
-          if(key == "blid") {
+          if(key == "Blockland ID") {
             if(val == user.blid) {
               user._longTerm.forumId = id;
               user.save();
               console.log("forumId confirmed");
+            } else {
+              console.log("not your account");
             }
           }
         }
