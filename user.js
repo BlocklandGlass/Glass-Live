@@ -286,12 +286,19 @@ User.prototype.addForumId = function (id, callback) {
           key = key.replace(":", "").trim();
 
           console.log("[" + key + "] [" + val + "]");
+          if(key == "blid") {
+            if(val == user.blid) {
+              user._longTerm.forumId = id;
+              user.save();
+              console.log("forumId confirmed");
+            }
+          }
         }
       }
     } else {
       callback(false);
     }
-  }.bind({user: user, callback: callback}));
+  }.bind({user: user, callback: callback, id: id}));
 }
 
 module.exports = {getByBlid: getByBlid, get: get};
