@@ -10,6 +10,10 @@ var createChatroom = function(title) {
   return new Chatroom(title);
 }
 
+var getAllChatrooms = function () {
+  return module.chatroomList;
+}
+
 function Chatroom(title) {
   this.id = module.chatrooms;
   this.title = title;
@@ -281,4 +285,4 @@ Chatroom.prototype.broadcast = function (msg) {
   this.transmit(JSON.stringify(dat));
 }
 
-module.exports = {getFromId: getFromId, createChatroom: createChatroom}
+module.exports = {getFromId: getFromId, createChatroom: createChatroom, getAllChatrooms: getAllChatrooms}

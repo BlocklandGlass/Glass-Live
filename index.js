@@ -118,7 +118,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
         break;
 
       case "getRoomList":
-        var rooms = Chatrooms.chatroomList;
+        var rooms = Chatrooms.getAllChatrooms();
         var obj = {
           "type": "roomList"
         };
