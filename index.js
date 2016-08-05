@@ -3,8 +3,8 @@ const database = require('./database');
 const Chatrooms = require('./chatroom');
 const Client = require('./client');
 const Users = require('./user');
-const gd = Chatrooms.createChatroom('General Discussion');
-const gdbeta = Chatrooms.createChatroom('Beta');
+const gd = Chatrooms.createChatroom('General Discussion', 'tree');
+const gdbeta = Chatrooms.createChatroom('Beta', 'tree_red');
 const moment = require('moment');
 const serverlist = require('./serverlist');
 
@@ -129,7 +129,8 @@ const clientServer = net.createServer((c) => { //'connection' listener
           o = {
             "id": room.id,
             "title": room.title,
-            "users": room.users.length
+            "users": room.users.length,
+            "image": room.image
           };
           roomArray.push(o);
         }

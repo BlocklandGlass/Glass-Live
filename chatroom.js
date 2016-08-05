@@ -14,9 +14,11 @@ var getAllChatrooms = function () {
   return module.chatroomList;
 }
 
-function Chatroom(title) {
+function Chatroom(title, image) {
   this.id = module.chatrooms;
   this.title = title;
+  this.image = image;
+
   this.users = [];
 
   this.clientList = [];
