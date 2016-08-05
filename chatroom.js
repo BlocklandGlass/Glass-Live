@@ -6,8 +6,8 @@ module.exports = Chatroom;
 module.chatrooms = 0;
 module.chatroomList = {};
 
-var createChatroom = function(title) {
-  return new Chatroom(title);
+var createChatroom = function(title, image) {
+  return new Chatroom(title, image);
 }
 
 var getAllChatrooms = function () {
