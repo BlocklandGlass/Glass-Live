@@ -194,10 +194,10 @@ Client.prototype.cleanUp = function (reason) {
   Users.get(this.blid, function(user) {
     user.removeClient(cl);
 
-    for(i = 0; i < cl.rooms.length; i++) {
-      cl.rooms[i].removeUser(cl, reason);
-    }
-  }.bind({cl: cl}));
+    cl.rooms.forEach(function(room) {
+      rooms.removeUser(cl, reason);
+    }.bind({cl: cl, reason: reason}));
+  }.bind({cl: cl, reason: reason}));
 
   idx = clientGroup.indexOf(this);
   clientGroup.splice(idx, 1);

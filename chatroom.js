@@ -25,8 +25,6 @@ function Chatroom(title, image) {
 
   module.chatroomList[module.chatrooms] = this;
   module.chatrooms++;
-  console.log("crid: " + this.id);
-  console.log(module.chatroomList)
 }
 
 var getFromId = function getFromId(id) {
