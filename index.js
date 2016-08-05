@@ -48,7 +48,6 @@ const clientServer = net.createServer((c) => { //'connection' listener
             c.user = user;
             if(c.user.clients.length > 0) {
               console.log("multiclient");
-              return;
               //c.user.clients[0].disconnect(1);
             }
 
@@ -321,7 +320,7 @@ const infoServer = net.createServer((c) => { //'connection' listener
     if(ip == "127.0.0.1")
       ip = "174.62.132.184";
 
-    console.log(ip);
+    //.log(ip);
 
     if(obj.type == 'identify') {
       listing = serverlist.getServer(ip, obj.port);
@@ -335,7 +334,7 @@ const infoServer = net.createServer((c) => { //'connection' listener
 
       c.listing = listing;
     } else if(obj.type == "updateValue") {
-      console.log("update: " + obj.key + " " + obj.value);
+      //console.log("update: " + obj.key + " " + obj.value);
       if(c.listing)
         c.listing.update(obj.key, obj.value);
     }
