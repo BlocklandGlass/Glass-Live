@@ -123,7 +123,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
           "type": "roomList"
         };
         var roomArray = [];
-        for(var i = 0; i < rooms.length; i++) {
+        for(i in rooms) {
           room = rooms[i];
           o = {
             "id": room.id,
