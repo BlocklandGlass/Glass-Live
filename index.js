@@ -117,6 +117,26 @@ const clientServer = net.createServer((c) => { //'connection' listener
         cr.onCommand(c.client, data.message);
         break;
 
+      case "getRoomList":
+        var rooms = Chatrooms.chatroomList;
+        var obj = {
+          "type": "roomList"
+        };
+        var roomArray = [];
+        for(var i = 0; i < rooms.length; i++) {
+          room = rooms[i];
+          o = {
+            "id": room.id,
+            "title": room.title,
+            "users": room.users.length
+          };
+          roomArray.push(o);
+        }
+
+        obj.rooms = roomArray;
+        c.write(JSON.stringify(obj) + '\r\n');
+        break;
+
       //================================
       // messages
       //================================
