@@ -48,7 +48,8 @@ const clientServer = net.createServer((c) => { //'connection' listener
             c.user = user;
             if(c.user.clients.length > 0) {
               console.log("multiclient");
-              //c.user.clients[0].disconnect(1);
+              c.user.clients[0].disconnect(1);
+              return;
             }
 
             //console.log("[debug] addClient");
