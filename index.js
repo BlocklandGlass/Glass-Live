@@ -8,11 +8,11 @@ const gd = Chatrooms.createChatroom('General Discussion', 'tree');
 Chatrooms.createChatroom('Servers', 'server');
 Chatrooms.createChatroom('Help', 'help');
 
-var qa = Chatrooms.createChatroom('Staff', 'balance_unbalance');
-qa.userRequirement = "mod";
+const staffRoom = Chatrooms.createChatroom('Staff', 'balance_unbalance');
+staffRoom.userRequirement = "mod";
 
-var qa = Chatrooms.createChatroom('Quality Assurance', 'tree_red');
-qa.userRequirement = "beta";
+const qaRoom = Chatrooms.createChatroom('Quality Assurance', 'tree_red');
+qaRoom.userRequirement = "beta";
 
 const moment = require('moment');
 const serverlist = require('./serverlist');
@@ -71,6 +71,13 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
           }.bind({c: c}));
           gd.addUser(c.client);
+          if(c.mod || c.admin) {
+            staffRoom.add(c.client);
+          }
+
+          if(c.beta) {
+            qaRoom.add(c.client);
+          }
         } else {
           console.log('Auth failed for ' + data.ident);
           c.write('{"type":"auth", "status":"failed"}\r\n');
@@ -131,6 +138,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
         var obj = {
           "type": "roomList"
         };
+
         var roomArray = [];
         for(i in rooms) {
           room = rooms[i];
@@ -140,6 +148,15 @@ const clientServer = net.createServer((c) => { //'connection' listener
             "users": room.users.length,
             "image": room.image
           };
+
+
+          if(room.userRequirement !== null) {
+            if(!c[room.userRequirement])
+              continue;
+            else {
+              room.private = true;
+            }
+          }
           roomArray.push(o);
         }
 
