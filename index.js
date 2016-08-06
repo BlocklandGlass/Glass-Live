@@ -3,8 +3,17 @@ const database = require('./database');
 const Chatrooms = require('./chatroom');
 const Client = require('./client');
 const Users = require('./user');
-const gd = Chatrooms.createChatroom('General Discussion', 'tree');
-const gdbeta = Chatrooms.createChatroom('Beta', 'tree_red');
+
+Chatrooms.createChatroom('General Discussion', 'tree');
+Chatrooms.createChatroom('Servers', 'server');
+Chatrooms.createChatroom('Help', 'help');
+
+var qa = Chatrooms.createChatroom('Staff', 'balance_unbalance');
+qa.userRequirement = "mod";
+
+var qa = Chatrooms.createChatroom('Quality Assurance', 'tree_red');
+qa.userRequirement = "beta";
+
 const moment = require('moment');
 const serverlist = require('./serverlist');
 

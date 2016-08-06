@@ -69,6 +69,8 @@ Client.prototype.authCheck = function (ident) {
     this.admin = res.admin;
     this.mod = res.mod;
 
+    this.beta = res.beta;
+
     if(!res.beta) {
       console.log("Not beta");
       return false;
