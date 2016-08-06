@@ -19,7 +19,7 @@ function Chatroom(title, image) {
   this.title = title;
   this.image = image;
 
-  this.users = [];
+  this.clients = [];
 
   this.clientList = [];
 
@@ -36,7 +36,16 @@ var getFromId = function getFromId(id) {
   }
 }
 
-Chatroom.prototype.addUser = function (c) {
+var getFromName = function getFromTitle(title) {
+  for(var i = 0; i < module.chatrooms; i++) {
+    if(module.chatroomList[i].title == title)
+      return module.chatroomList[i];
+  }
+
+  return false;
+}
+
+Chatroom.prototype.addClient = function (c) {
   dat = {
     "type": "roomJoin",
     "id": this.id,
@@ -54,12 +63,12 @@ Chatroom.prototype.addUser = function (c) {
   this.clientList.push(cli);
 
   dat.clients = this.clientList;
-  c.con.write(JSON.stringify(dat) + '\r\n');
+  c.sendObject(dat);
 
-  if(this.users.indexOf(c) > -1) {
+  if(this.clients.indexOf(c) > -1) {
     return;
   } else {
-    this.users.push(c);
+    this.clients.push(c);
   }
 
   broad = {
@@ -76,9 +85,9 @@ Chatroom.prototype.addUser = function (c) {
 }
 
 Chatroom.prototype.removeUser = function (c, reason) {
-  idx = this.users.indexOf(c);
+  idx = this.clients.indexOf(c);
   if(idx > -1) {
-    this.users.splice(idx, 1);
+    this.clients.splice(idx, 1);
   } else {
     return;
   }
@@ -106,7 +115,7 @@ Chatroom.prototype.removeUser = function (c, reason) {
       "id": this.id,
       "reason": reason
     };
-    c.con.write(JSON.stringify(dat) + '\r\n');
+    c.sendObject(dat);
   }
 
   broad = {
@@ -135,8 +144,8 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           }
           name = name.trim();
 
-          for(var i = 0; i < this.users.length; i++) {
-            cl = this.users[i];
+          for(var i = 0; i < this.clients.length; i++) {
+            cl = this.clients[i];
             if(cl.username.toLowerCase() == name.toLowerCase()) {
               this.removeUser(cl, 2);
             }
@@ -148,8 +157,8 @@ Chatroom.prototype.onCommand = function (client, cmd) {
     case "kickid":
       if(arg.length >= 2) {
         if(client.mod) {
-          for(var i = 0; i < this.users.length; i++) {
-            cl = this.users[i];
+          for(var i = 0; i < this.clients.length; i++) {
+            cl = this.clients[i];
             if(cl.blid == arg[1]) {
               console.log("kicking");
               this.removeUser(cl, 2);
@@ -239,14 +248,14 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 }
 
 Chatroom.prototype.transmit = function (msg) {
-  for(i = 0; i < this.users.length; i++) {
-    c = this.users[i];
-    c.con.write(msg + '\r\n');
+  for(i = 0; i < this.clients.length; i++) {
+    c = this.clients[i];
+    c.write(msg);
   }
 }
 
 Chatroom.prototype.sendMessage = function (c, msg) {
-  if(this.users.indexOf(c) == -1) {
+  if(this.clients.indexOf(c) == -1) {
     console.log("User attempted chat outside of room");
     return;
   }
@@ -285,4 +294,4 @@ Chatroom.prototype.broadcast = function (msg) {
   this.transmit(JSON.stringify(dat));
 }
 
-module.exports = {getFromId: getFromId, createChatroom: createChatroom, getAllChatrooms: getAllChatrooms}
+module.exports = {getFromId: getFromId, createChatroom: createChatroom, getAllChatrooms: getAllChatrooms, getFromTitle: getFromName}

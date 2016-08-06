@@ -2,14 +2,44 @@ module.exports = Client;
 
 const Users = require('./user');
 const config = require('./config');
-
+const request = require('request');
 
 connections = 0;
 
 var clientGroup = [];
 
-function Client(con) {
-  this.con = con;
+function create(ident, override, callback) {
+  var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
+  console.log("create called");
+  request(url, function (error, response, body) {
+    console.log("error: " + error);
+    res = JSON.parse(body);
+
+    console.log(res.beta);
+
+    if(res.status == "success" && res.beta) {
+      var client = new Client();
+
+      client.blid = res.blid;
+      client.username = res.username;
+      client.admin = res.admin;
+      client.mod = res.mod;
+      client.beta = res.beta;
+
+      Users.get(client.blid, function(user) {
+        user.addClient(client);
+        if(user.getPrimaryClient() == false || override) {
+          user.setPrimaryClient(client);
+        }
+        callback(null, client);
+      }.bind({client: client, override: override, callback: callback}));
+    } else {
+      return callback('auth', null);
+    }
+  }.bind({callback: callback, override: override}));
+}
+
+function Client() {
   this.cid = connections;
 
   this.mod = false;
@@ -26,15 +56,11 @@ function Client(con) {
   connections++;
 }
 
-var create = function (con) {
-  return new Client(con);
-}
-
 var broadcast = function (str) {
   for(var i = 0; i < clientGroup.length; i++) {
     cl = clientGroup[i];
     try {
-      cl.con.write(str + '\r\n');
+      cl.connection.write(str + '\r\n');
     } catch (e) {
 
     }
@@ -59,7 +85,7 @@ Client.prototype.authCheck = function (ident) {
   } catch (e) {
     console.log("Error authenticating user");
     console.log(req.getBody().toString('utf8'));
-    this.con.write('{"type":"auth", "status":"failed"}\r\n');
+    this.connection.write('{"type":"auth", "status":"failed"}\r\n');
     return false;
   }
 
@@ -82,6 +108,14 @@ Client.prototype.authCheck = function (ident) {
   }
 };
 
+Client.prototype.sendObject = function(obj) {
+  this.connection.write(JSON.stringify(obj) + '\r\n');
+}
+
+Client.prototype.write = function(str) {
+  this.connection.write(str + '\r\n');
+}
+
 Client.prototype.disconnect = function(reason) {
   if(reason == null) {
     reason = -1;
@@ -96,7 +130,7 @@ Client.prototype.disconnect = function(reason) {
     "reason": reason
   };
 
-  this.con.end(JSON.stringify(dat));
+  this.connection.end(JSON.stringify(dat));
   this.cleanUp();
 }
 
@@ -133,7 +167,7 @@ Client.prototype.sendFriendsList = function () {
             "type": "friendsList",
             "friends": friends
           };
-          cl.con.write(JSON.stringify(dat) + '\r\n');
+          cl.connection.write(JSON.stringify(dat) + '\r\n');
         }
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
     }
@@ -142,7 +176,7 @@ Client.prototype.sendFriendsList = function () {
         "type": "friendsList",
         "friends": []
       };
-      cl.con.write(JSON.stringify(dat) + '\r\n');
+      cl.connection.write(JSON.stringify(dat) + '\r\n');
     }
   }.bind({cl: cl}));
 }
@@ -169,7 +203,7 @@ Client.prototype.sendFriendRequests = function () {
             "type": "friendRequests",
             "requests": friends
           };
-          cl.con.write(JSON.stringify(dat) + '\r\n');
+          cl.connection.write(JSON.stringify(dat) + '\r\n');
         }
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
     }
@@ -179,13 +213,13 @@ Client.prototype.sendFriendRequests = function () {
         "type": "friendRequests",
         "requests": []
       };
-      cl.con.write(JSON.stringify(dat) + '\r\n');
+      cl.connection.write(JSON.stringify(dat) + '\r\n');
     }
   }.bind({cl: cl}));
 }
 
 Client.prototype.sendRaw = function (dat) {
-  this.con.write(JSON.stringify(dat) + '\r\n');
+  this.connection.write(JSON.stringify(dat) + '\r\n');
 }
 
 Client.prototype.cleanUp = function (reason) {

@@ -262,8 +262,36 @@ User.prototype.setUsername = function(usr) {
 User.prototype.messageClients = function (msg) {
   for(var i = 0; i < this.clients.length; i++) {
     cl = this.clients[i];
-    cl.con.write(msg + '\r\n');
+    cl.write(msg);
   }
+}
+
+User.prototype.messagePrimary = function (msg) {
+  var prim = this.getPrimaryClient();
+  if(prim != false)
+    prim.write(msg);
+}
+
+User.prototype.getPrimaryClient = function () {
+  if(this._primaryClient != null)
+    return this._primaryClient;
+  else
+    return false;
+}
+
+User.prototype.setPrimaryClient = function (client) {
+  //todo inform old client
+  this._primaryClient = client;
+  client.isPrimary = true;
+}
+
+User.prototype.generateUserData = function () {
+  /*data = {
+    "blid":
+    "username":
+    "location":
+    "forumId"
+  }*/
 }
 
 User.prototype.addForumId = function (id, callback) {
