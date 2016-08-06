@@ -15,6 +15,8 @@ function Groupchat(owner, clients) {
   this.id = groupIndex;
   this.owner = owner;
 
+  this.clients = [];
+
   this.addClient(owner);
   for(var i = 0; i < clients.length; i++) {
     this.inviteBlid(clients[i], owner);

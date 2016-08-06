@@ -386,6 +386,7 @@ function handleData(client, c, data) {
       Groupchats.createGroup(c.client, clients, function(success, group) {
         console.log("group create success: " + success);
       });
+      break;
 
     default:
       console.log("unhandled: " + data.type);
