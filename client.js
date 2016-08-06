@@ -59,7 +59,7 @@ Client.prototype.authCheck = function (ident) {
   } catch (e) {
     console.log("Error authenticating user");
     console.log(req.getBody().toString('utf8'));
-    this.con.write('{"type":"auth", "status":"success"}\r\n');
+    this.con.write('{"type":"auth", "status":"failed"}\r\n');
     return false;
   }
 

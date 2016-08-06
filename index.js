@@ -71,11 +71,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
           }.bind({c: c}));
           gd.addUser(c.client);
-          if(c.mod || c.admin) {
+          if(c.client.mod || c.client.admin) {
             staffRoom.addUser(c.client);
           }
 
-          if(c.beta) {
+          if(c.client.beta) {
             qaRoom.addUser(c.client);
           }
         } else {
@@ -149,9 +149,8 @@ const clientServer = net.createServer((c) => { //'connection' listener
             "image": room.image
           };
 
-
-          if(room.userRequirement !== null) {
-            if(!c[room.userRequirement])
+          if(room.userRequirement != null) {
+            if(!c.client[room.userRequirement])
               continue;
             else {
               room.private = true;
