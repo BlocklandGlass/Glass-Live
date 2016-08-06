@@ -197,7 +197,7 @@ Client.prototype.cleanUp = function (reason) {
     user.removeClient(cl);
 
     cl.rooms.forEach(function(room) {
-      rooms.removeUser(cl, reason);
+      room.removeUser(cl, reason);
     }.bind({cl: cl, reason: reason}));
   }.bind({cl: cl, reason: reason}));
 
