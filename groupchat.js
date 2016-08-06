@@ -139,4 +139,4 @@ Groupchat.prototype.clientLeave = function(client, reason) {
   this.writeAll(JSON.stringify(data));
 }
 
-module.export = {createGroup: createGroup}
+module.exports = {createGroup: createGroup}
