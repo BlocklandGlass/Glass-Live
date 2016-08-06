@@ -72,11 +72,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
           }.bind({c: c}));
           gd.addUser(c.client);
           if(c.mod || c.admin) {
-            staffRoom.add(c.client);
+            staffRoom.addUser(c.client);
           }
 
           if(c.beta) {
-            qaRoom.add(c.client);
+            qaRoom.addUser(c.client);
           }
         } else {
           console.log('Auth failed for ' + data.ident);
