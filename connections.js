@@ -60,14 +60,14 @@ const clientServer = net.createServer((c) => { //'connection' listener
   });
 
   c.on('end', () => {
-    if(c.client != null && c.blid != null)
+    if(c.client != null)
       c.client.cleanUp(3);
 
     console.log('Client disconnected');
   });
 
   c.on('close', () => {
-    if(c.client != null && c.blid != null)
+    if(c.client != null)
       c.client.cleanUp(1);
 
     console.log('Client closed');
@@ -199,7 +199,7 @@ function handleData(client, c, data) {
       dat = {
         "type": "roomAwake",
         "id": data.id,
-        "user": c.blid,
+        "user": client.blid,
         "awake": data.bool
       };
       var cr = Chatrooms.getFromId(data.id);
@@ -255,7 +255,7 @@ function handleData(client, c, data) {
             "type": "message",
             "message": data.message,
             "sender": c.client.username,
-            "sender_id": c.blid,
+            "sender_id": client.blid,
             "timestamp": moment().unix(),
             "datetime": moment().format('h:mm:ss a')
           };
@@ -278,7 +278,7 @@ function handleData(client, c, data) {
           obj = {
             "type": "messageTyping",
             "typing": data.typing,
-            "sender": c.blid,
+            "sender": client.blid,
             "timestamp": moment().unix(),
             "datetime": moment().format('h:mm:ss a')
           };
@@ -325,7 +325,7 @@ function handleData(client, c, data) {
       break;
 
     case "friendRequest":
-      if(data.target < 0 || data.target == c.blid) {
+      if(data.target < 0 || data.target == client.blid) {
         console.log("friend request failed, invalid id");
         return;
       }
@@ -363,7 +363,7 @@ function handleData(client, c, data) {
       var url = data.url;
       id = url.replace("http://", "").replace("https://", "").replace("forum.blockland.us/", "").replace("index.php?", "").replace("action=profile", "").replace("u=", "").replace(";", "");
       if(!isNaN(id)) {
-        Users.get(c.blid, function(user) {
+        Users.get(client.blid, function(user) {
           user.addForumId(id, function(success) {
             if(success) {
 
