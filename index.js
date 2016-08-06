@@ -4,7 +4,7 @@ const Chatrooms = require('./chatroom');
 const Client = require('./client');
 const Users = require('./user');
 
-Chatrooms.createChatroom('General Discussion', 'tree');
+const gd = Chatrooms.createChatroom('General Discussion', 'tree');
 Chatrooms.createChatroom('Servers', 'server');
 Chatrooms.createChatroom('Help', 'help');
 
@@ -71,7 +71,6 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
           }.bind({c: c}));
           gd.addUser(c.client);
-          gdbeta.addUser(c.client);
         } else {
           console.log('Auth failed for ' + data.ident);
           c.write('{"type":"auth", "status":"failed"}\r\n');
