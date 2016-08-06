@@ -3,6 +3,7 @@ const config = require('./config');
 
 const Clients = require('./client');
 const Chatrooms = require('./chatroom');
+const Groupchats = require('./groupchat');
 const serverlist = require('./serverlist');
 
 const clientServer = net.createServer((c) => { //'connection' listener
@@ -382,7 +383,7 @@ function handleData(client, c, data) {
 
     case "groupCreate":
       clients = data.invite;
-      Groupchat.createGroup(c.client, clients, function(success, group) {
+      Groupchats.createGroup(c.client, clients, function(success, group) {
         console.log("group create success: " + success);
       });
 
