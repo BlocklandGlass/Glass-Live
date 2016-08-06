@@ -65,14 +65,15 @@ Groupchat.prototype.addClient = function(client) {
 }
 
 Groupchat.prototype.inviteBlid = function(blid, inviter) {
+  var group = this;
   Users.get(blid, function(user) {
     var client = user.getPrimaryClient();
     if(client != false) {
-      this.inviteClient(client, inviter);
+      group.inviteClient(client, inviter);
     } else {
-      this.pushText(user.username + " is offline");
+      //group.pushText(user.username + " is offline");
     }
-  }.bind({inviter: inviter}));
+  }.bind({inviter: inviter, group: group}));
 }
 
 Groupchat.prototype.inviteClient = function(client, inviter) {
