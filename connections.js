@@ -3,6 +3,7 @@ const config = require('./config');
 
 const Clients = require('./client');
 const Chatrooms = require('./chatroom');
+const serverlist = require('./serverlist');
 
 const clientServer = net.createServer((c) => { //'connection' listener
   c.on('data', (raw) => {
