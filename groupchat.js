@@ -1,3 +1,5 @@
+const Users = require('./user');
+
 module.export = Groupchat;
 
 var createGroup = function(owner, clients, callback) {
