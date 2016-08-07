@@ -403,6 +403,12 @@ function handleData(client, c, data) {
       }
       break;
 
+    case "groupInvite":
+      id = data.id;
+      group = Groupchats.getFromId(id);
+      group.inviteBlid(data.blid, client);
+      break;
+
     case "groupMessage":
       id = data.id;
       group = Groupchats.getFromId(id);
