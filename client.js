@@ -83,7 +83,7 @@ Client.prototype.pushMessageHistory = function(msg, room) {
   };
 
   mh.unshift(obj);
-  if(mh.length > 5) {
+  if(mh.length >= 5) {
     mh.splice(0, 5);
   }
 }
@@ -108,6 +108,7 @@ Client.prototype.spamCheck = function(msg, room) {
 
   if(mh.length >= 5) {
     var prev = mh[4];
+    console.log("time difference: " + prev.time.diff(moment(), 'milliseconds'));
     if(prev.time.diff(moment(), 'milliseconds') < 5000) {
       this.sendObject({
         "type": "roomText",
