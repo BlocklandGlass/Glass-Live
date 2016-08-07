@@ -74,13 +74,17 @@ var broadcast = function (str) {
 Client.prototype.pushMessageHistory = function(msg, room) {
   if(this.messageHistory[room.id] == null)
     this.messageHistory[room.id] = [];
+
+  var mh = this.messageHistory[room.id];
+
   var obj = {
     "msg": msg,
     "time": moment()
   };
-  this.messageHistory.push(obj);
-  if(this.messageHistory.length > 5) {
-    this.messageHistory.splice(0, 5);
+
+  mh.unshift(obj);
+  if(mh.length > 5) {
+    mh.splice(0, 5);
   }
 }
 
@@ -88,8 +92,10 @@ Client.prototype.spamCheck = function(msg, room) {
   if(this.messageHistory[room.id] == null)
     this.messageHistory[room.id] = [];
 
-  if(this.messageHistory.length > 0) {
-    var last = this.messageHistory[0]
+  var mh = this.messageHistory[room.id];
+
+  if(mh.length > 0) {
+    var last = mh[0]
     if(last.msg == msg) {
       this.sendObject({
         "type": "roomText",
