@@ -3,6 +3,7 @@ module.exports = Client;
 const Users = require('./user');
 const config = require('./config');
 const request = require('request');
+const moment = require('moment');
 
 connections = 0;
 
@@ -50,6 +51,8 @@ function Client() {
   this.rooms = [];
   this.ignore = [];
 
+  this.messageHistory = [];
+
   //todo: friends loading
 
   clientGroup.push(this);
@@ -66,6 +69,38 @@ var broadcast = function (str) {
 
     }
   }
+}
+
+Client.prototype.pushMessageHistory = function(msg, room) {
+  if(this.messageHistory[room.id] == null)
+    this.messageHistory[room.id] = [];
+  var obj = {
+    "msg": msg,
+    "time": moment()
+  };
+  this.messageHistory.push(obj);
+  if(this.messageHistory.length > 5) {
+    this.messageHistory.splice(0, 5);
+  }
+}
+
+Client.prototype.spamCheck = function(msg, room) {
+  if(this.messageHistory[room.id] == null)
+    this.messageHistory[room.id] = [];
+
+  if(this.messageHistory.length > 0) {
+    var last = this.messageHistory[0]
+    if(last.msg == msg) {
+      this.sendObject({
+        "type": "roomText",
+        "id": room.id,
+        "text": "<color:dd3300> * Don't repeat yourself."
+      });
+      return false;
+    }
+  }
+
+  return true;
 }
 
 Client.prototype.sendObject = function(obj) {

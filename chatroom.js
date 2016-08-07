@@ -537,6 +537,11 @@ Chatroom.prototype.sendMessage = function (c, msg) {
     return;
   }
 
+  if(!c.spamCheck(msg, this)) {
+    return;
+  }
+  c.pushMessageHistory(msg, this)
+
   var dat = {
     "type": "roomMessage",
     "room": this.id,
