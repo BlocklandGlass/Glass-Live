@@ -307,18 +307,30 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               if(cr.muteTimer[cl.blid] != null)
                 clearTimeout(cr.muteTimer[cl.blid]);
 
+              var duration = 60000*arg[1];
+              console.log(duration);
+
               dat = {
                 "type": "roomText",
                 "id": this.id,
                 "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Timeout]"
               };
               cr.transmit(JSON.stringify(dat));
-            }.bind({cr: cr, cl: cl}), 60000*arg[1]);
+            }.bind({cr: cr, cl: cl}), duration);
+
+            var durStr = ""
+            if(duration%60000 == duration) {
+              durStr = Math.floor(duration/1000) + " seconds";
+            } else if(duration%(60 * 60 * 1000) < duration) {
+              durStr = Math.floor(duration/(60 * 60 * 1000)) + " hours";
+            } else {
+              durStr = Math.floor(duration/(60 * 1000)) + " minutes";
+            }
 
             dat = {
               "type": "roomText",
               "id": this.id,
-              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted for " + arg[1] + " minutes."
+              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted for " + duration + "."
             };
             this.transmit(JSON.stringify(dat));
             return;
@@ -362,7 +374,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             dat = {
               "type": "roomText",
               "id": this.id,
-              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted."
+              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Manual]"
             };
             this.transmit(JSON.stringify(dat));
             return;
