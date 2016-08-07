@@ -451,6 +451,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               "text": "<color:dd3300> * " + cl.username + "'s BL_ID is " + cl.blid
             };
             client.sendRaw(dat);
+            return;
           }
         }
         dat = {
