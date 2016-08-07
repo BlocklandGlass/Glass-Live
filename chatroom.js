@@ -299,7 +299,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               "id": this.id,
               "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted."
             };
-            this.transmit(dat);
+            this.transmit(JSON.stringify(dat));
             return;
           }
         }
@@ -336,7 +336,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               "id": this.id,
               "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted."
             };
-            this.transmit(dat);
+            this.transmit(JSON.stringify(dat));
             return;
           }
         }
@@ -375,7 +375,7 @@ Chatroom.prototype.sendMessage = function (c, msg) {
       "id": this.id,
       "text": "<color:dd3300> * You're muted!"
     };
-    client.sendRaw(dat);
+    c.sendRaw(dat);
     return;
   }
 
