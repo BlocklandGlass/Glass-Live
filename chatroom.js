@@ -148,6 +148,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             cl = this.clients[i];
             if(cl.username.toLowerCase() == name.toLowerCase()) {
               this.removeUser(cl, 2);
+              cl.disconnect(1);
             }
           }
         }
@@ -162,6 +163,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             if(cl.blid == arg[1]) {
               console.log("kicking");
               this.removeUser(cl, 2);
+              cl.disconnect(1);
             }
           }
         } else {
@@ -239,6 +241,39 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         "text": "<color:dd3300> * Local Time: " + moment().format('h:mm:ss a')
       };
       client.sendRaw(dat);
+      break;
+
+    case "ignore":
+      if(arg.length >= 2) {
+        name = "";
+        for(var i = 1; i < arg.length; i++) {
+          name = name + " " + arg[i];
+        }
+        name = name.trim();
+
+        for(var i = 0; i < this.clients.length; i++) {
+          cl = this.clients[i];
+          if(cl.username.toLowerCase() == name.toLowerCase()) {
+            if(client.ignore.indexOf(cl.blid) == -1)
+              client.ignore.push(cl.blid);
+
+            dat = {
+              "type": "roomText",
+              "id": this.id,
+              "text": "<color:dd3300> * Ignoring " + cl.username + " (" + cl.blid + ") in all rooms."
+            };
+            client.sendRaw(dat);
+            return;
+          }
+        }
+
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * User not found."
+        };
+        client.sendRaw(dat);
+      }
       break;
 
     default:
