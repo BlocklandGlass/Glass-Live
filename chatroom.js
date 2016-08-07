@@ -299,7 +299,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               "id": this.id,
               "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted."
             };
-            client.sendRaw(dat);
+            this.transmit(dat);
             return;
           }
         }
@@ -336,7 +336,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               "id": this.id,
               "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted."
             };
-            client.sendRaw(dat);
+            this.transmit(dat);
             return;
           }
         }
@@ -369,7 +369,17 @@ Chatroom.prototype.sendMessage = function (c, msg) {
     return;
   }
 
-  dat = {
+  if(this.mute.indexOf(c.blid) > -1) {
+    dat = {
+      "type": "roomText",
+      "id": this.id,
+      "text": "<color:dd3300> * You're muted!"
+    };
+    client.sendRaw(dat);
+    return;
+  }
+
+  var dat = {
     "type": "roomMessage",
     "room": this.id,
     "sender": c.username,
@@ -378,7 +388,14 @@ Chatroom.prototype.sendMessage = function (c, msg) {
     "timestamp": moment().unix(),
     "datetime": moment().format('h:mm:ss a')
   };
-  this.transmit(JSON.stringify(dat));
+
+  var msg = JSON.stringify(dat);
+
+  for(i = 0; i < this.clients.length; i++) {
+    cl = this.clients[i];
+    if(cl.ignore.indexOf(c.blid) == -1)
+      cl.write(msg);
+  }
 }
 
 Chatroom.prototype.sendRaw = function (c, msg) {
