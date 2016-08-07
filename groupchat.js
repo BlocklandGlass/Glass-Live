@@ -3,20 +3,29 @@ const Users = require('./user');
 module.export = Groupchat;
 
 var createGroup = function(owner, clients, callback) {
-  if(clients.length < 2) {
-    callback(false, null);
-  } else {
+  //if(clients.length < 2) {
+    //callback(false, null);
+  //} else {
     var gc = new Groupchat(owner, clients);
     callback(true, gc);
-  }
+  //}
+}
+
+var getFromId = function(id) {
+  if(groupList[id] != null)
+    return groupList[id];
+  else
+    return false;
 }
 
 var groupIndex = 0;
+var groupList = {}
 
 function Groupchat(owner, clients) {
   this.id = groupIndex;
   this.owner = owner;
 
+  this.invitees = [];
   this.clients = [];
 
   this.addClient(owner);
@@ -25,6 +34,7 @@ function Groupchat(owner, clients) {
   }
 
   groupList[this.id] = this;
+  groupIndex++;
 }
 
 Groupchat.prototype.addClient = function(client) {
@@ -50,7 +60,9 @@ Groupchat.prototype.addClient = function(client) {
     "clients": clientArray
   };
 
-  client.write(JSON.stringify(data) + '\r\n');
+  client.write(JSON.stringify(data));
+
+  this.clients.push(client);
 
   data = {
     "type": "groupClientEnter",
@@ -61,7 +73,7 @@ Groupchat.prototype.addClient = function(client) {
 
   this.writeAll(JSON.stringify(data));
 
-  this.clients.push(client);
+
 }
 
 Groupchat.prototype.inviteBlid = function(blid, inviter) {
@@ -93,7 +105,7 @@ Groupchat.prototype.inviteClient = function(client, inviter) {
 
   this.invitees.push(client.blid);
 
-  client.write(JSON.stringify(data) + '\r\n');
+  client.write(JSON.stringify(data));
 }
 
 Groupchat.prototype.acceptInvitation = function(client) {
@@ -120,7 +132,7 @@ Groupchat.prototype.sendMessage = function(sender, message) {
 Groupchat.prototype.writeAll = function(str) {
   for(var i = 0; i < this.clients.length; i++) {
     client = this.clients[i];
-    client.write(str + '\r\n');
+    client.write(str);
   }
 }
 
@@ -144,4 +156,4 @@ Groupchat.prototype.clientLeave = function(client, reason) {
   this.writeAll(JSON.stringify(data));
 }
 
-module.exports = {createGroup: createGroup}
+module.exports = {createGroup: createGroup, getFromId: getFromId}

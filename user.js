@@ -129,7 +129,7 @@ User.prototype.newFriendRequest = function(sender) {
 
   dat = {
     "type": "friendRequest",
-    "sender": sender.getUsername(),
+    "sender": sender.username,
     "sender_blid": sender.blid
   };
   this.messageClients(JSON.stringify(dat));

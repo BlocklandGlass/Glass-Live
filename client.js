@@ -60,56 +60,15 @@ var broadcast = function (str) {
   for(var i = 0; i < clientGroup.length; i++) {
     cl = clientGroup[i];
     try {
-      cl.connection.write(str + '\r\n');
+      cl.write(str);
     } catch (e) {
 
     }
   }
 }
 
-Client.prototype.authCheck = function (ident) {
-  var request = require('sync-request');
-
-  if(config.authenticator == "bypass") {
-    this.blid = 27323;
-    this.username = "BLG";
-    this.admin = 1;
-    this.mod = 1;
-    return true;
-  }
-
-  var req = request('GET', "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident)
-
-  try {
-    res = JSON.parse(req.getBody());
-  } catch (e) {
-    console.log("Error authenticating user");
-    console.log(req.getBody().toString('utf8'));
-    this.connection.write('{"type":"auth", "status":"failed"}\r\n');
-    return false;
-  }
-
-  if(res.status == "success") {
-    this.blid = res.blid;
-    this.username = res.username;
-    this.admin = res.admin;
-    this.mod = res.mod;
-
-    this.beta = res.beta;
-
-    if(!res.beta) {
-      console.log("Not beta");
-      return false;
-    }
-
-    return true;
-  } else {
-    return false;
-  }
-};
-
 Client.prototype.sendObject = function(obj) {
-  this.connection.write(JSON.stringify(obj) + '\r\n');
+  this.write(JSON.stringify(obj));
 }
 
 Client.prototype.write = function(str) {
@@ -167,7 +126,7 @@ Client.prototype.sendFriendsList = function () {
             "type": "friendsList",
             "friends": friends
           };
-          cl.connection.write(JSON.stringify(dat) + '\r\n');
+          cl.write(JSON.stringify(dat));
         }
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
     }
@@ -176,7 +135,7 @@ Client.prototype.sendFriendsList = function () {
         "type": "friendsList",
         "friends": []
       };
-      cl.connection.write(JSON.stringify(dat) + '\r\n');
+      cl.write(JSON.stringify(dat));
     }
   }.bind({cl: cl}));
 }
@@ -203,7 +162,7 @@ Client.prototype.sendFriendRequests = function () {
             "type": "friendRequests",
             "requests": friends
           };
-          cl.connection.write(JSON.stringify(dat) + '\r\n');
+          cl.write(JSON.stringify(dat));
         }
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
     }
@@ -213,13 +172,13 @@ Client.prototype.sendFriendRequests = function () {
         "type": "friendRequests",
         "requests": []
       };
-      cl.connection.write(JSON.stringify(dat) + '\r\n');
+      cl.write(JSON.stringify(dat));
     }
   }.bind({cl: cl}));
 }
 
 Client.prototype.sendRaw = function (dat) {
-  this.connection.write(JSON.stringify(dat) + '\r\n');
+  this.write(JSON.stringify(dat));
 }
 
 Client.prototype.cleanUp = function (reason) {

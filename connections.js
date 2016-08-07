@@ -2,6 +2,7 @@ const net = require('net');
 const config = require('./config');
 
 const Clients = require('./client');
+const Users = require('./user');
 const Chatrooms = require('./chatroom');
 const Groupchats = require('./groupchat');
 const serverlist = require('./serverlist');
@@ -22,7 +23,7 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
       if(data.type == "auth") {
         console.log("Authing");
-        Clients.create(data.ident, (data.override == 1 ? true : false), function(err, client) {
+        Clients.create(data.ident, (data.override == 1 ? true : false), function(err, client, user) {
           console.log("created");
           if(err == null) {
             client.connection = c;
@@ -35,6 +36,8 @@ const clientServer = net.createServer((c) => { //'connection' listener
             };
 
             client.sendObject(obj);
+            client.sendFriendsList();
+            client.sendFriendRequests();
 
             var gd = Chatrooms.getFromTitle('General Discussion');
             gd.addClient(client);
@@ -332,16 +335,20 @@ function handleData(client, c, data) {
       }
 
       Users.get(data.target, function(target) {
-        target.newFriendRequest(c.user);
+        target.newFriendRequest(client);
       }.bind({c: c, data: data}));
       break;
 
     case "friendAccept":
-      c.user.acceptFriend(data.blid);
+      Users.get(client.blid, function(user){
+        user.acceptFriend(data.blid);
+      }.bind({data: data}));
       break;
 
     case "friendDecline":
-      c.user.declineFriend(data.blid);
+      Users.get(client.blid, function(user){
+        user.declineFriend(data.blid);
+      }.bind({data: data}));
       break;
 
     case "queryServerList":
@@ -386,6 +393,20 @@ function handleData(client, c, data) {
       Groupchats.createGroup(c.client, clients, function(success, group) {
         console.log("group create success: " + success);
       });
+      break;
+
+    case "groupJoin":
+      id = data.id;
+      group = Groupchats.getFromId(id);
+      if(group != false) {
+        group.acceptInvitation(client);
+      }
+      break;
+
+    case "groupMessage":
+      id = data.id;
+      group = Groupchats.getFromId(id);
+      group.sendMessage(client, data.msg);
       break;
 
     default:
