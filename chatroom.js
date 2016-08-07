@@ -397,18 +397,25 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
     case "away":
     case "afk":
-      if(client.afk === true)
-        return;
-
-      dat = {
-        "type": "roomText",
-        "id": this.id,
-        "text": "<color:bb00cc> * " + client.username + " is now away"
-      };
-      client.afk = true;
+      if(client.afk === true) {
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:bb33cc> * " + client.username + " is back"
+        };
+        client.afk = false;
+      } else {
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:bb00cc> * " + client.username + " is now away"
+        }
+        client.afk = true;
+      }
       this.transmit(JSON.stringify(dat));
       break;
 
+    case "unafk":
     case "back":
       if(client.afk === false)
         return;
