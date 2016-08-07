@@ -109,7 +109,7 @@ Client.prototype.spamCheck = function(msg, room) {
   if(mh.length >= 5) {
     var prev = mh[4];
     console.log("time difference: " + prev.time.diff(moment(), 'milliseconds'));
-    if(prev.time.diff(moment(), 'milliseconds') < 5000) {
+    if(moment().diff(prev.time, 'milliseconds') < 5000) {
       this.sendObject({
         "type": "roomText",
         "id": room.id,
