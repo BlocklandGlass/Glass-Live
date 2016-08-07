@@ -182,7 +182,12 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         "uptime\tGives the server's uptime",
         "time\tGives the local time of the server",
         "kick <username>\tKicks user",
-        "kickid <blid>\tKicks user by blid"
+        "kickid <blid>\tKicks user by blid",
+        "mute <time> <user>\tMutes the user for <time> minutes",
+        "afk\tToggles afk status",
+        "away\tAlias of afk",
+        "ignore <username>\tHide user's messages",
+        "getid <username>\tGives user's BL_ID"
       ];
 
       var str = "<spush><tab:120, 220><color:dd3300>";
@@ -427,6 +432,42 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       };
       client.afk = false;
       this.transmit(JSON.stringify(dat));
+      break;
+
+    case "getid":
+      if(arg.length >= 2) {
+        name = "";
+        for(var i = 1; i < arg.length; i++) {
+          name = name + " " + arg[i];
+        }
+        name = name.trim();
+
+        for(var i = 0; i < this.clients.length; i++) {
+          cl = this.clients[i];
+          if(cl.username.toLowerCase() == name.toLowerCase()) {
+            dat = {
+              "type": "roomText",
+              "id": this.id,
+              "text": "<color:dd3300> * " + cl.username + "'s BL_ID is " + cl.blid
+            };
+            client.sendRaw(dat);
+          }
+        }
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * User not found."
+        };
+        client.sendRaw(dat);
+        return;
+      } else {
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * /getid <username>"
+        };
+        client.sendRaw(dat);
+      }
       break;
 
     default:
