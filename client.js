@@ -84,6 +84,7 @@ Client.prototype.disconnect = function(reason) {
   // 0 - server shutdown
   // 1 - other sign-in
   // 2 - barred
+  // 3 - kick
 
   dat = {
     "type":"disconnected",

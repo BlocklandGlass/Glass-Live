@@ -23,6 +23,8 @@ function Chatroom(title, image) {
 
   this.clientList = [];
 
+  this.mute = [];
+
   module.chatroomList[module.chatrooms] = this;
   module.chatrooms++;
 }
@@ -148,7 +150,6 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             cl = this.clients[i];
             if(cl.username.toLowerCase() == name.toLowerCase()) {
               this.removeUser(cl, 2);
-              cl.disconnect(1);
             }
           }
         }
@@ -261,6 +262,79 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               "type": "roomText",
               "id": this.id,
               "text": "<color:dd3300> * Ignoring " + cl.username + " (" + cl.blid + ") in all rooms."
+            };
+            client.sendRaw(dat);
+            return;
+          }
+        }
+
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * User not found."
+        };
+        client.sendRaw(dat);
+      }
+      break;
+
+    case "mute":
+      if(!client.mod)
+        return;
+
+      if(arg.length >= 2) {
+        name = "";
+        for(var i = 1; i < arg.length; i++) {
+          name = name + " " + arg[i];
+        }
+        name = name.trim();
+
+        for(var i = 0; i < this.clients.length; i++) {
+          cl = this.clients[i];
+          if(cl.username.toLowerCase() == name.toLowerCase()) {
+            if(this.mute.indexOf(cl.blid) == -1)
+              this.mute.push(cl.blid);
+
+            dat = {
+              "type": "roomText",
+              "id": this.id,
+              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted."
+            };
+            client.sendRaw(dat);
+            return;
+          }
+        }
+
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * User not found."
+        };
+        client.sendRaw(dat);
+      }
+      break;
+
+    case "unmute":
+      if(!client.mod)
+        return;
+
+      if(arg.length >= 2) {
+        name = "";
+        for(var i = 1; i < arg.length; i++) {
+          name = name + " " + arg[i];
+        }
+        name = name.trim();
+
+        for(var i = 0; i < this.clients.length; i++) {
+          cl = this.clients[i];
+          if(cl.username.toLowerCase() == name.toLowerCase()) {
+            idx = this.mute.indexOf(cl.blid);
+            if(idx > -1)
+              this.mute.splice(idx, 1);
+
+            dat = {
+              "type": "roomText",
+              "id": this.id,
+              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted."
             };
             client.sendRaw(dat);
             return;
