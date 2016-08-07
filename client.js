@@ -106,6 +106,18 @@ Client.prototype.spamCheck = function(msg, room) {
     }
   }
 
+  if(mg.length >= 5) {
+    var prev = mh[4];
+    if(prev.time.diff(moment(), 'milliseconds') < 5000) {
+      this.sendObject({
+        "type": "roomText",
+        "id": room.id,
+        "text": "<color:dd3300> * You're typing too fast!"
+      });
+      return false;
+    }
+  }
+
   return true;
 }
 
