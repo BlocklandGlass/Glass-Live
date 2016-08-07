@@ -72,8 +72,22 @@ Groupchat.prototype.addClient = function(client) {
   };
 
   this.writeAll(JSON.stringify(data));
+}
 
+Groupchat.prototype.removeClient = function(client) {
+  var idx = this.clients.indexOf(client);
+  if(idx == -1)
+    return;
 
+  this.clients.splice(idx, 1);
+
+  data = {
+    "type": "groupClientLeave",
+    "id": this.id,
+    "blid": client.blid
+  };
+
+  this.writeAll(JSON.stringify(data));
 }
 
 Groupchat.prototype.inviteBlid = function(blid, inviter) {

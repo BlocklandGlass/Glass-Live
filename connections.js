@@ -409,6 +409,12 @@ function handleData(client, c, data) {
       group.sendMessage(client, data.msg);
       break;
 
+    case "groupLeave":
+      id = data.id;
+      group = Groupchats.getFromId(id);
+      group.removeClient(client);
+      break;
+
     default:
       console.log("unhandled: " + data.type);
   }
