@@ -395,6 +395,26 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       }
       break;
 
+    case "afk":
+      dat = {
+        "type": "roomText",
+        "id": this.id,
+        "text": "<color:dd33dd> * " + client.username + " is AFK"
+      };
+      client.afk = true;
+      this.transmit(JSON.stringify(dat));
+      break;
+
+    case "back":
+      dat = {
+        "type": "roomText",
+        "id": this.id,
+        "text": "<color:dd33dd> * " + client.username + " is no longer AFK"
+      };
+      client.afk = false;
+      this.transmit(JSON.stringify(dat));
+      break;
+
     default:
       console.log("unrecognized command: " + arg[0]);
       break;
