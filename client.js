@@ -48,6 +48,7 @@ function Client() {
   this.activity = "idle";
 
   this.rooms = [];
+  this.ignore = [];
 
   //todo: friends loading
 
