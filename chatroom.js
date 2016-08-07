@@ -377,8 +377,8 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             if(idx > -1) {
               this.mute.splice(idx, 1);
 
-              if(cr.muteTimer[cl.blid] != null)
-                clearTimeout(cr.muteTimer[cl.blid]);
+              if(this.muteTimer[cl.blid] != null)
+                clearTimeout(this.muteTimer[cl.blid]);
 
               dat = {
                 "type": "roomText",
