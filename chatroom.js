@@ -24,6 +24,7 @@ function Chatroom(title, image) {
   this.clientList = [];
 
   this.mute = [];
+  this.muteTimer = []
 
   module.chatroomList[module.chatrooms] = this;
   module.chatrooms++;
@@ -281,9 +282,9 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       if(!client.mod)
         return;
 
-      if(arg.length >= 2) {
+      if(arg.length >= 3) {
         name = "";
-        for(var i = 1; i < arg.length; i++) {
+        for(var i = 2; i < arg.length; i++) {
           name = name + " " + arg[i];
         }
         name = name.trim();
@@ -294,10 +295,30 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             if(this.mute.indexOf(cl.blid) == -1)
               this.mute.push(cl.blid);
 
+            if(this.muteTimer[cl.blid] != null)
+              clearTimeout(this.muteTimer[cl.blid]);
+
+            var cr = this;
+            this.muteTimer[cl.blid] = setTimeout(function () {
+              idx = cr.mute.indexOf(cl.blid);
+              if(idx > -1)
+                cr.mute.splice(idx, 1);
+
+              if(cr.muteTimer[cl.blid] != null)
+                clearTimeout(cr.muteTimer[cl.blid]);
+
+              dat = {
+                "type": "roomText",
+                "id": this.id,
+                "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Timeout]"
+              };
+              cr.transmit(JSON.stringify(dat));
+            }.bind({cr: cr, cl: cl}), 60000*arg[1]);
+
             dat = {
               "type": "roomText",
               "id": this.id,
-              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted."
+              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted for " + arg[1] + " minutes."
             };
             this.transmit(JSON.stringify(dat));
             return;
@@ -308,6 +329,13 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           "type": "roomText",
           "id": this.id,
           "text": "<color:dd3300> * User not found."
+        };
+        client.sendRaw(dat);
+      } else {
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * /mute <minutes> <name>"
         };
         client.sendRaw(dat);
       }
