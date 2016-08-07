@@ -83,7 +83,7 @@ Client.prototype.pushMessageHistory = function(msg, room) {
   };
 
   mh.unshift(obj);
-  if(mh.length >= 5) {
+  if(mh.length > 5) {
     mh.splice(0, 5);
   }
 }
