@@ -283,6 +283,43 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       }
       break;
 
+    case "unignore":
+      if(arg.length >= 2) {
+        name = "";
+        for(var i = 1; i < arg.length; i++) {
+          name = name + " " + arg[i];
+        }
+        name = name.trim();
+
+        for(var i = 0; i < this.clients.length; i++) {
+          cl = this.clients[i];
+          if(cl.username.toLowerCase() == name.toLowerCase()) {
+            idx = client.ignore.indexOf(cl.blid);
+            if(idx == -1)
+              return;
+
+
+            client.ignore.splice(idx, 1);
+
+            dat = {
+              "type": "roomText",
+              "id": this.id,
+              "text": "<color:dd3300> * Unignored " + cl.username + "."
+            };
+            client.sendRaw(dat);
+            return;
+          }
+        }
+
+        dat = {
+          "type": "roomText",
+          "id": this.id,
+          "text": "<color:dd3300> * User not found."
+        };
+        client.sendRaw(dat);
+      }
+      break;
+
     case "mute":
       if(!client.mod)
         return;
