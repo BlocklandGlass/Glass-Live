@@ -81,7 +81,6 @@ function User(data, blid) {
     this.initialized = true;
 
     console.log("[debug] found " + blid);
-    console.log(data.data);
   }
 
   module.users[blid] = this;
@@ -124,8 +123,6 @@ User.prototype.newFriendRequest = function(sender) {
   if(this._longTerm.requests.indexOf(sender.blid) == -1) {
     this._longTerm.requests.push(sender.blid);
   }
-
-  console.log("new friend request from " + sender.blid);
 
   dat = {
     "type": "friendRequest",
@@ -299,7 +296,6 @@ User.prototype.addForumId = function (id, callback) {
   url = 'https://forum.blockland.us/index.php?action=profile;u=' + id + ';wap';
   request(url, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      console.log("success")
       var $ = cheerio.load(body);
       var rows = $('.windowbg').find('tr');
 

@@ -11,14 +11,10 @@ var clientGroup = [];
 
 function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
-  console.log("create called");
   request(url, function (error, response, body) {
-    console.log("error: " + error);
     res = JSON.parse(body);
 
-    console.log(res.beta);
-
-    if(res.status == "success" && res.beta) {
+    if(res.status == "success") {
       var client = new Client();
 
       client.blid = res.blid;
@@ -108,7 +104,6 @@ Client.prototype.spamCheck = function(msg, room) {
 
   if(mh.length >= 5) {
     var prev = mh[4];
-    console.log("time difference: " + prev.time.diff(moment(), 'milliseconds'));
     if(moment().diff(prev.time, 'milliseconds') < 5000) {
       this.sendObject({
         "type": "roomText",
@@ -160,7 +155,6 @@ Client.prototype.setLocation = function (act, loc) {
 };
 
 Client.prototype.sendFriendsList = function () {
-  console.log("[debug] sendFriendsList");
   var cl = this;
   Users.get(this.blid, function(user) {
     fl = user.getFriendsList();
@@ -206,7 +200,6 @@ Client.prototype.sendFriendRequests = function () {
 
     for(i = 0; i < fl.length; i++) {
       blid = fl[i];
-      console.log("[fl.length] " + fl.length);
       Users.get(blid, function(us) {
         obj = {
           "blid": blid,

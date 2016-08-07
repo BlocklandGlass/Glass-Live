@@ -163,16 +163,15 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           for(var i = 0; i < this.clients.length; i++) {
             cl = this.clients[i];
             if(cl.blid == arg[1]) {
-              console.log("kicking");
               this.removeUser(cl, 2);
               cl.disconnect(1);
             }
           }
         } else {
-          console.log("not mod");
+
         }
       } else {
-        console.log("too few arguments");
+
       }
       break;
 
@@ -342,10 +341,8 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
             var cr = this;
             var duration = 60000*arg[1];
-            console.log(duration);
 
             this.muteTimer[cl.blid] = setTimeout(function () {
-              console.log("unmute");
               idx = cr.mute.indexOf(cl.blid);
               if(idx > -1)
                 cr.mute.splice(idx, 1);
