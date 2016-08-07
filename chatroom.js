@@ -290,7 +290,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         name = name.trim();
 
         for(var i = 0; i < this.clients.length; i++) {
-          cl = this.clients[i];
+          var cl = this.clients[i];
           if(cl.username.toLowerCase() == name.toLowerCase()) {
             if(this.mute.indexOf(cl.blid) == -1)
               this.mute.push(cl.blid);
@@ -369,15 +369,19 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           cl = this.clients[i];
           if(cl.username.toLowerCase() == name.toLowerCase()) {
             idx = this.mute.indexOf(cl.blid);
-            if(idx > -1)
+            if(idx > -1) {
               this.mute.splice(idx, 1);
 
-            dat = {
-              "type": "roomText",
-              "id": this.id,
-              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Manual]"
-            };
-            this.transmit(JSON.stringify(dat));
+              if(cr.muteTimer[cl.blid] != null)
+                clearTimeout(cr.muteTimer[cl.blid]);
+
+              dat = {
+                "type": "roomText",
+                "id": this.id,
+                "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Manual]"
+              };
+              this.transmit(JSON.stringify(dat));
+            }
             return;
           }
         }
