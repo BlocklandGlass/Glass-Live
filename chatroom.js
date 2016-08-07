@@ -299,6 +299,9 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               clearTimeout(this.muteTimer[cl.blid]);
 
             var cr = this;
+            var duration = 60000*arg[1];
+            console.log(duration);
+
             this.muteTimer[cl.blid] = setTimeout(function () {
               idx = cr.mute.indexOf(cl.blid);
               if(idx > -1)
@@ -306,9 +309,6 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
               if(cr.muteTimer[cl.blid] != null)
                 clearTimeout(cr.muteTimer[cl.blid]);
-
-              var duration = 60000*arg[1];
-              console.log(duration);
 
               dat = {
                 "type": "roomText",
