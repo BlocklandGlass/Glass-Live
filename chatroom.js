@@ -303,6 +303,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             console.log(duration);
 
             this.muteTimer[cl.blid] = setTimeout(function () {
+              console.log("unmute");
               idx = cr.mute.indexOf(cl.blid);
               if(idx > -1)
                 cr.mute.splice(idx, 1);
@@ -312,7 +313,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
               dat = {
                 "type": "roomText",
-                "id": this.id,
+                "id": cr.id,
                 "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Timeout]"
               };
               cr.transmit(JSON.stringify(dat));
@@ -330,7 +331,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
             dat = {
               "type": "roomText",
               "id": this.id,
-              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted for " + duration + "."
+              "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted for " + durStr + "."
             };
             this.transmit(JSON.stringify(dat));
             return;
