@@ -267,6 +267,8 @@ User.prototype.messagePrimary = function (msg) {
   var prim = this.getPrimaryClient();
   if(prim != false)
     prim.write(msg);
+  else
+    console.log("can't find primary client");
 }
 
 User.prototype.getPrimaryClient = function () {
@@ -277,6 +279,7 @@ User.prototype.getPrimaryClient = function () {
 }
 
 User.prototype.setPrimaryClient = function (client) {
+  console.log("setPrimaryClient");
   //todo inform old client
   this._primaryClient = client;
   client.isPrimary = true;
