@@ -43,6 +43,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
             var gd = Chatrooms.getFromTitle('General Discussion');
             gd.addClient(client);
 
+            if(client.beta) {
+              var qa = Chatrooms.getFromTitle('Quality Assurance');
+              qa.addClient(client);
+            }
+
           } else {
             console.log("error");
             if(err == "auth") {
