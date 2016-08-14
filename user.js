@@ -233,6 +233,9 @@ User.prototype.removeClient = function (c) {
     return;
   }
 
+  if(c.isPrimary)
+    this._primaryClient = null;
+
   if(this.clients.length == 0) {
     dat = {
       "type": "friendStatus",
@@ -274,8 +277,10 @@ User.prototype.messagePrimary = function (msg) {
 User.prototype.getPrimaryClient = function () {
   if(this._primaryClient != null)
     return this._primaryClient;
-  else
+  else {
+    console.log("no primary client");
     return false;
+  }
 }
 
 User.prototype.setPrimaryClient = function (client) {

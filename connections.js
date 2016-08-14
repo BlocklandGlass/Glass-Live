@@ -80,10 +80,12 @@ const clientServer = net.createServer((c) => { //'connection' listener
 
   c.on('error', (err) => {
     if(err == 'EPIPE' || err == 'ECONNRESET') {
-      c.client.cleanUp(1);
+      if(c.client != null)
+        c.client.cleanUp(1);
       //not really an error, just a disconnect we didnt catch
     } else {
-      c.client.cleanUp(3);
+      if(c.client != null)
+        c.client.cleanUp(3);
       //console.error('Caught error', err);
     }
     console.log('Client error');
@@ -259,7 +261,7 @@ function handleData(client, c, data) {
           obj = {
             "type": "message",
             "message": data.message,
-            "sender": c.client.username,
+            "sender": client.username,
             "sender_id": client.blid,
             "timestamp": moment().unix(),
             "datetime": moment().format('h:mm:ss a')
@@ -385,7 +387,9 @@ function handleData(client, c, data) {
       break;
 
     case "disconnect":
-      c.client.cleanUp(data.reason);
+      if(c.client != null)
+        c.client.cleanUp(data.reason);
+
       c.end();
       break;
 
