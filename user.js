@@ -120,6 +120,10 @@ User.prototype.save = function() {
 }
 
 User.prototype.newFriendRequest = function(sender) {
+  if(this._longTerm.friends.indexOf(sender.blid) > -1) {
+    return;
+  }
+
   if(this._longTerm.requests.indexOf(sender.blid) == -1) {
     this._longTerm.requests.push(sender.blid);
   }
@@ -147,9 +151,6 @@ User.prototype.acceptFriend = function (blid) {
     get(blid, function(user) {
       idx = me._longTerm.requests.indexOf(blid);
       me._longTerm.requests.splice(idx, 1);
-
-      if(me._longTerm.friends.indexOf(blid) > -1)
-        return;
 
       me.addFriend(blid, 1);
       user.addFriend(me.blid, 0);
