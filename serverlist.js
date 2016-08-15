@@ -39,7 +39,7 @@ ServerListing.prototype.onUpdate = function(key) {
     "value": this[key]
   };
 
-  Clients.broadcast(JSON.stringify(obj));
+  //Clients.broadcast(JSON.stringify(obj));
 }
 
 var getAll = function() {

@@ -24,6 +24,7 @@ function create(ident, override, callback) {
       client.beta = res.beta;
 
       Users.get(client.blid, function(user) {
+        user.setUsername(client.username);
         user.addClient(client);
         if(user.getPrimaryClient() == false || override) {
           user.setPrimaryClient(client);
