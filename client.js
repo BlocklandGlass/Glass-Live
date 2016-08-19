@@ -7,7 +7,7 @@ const moment = require('moment');
 
 connections = 0;
 
-var clientGroup = [];
+module.clientgroup = [];
 
 function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
@@ -56,14 +56,14 @@ function Client() {
 
   //todo: friends loading
 
-  clientGroup.push(this);
+  module.clientgroup.push(this);
 
   connections++;
 }
 
 var broadcast = function (str) {
-  for(var i = 0; i < clientGroup.length; i++) {
-    cl = clientGroup[i];
+  for(var i = 0; i < module.clientgroup.length; i++) {
+    cl = module.clientgroup[i];
     try {
       cl.write(str);
     } catch (e) {
@@ -248,8 +248,8 @@ Client.prototype.cleanUp = function (reason) {
     }.bind({cl: cl, reason: reason}));
   }.bind({cl: cl, reason: reason}));
 
-  idx = clientGroup.indexOf(this);
-  clientGroup.splice(idx, 1);
+  idx = module.clientgroup.indexOf(this);
+  module.clientgroup.splice(idx, 1);
 }
 
 Client.prototype._addToRoom = function (g) {
