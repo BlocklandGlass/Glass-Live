@@ -190,6 +190,30 @@ User.prototype.addFriend = function(blid, accepter) {
   }.bind({us: us, blid: blid, accepter: accepter}));
 }
 
+User.prototype.removeFriend = function(blid) {
+  var us = this
+  get(blid, function(u) {
+    dat = {
+      "type": "friendRemove",
+      "blid": us.blid
+    };
+    u.messageClients(JSON.stringify(dat));
+
+    var idx = us._longTerm.friends.indexOf(blid)
+    if(idx > -1) {
+      us._longTerm.friends.splice(idx, 1)
+    }
+
+    idx = u._longTerm.friends.indexOf(us.blid)
+    if(idx > -1) {
+      u._longTerm.friends.splice(idx, 1)
+    }
+
+    us.save();
+    u.save();
+  }.bind({us: us, blid: blid}));
+}
+
 User.prototype.getFriendsList = function() {
   if(this._longTerm.friends == null)
     this._longTerm.friends = [];

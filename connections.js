@@ -359,6 +359,12 @@ function handleData(client, c, data) {
       }.bind({data: data}));
       break;
 
+    case "friendRemove":
+      Users.get(client.blid, function(user){
+        user.removeFriend(data.blid);
+      }.bind({data: data}));
+      break;
+
     case "queryServerList":
       var servers = serverlist.getAll();
       for(addr in servers) {
