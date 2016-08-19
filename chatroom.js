@@ -53,7 +53,7 @@ Chatroom.prototype.addClient = function (c) {
     "type": "roomJoin",
     "id": this.id,
     "title": this.title,
-    "motd": "Welcome to the Glass Live private beta!\nBe nice, have fun, and find bugs\n"
+    "motd": "Welcome to the Glass Live!\nBe respectful and have a good time!\n"
   };
 
   cli = {
