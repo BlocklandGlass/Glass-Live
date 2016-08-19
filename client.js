@@ -15,7 +15,7 @@ function create(ident, override, callback) {
     try {
       res = JSON.parse(body);
     } catch (e) {
-      console.error();("Error getting auth status from site", err);
+      console.error("Error getting auth status from site", e);
     }
 
     if(res.status == "success") {
