@@ -12,7 +12,11 @@ var clientGroup = [];
 function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
   request(url, function (error, response, body) {
-    res = JSON.parse(body);
+    try {
+      res = JSON.parse(body);
+    } catch (e) {
+      console.error();("Error getting auth status from site", err);
+    }
 
     if(res.status == "success") {
       var client = new Client();
