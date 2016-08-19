@@ -67,7 +67,7 @@ var broadcast = function (str) {
     try {
       cl.write(str);
     } catch (e) {
-
+      continue;
     }
   }
 }
