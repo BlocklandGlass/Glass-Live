@@ -223,7 +223,9 @@ function handleData(client, c, data) {
 
     case "roomCommand":
       var cr = Chatrooms.getFromId(data.room);
-      cr.onCommand(c.client, data.message);
+      if(cr) {
+        cr.onCommand(c.client, data.message);
+      }
       break;
 
     case "getRoomList":
