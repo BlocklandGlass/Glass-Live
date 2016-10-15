@@ -13,9 +13,10 @@ function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
   request(url, function (error, response, body) {
     try {
-      res = JSON.parse(body);
+      var res = JSON.parse(body);
     } catch (e) {
       console.error("Error getting auth status from site", e);
+      return;
     }
 
     if(res.status == "success") {
