@@ -49,14 +49,14 @@ var getFromName = function getFromTitle(title) {
 }
 
 Chatroom.prototype.addClient = function (c) {
-  dat = {
+  var dat = {
     "type": "roomJoin",
     "id": this.id,
     "title": this.title,
-    "motd": "Welcome to the Glass Live!\nBe respectful and have a good time!\n"
+    "motd": "Welcome to Glass Live!\nBe respectful and have a good time!\n"
   };
 
-  cli = {
+  var cli = {
     "username": c.username,
     "blid": c.blid,
     "mod": c.mod,
@@ -65,7 +65,20 @@ Chatroom.prototype.addClient = function (c) {
 
   this.clientList.push(cli);
 
-  dat.clients = this.clientList;
+  dat.clients = [];
+
+  for(i in this.clients) {
+    var cl = this.clients[i];
+    var cli = {
+      "username": cl.username,
+      "blid": cl.blid,
+      "mod": cl.mod,
+      "admin": cl.admin,
+      "awake": cl.awake
+    };
+    dat.clients.push(cli);
+  }
+
   c.sendObject(dat);
 
   if(this.clients.indexOf(c) > -1) {
@@ -74,13 +87,13 @@ Chatroom.prototype.addClient = function (c) {
     this.clients.push(c);
   }
 
-  broad = {
+  var broad = {
     "type": "roomUserJoin",
     "id": this.id,
     "username": c.username,
     "blid": c.blid,
     "admin": c.admin,
-    "mod": c.mod
+    "mod": c.mod,
   };
   this.transmit(JSON.stringify(broad));
 

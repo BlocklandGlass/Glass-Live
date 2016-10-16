@@ -208,6 +208,7 @@ function handleData(client, c, data) {
       break;
 
     case "roomAwake":
+      c.client.awake = data.bool;
       dat = {
         "type": "roomAwake",
         "id": data.id,

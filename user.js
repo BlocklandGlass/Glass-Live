@@ -41,7 +41,7 @@ var get = function get(blid, callback) {
         var callbacks = module.userLoadCallbacks[blid];
         console.log("[debug] callbacks: " + (callbacks.length));
         for(var i = 0; i < callbacks.length; i++) {
-          cb = callbacks[i];
+          var cb = callbacks[i];
           if(typeof cb === "function")
             cb(user);
         }
@@ -128,7 +128,7 @@ User.prototype.newFriendRequest = function(sender) {
     this._longTerm.requests.push(sender.blid);
   }
 
-  dat = {
+  var dat = {
     "type": "friendRequest",
     "sender": sender.username,
     "sender_blid": sender.blid
@@ -140,7 +140,7 @@ User.prototype.newFriendRequest = function(sender) {
 
 User.prototype.acceptFriend = function (blid) {
   if(this._longTerm.requests.indexOf(blid) == -1) {
-    dat = {
+    var dat = {
       "type": "messageBox",
       "title": "Uh oh",
       "text": "You don't have a friend request from that person!"
@@ -149,7 +149,7 @@ User.prototype.acceptFriend = function (blid) {
   } else {
     var me = this;
     get(blid, function(user) {
-      idx = me._longTerm.requests.indexOf(blid);
+      var idx = me._longTerm.requests.indexOf(blid);
       me._longTerm.requests.splice(idx, 1);
 
       me.addFriend(blid, 1);
@@ -160,10 +160,8 @@ User.prototype.acceptFriend = function (blid) {
 
 User.prototype.declineFriend = function (blid) {
   if(this._longTerm.requests.indexOf(blid) > -1) {
-
-    idx = this._longTerm.requests.indexOf(blid);
+    var idx = this._longTerm.requests.indexOf(blid);
     this._longTerm.requests.splice(idx, 1);
-
   }
 };
 
@@ -193,7 +191,7 @@ User.prototype.addFriend = function(blid, accepter) {
 User.prototype.removeFriend = function(blid) {
   var us = this
   get(blid, function(u) {
-    dat = {
+    var dat = {
       "type": "friendRemove",
       "blid": us.blid
     };
@@ -204,7 +202,7 @@ User.prototype.removeFriend = function(blid) {
       us._longTerm.friends.splice(idx, 1)
     }
 
-    idx = u._longTerm.friends.indexOf(us.blid)
+    var idx = u._longTerm.friends.indexOf(us.blid)
     if(idx > -1) {
       u._longTerm.friends.splice(idx, 1)
     }
@@ -229,9 +227,9 @@ User.prototype.getFriendRequests = function() {
 }
 
 User.prototype.messageFriends = function(msg) {
-  friends = this.getFriendsList();
+  var friends = this.getFriendsList();
   for(var i = 0; i < friends.length; i++) {
-    friend_blid = friends[i];
+    var friend_blid = friends[i];
     get(friend_blid, function(user) {
       user.messageClients(msg)
     });
@@ -240,7 +238,7 @@ User.prototype.messageFriends = function(msg) {
 
 User.prototype.addClient = function(client) {
   if(this.clients.length == 0) {
-    dat = {
+    var dat = {
       "type": "friendStatus",
       "online": "1",
       "blid": this.blid
@@ -251,7 +249,7 @@ User.prototype.addClient = function(client) {
 }
 
 User.prototype.removeClient = function (c) {
-  idx = this.clients.indexOf(c);
+  var idx = this.clients.indexOf(c);
   if(idx > -1) {
     this.clients.splice(idx, 1);
   } else {
@@ -262,7 +260,7 @@ User.prototype.removeClient = function (c) {
     this._primaryClient = null;
 
   if(this.clients.length == 0) {
-    dat = {
+    var dat = {
       "type": "friendStatus",
       "online": "0",
       "blid": this.blid
@@ -286,7 +284,7 @@ User.prototype.setUsername = function(usr) {
 
 User.prototype.messageClients = function (msg) {
   for(var i = 0; i < this.clients.length; i++) {
-    cl = this.clients[i];
+    var cl = this.clients[i];
     cl.write(msg);
   }
 }
@@ -326,7 +324,7 @@ User.prototype.generateUserData = function () {
 
 User.prototype.addForumId = function (id, callback) {
   var user = this;
-  url = 'https://forum.blockland.us/index.php?action=profile;u=' + id + ';wap';
+  var url = 'https://forum.blockland.us/index.php?action=profile;u=' + id + ';wap';
   request(url, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       var $ = cheerio.load(body);

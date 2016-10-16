@@ -6,7 +6,7 @@ const request = require('request');
 const moment = require('moment');
 const encoding = require('encoding');
 
-connections = 0;
+module.connections = 0;
 
 module.clientgroup = [];
 
@@ -49,7 +49,7 @@ function create(ident, override, callback) {
 }
 
 function Client() {
-  this.cid = connections;
+  this.cid = module.connections;
 
   this.mod = false;
   this.admin = false;
@@ -65,12 +65,12 @@ function Client() {
 
   module.clientgroup.push(this);
 
-  connections++;
+  module.connections++;
 }
 
 var broadcast = function (str) {
   for(var i = 0; i < module.clientgroup.length; i++) {
-    cl = module.clientgroup[i];
+    var cl = module.clientgroup[i];
     try {
       cl.write(str);
     } catch (e) {
@@ -147,7 +147,7 @@ Client.prototype.disconnect = function(reason) {
   // 2 - barred
   // 3 - kick
 
-  dat = {
+  var dat = {
     "type":"disconnected",
     "reason": reason
   };
@@ -169,22 +169,22 @@ Client.prototype.setLocation = function (act, loc) {
 Client.prototype.sendFriendsList = function () {
   var cl = this;
   Users.get(this.blid, function(user) {
-    fl = user.getFriendsList();
+    var fl = user.getFriendsList();
 
     var friends = [];
     var friendCount = fl.length;
 
     for(i = 0; i < fl.length; i++) {
-      blid = fl[i];
+      var blid = fl[i];
       Users.get(blid, function(us) {
-        obj = {
+        var obj = {
           "blid": blid,
           "username": us.getUsername(),
           "online": us.isOnline()
         };
         friends.push(obj);
         if(friends.length == friendCount) {
-          dat = {
+          var dat = {
             "type": "friendsList",
             "friends": friends
           };
@@ -193,7 +193,7 @@ Client.prototype.sendFriendsList = function () {
       }.bind({friendCount: friendCount, blid: blid, cl: cl, friends: friends}));
     }
     if(friendCount == 0) {
-      dat = {
+      var dat = {
         "type": "friendsList",
         "friends": []
       };
@@ -205,21 +205,21 @@ Client.prototype.sendFriendsList = function () {
 Client.prototype.sendFriendRequests = function () {
   var cl = this;
   Users.get(this.blid, function(user) {
-    fl = user.getFriendRequests();
+    var fl = user.getFriendRequests();
 
     var friends = [];
     var friendCount = fl.length;
 
     for(i = 0; i < fl.length; i++) {
-      blid = fl[i];
+      var blid = fl[i];
       Users.get(blid, function(us) {
-        obj = {
+        var obj = {
           "blid": blid,
           "username": us.getUsername()
         };
         friends.push(obj);
         if(friends.length == friendCount) {
-          dat = {
+          var dat = {
             "type": "friendRequests",
             "requests": friends
           };
@@ -229,7 +229,7 @@ Client.prototype.sendFriendRequests = function () {
     }
 
     if(friendCount == 0) {
-      dat = {
+      var dat = {
         "type": "friendRequests",
         "requests": []
       };
@@ -255,7 +255,7 @@ Client.prototype.cleanUp = function (reason) {
     }.bind({cl: cl, reason: reason}));
   }.bind({cl: cl, reason: reason}));
 
-  idx = module.clientgroup.indexOf(this);
+  var idx = module.clientgroup.indexOf(this);
   module.clientgroup.splice(idx, 1);
 }
 
