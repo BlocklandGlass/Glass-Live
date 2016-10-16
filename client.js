@@ -12,8 +12,8 @@ module.clientgroup = [];
 function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
   request(url, function (error, response, body) {
-    if(error) { console.error("Error with auto request, ", error); return;  }
-    console.log("Response: " + response);
+    if(error) { console.error("Error with auth request, ", error); return;  }
+    console.log("Response: " + response.statusCode);
     try {
       var res = JSON.parse(body);
     } catch (e) {
