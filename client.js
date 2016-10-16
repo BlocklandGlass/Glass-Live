@@ -12,10 +12,12 @@ module.clientgroup = [];
 function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
   request(url, function (error, response, body) {
+    if(error) { console.error("Error with auto request, ", error); return;  }
     try {
       var res = JSON.parse(body);
     } catch (e) {
       console.error("Error getting auth status from site", e);
+      console.log(body);
       return;
     }
 
