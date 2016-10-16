@@ -27,7 +27,7 @@ function create(ident, override, callback) {
       var client = new Client();
 
       client.blid = res.blid;
-      client.username = encoding.convert(res.username, 'ISO-8859-1', 'UTF-8').toString('ISO-8859-1');
+      client.username = encoding.convert(res.username, 'ISO-8859-1', 'UTF-8').toString('ascii');
       client.admin = res.admin;
       client.mod = res.mod;
       client.beta = res.beta;
