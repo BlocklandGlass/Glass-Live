@@ -4,6 +4,7 @@ const Users = require('./user');
 const config = require('./config');
 const request = require('request');
 const moment = require('moment');
+const utf8 = require('utf8');
 
 connections = 0;
 
@@ -26,7 +27,7 @@ function create(ident, override, callback) {
       var client = new Client();
 
       client.blid = res.blid;
-      client.username = res.username;
+      client.username = utf8.decode(res.username);
       client.admin = res.admin;
       client.mod = res.mod;
       client.beta = res.beta;
