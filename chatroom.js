@@ -548,7 +548,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         return;
 
       var msg = cmd.substr(cmd.indexOf(' ')+1);
-      this.setMOD(msg);
+      this.setMOTD(msg);
 
       client.sendRaw({
         "type": "roomText",
