@@ -24,7 +24,9 @@ function Chatroom(title, image) {
   this.clientList = [];
 
   this.mute = [];
-  this.muteTimer = []
+  this.muteTimer = [];
+
+  this.config = this.load();
 
   module.chatroomList[module.chatrooms] = this;
   module.chatrooms++;
@@ -48,12 +50,34 @@ var getFromName = function getFromTitle(title) {
   return false;
 }
 
+Chatroom.prototype.setMOTD = function(msg) {
+  this.config.motd = msg;
+  this.save();
+}
+
+Chatroom.prototype.save = function () {
+  var fs = require('fs');
+  fs.writeFileSync('save/' + this.title.replace(/ /g, "_") + '.json', JSON.stringify(this.config)); //need a better way, oh well
+}
+
+Chatroom.prototype.load = function () {
+  try {
+    var fs = require('fs');
+    var body = fs.readFileSync('save/' + this.title.replace(/ /g, "_") + '.json');
+    var obj = JSON.parse(body);
+    return obj;
+  } catch(e) {
+    console.error("Error loading chatroom", e);
+    return {};
+  }
+}
+
 Chatroom.prototype.addClient = function (c) {
   var dat = {
     "type": "roomJoin",
     "id": this.id,
     "title": this.title,
-    "motd": "Welcome to Glass Live!\nBe respectful and have a good time!\n"
+    "motd": this.config.motd
   };
 
   var cli = {

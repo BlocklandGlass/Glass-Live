@@ -48,6 +48,11 @@ const clientServer = net.createServer((c) => { //'connection' listener
               qa.addClient(client);
             }
 
+            if(client.mod) {
+              var staff = Chatrooms.getFromTitle('Staff');
+              staff.addClient(client);
+            }
+
           } else {
             console.log("error");
             if(err == "auth") {
