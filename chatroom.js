@@ -168,7 +168,7 @@ Chatroom.prototype.removeUser = function (c, reason) {
 }
 
 Chatroom.prototype.onCommand = function (client, cmd) {
-  arg = cmd.split(" ");
+  var arg = cmd.split(" ");
   if(arg[0] == null && arg[0] != "/")
    return;
 
@@ -178,7 +178,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
     case "kick":
       if(arg.length >= 2) {
         if(client.mod) {
-          name = "";
+          var name = "";
           for(var i = 1; i < arg.length; i++) {
             name = name + " " + arg[i];
           }
@@ -213,7 +213,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       break;
 
     case "help":
-      func = [
+      var func = [
         "help\tLists functions",
         "uptime\tGives the server's uptime",
         "time\tGives the local time of the server",
@@ -232,7 +232,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       }
       str = str + "<spop>";
 
-      dat = {
+      var dat = {
         "type": "roomText",
         "id": this.id,
         "text": str
@@ -241,10 +241,10 @@ Chatroom.prototype.onCommand = function (client, cmd) {
       break;
 
     case "uptime":
-      seconds = (moment().unix()-global.uptime);
-      minutes = Math.floor(seconds/60);
-      hours = Math.floor(minutes/60);
-      days = Math.floor(hours/24);
+      var seconds = (moment().unix()-global.uptime);
+      var minutes = Math.floor(seconds/60);
+      var hours = Math.floor(minutes/60);
+      var days = Math.floor(hours/24);
 
       seconds = seconds % 60;
       minutes = minutes % 60;
@@ -269,7 +269,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
       str = str.trim();
 
-      dat = {
+      var dat = {
         "type": "roomText",
         "id": this.id,
         "text": "<color:dd3300> * Uptime: " + str
@@ -288,19 +288,19 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
     case "ignore":
       if(arg.length >= 2) {
-        name = "";
+        var name = "";
         for(var i = 1; i < arg.length; i++) {
           name = name + " " + arg[i];
         }
         name = name.trim();
 
         for(var i = 0; i < this.clients.length; i++) {
-          cl = this.clients[i];
+          var cl = this.clients[i];
           if(cl.username.toLowerCase() == name.toLowerCase()) {
             if(client.ignore.indexOf(cl.blid) == -1)
               client.ignore.push(cl.blid);
 
-            dat = {
+            var dat = {
               "type": "roomText",
               "id": this.id,
               "text": "<color:dd3300> * Ignoring " + cl.username + " (" + cl.blid + ") in all rooms."
@@ -310,7 +310,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           }
         }
 
-        dat = {
+        var dat = {
           "type": "roomText",
           "id": this.id,
           "text": "<color:dd3300> * User not found."
@@ -321,14 +321,14 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
     case "unignore":
       if(arg.length >= 2) {
-        name = "";
+        var name = "";
         for(var i = 1; i < arg.length; i++) {
           name = name + " " + arg[i];
         }
         name = name.trim();
 
         for(var i = 0; i < this.clients.length; i++) {
-          cl = this.clients[i];
+          var cl = this.clients[i];
           if(cl.username.toLowerCase() == name.toLowerCase()) {
             idx = client.ignore.indexOf(cl.blid);
             if(idx == -1)
@@ -337,7 +337,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
             client.ignore.splice(idx, 1);
 
-            dat = {
+            var dat = {
               "type": "roomText",
               "id": this.id,
               "text": "<color:dd3300> * Unignored " + cl.username + "."
@@ -347,7 +347,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           }
         }
 
-        dat = {
+        var dat = {
           "type": "roomText",
           "id": this.id,
           "text": "<color:dd3300> * User not found."
@@ -361,7 +361,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         return;
 
       if(arg.length >= 3) {
-        name = "";
+        var name = "";
         for(var i = 2; i < arg.length; i++) {
           name = name + " " + arg[i];
         }
@@ -387,7 +387,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               if(cr.muteTimer[cl.blid] != null)
                 clearTimeout(cr.muteTimer[cl.blid]);
 
-              dat = {
+              var dat = {
                 "type": "roomText",
                 "id": cr.id,
                 "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Timeout]"
@@ -404,7 +404,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
               durStr = Math.floor(duration/(60 * 1000)) + " minutes";
             }
 
-            dat = {
+            var dat = {
               "type": "roomText",
               "id": this.id,
               "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was muted for " + durStr + "."
@@ -414,14 +414,14 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           }
         }
 
-        dat = {
+        var dat = {
           "type": "roomText",
           "id": this.id,
           "text": "<color:dd3300> * User not found."
         };
         client.sendRaw(dat);
       } else {
-        dat = {
+        var dat = {
           "type": "roomText",
           "id": this.id,
           "text": "<color:dd3300> * /mute <minutes> <name>"
@@ -435,23 +435,23 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         return;
 
       if(arg.length >= 2) {
-        name = "";
+        var name = "";
         for(var i = 1; i < arg.length; i++) {
           name = name + " " + arg[i];
         }
         name = name.trim();
 
         for(var i = 0; i < this.clients.length; i++) {
-          cl = this.clients[i];
+          var cl = this.clients[i];
           if(cl.username.toLowerCase() == name.toLowerCase()) {
-            idx = this.mute.indexOf(cl.blid);
+            var idx = this.mute.indexOf(cl.blid);
             if(idx > -1) {
               this.mute.splice(idx, 1);
 
               if(this.muteTimer[cl.blid] != null)
                 clearTimeout(this.muteTimer[cl.blid]);
 
-              dat = {
+              var dat = {
                 "type": "roomText",
                 "id": this.id,
                 "text": "<color:dd3300> * " + cl.username + " (" + cl.blid + ") was unmuted. [Manual]"
@@ -462,7 +462,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
           }
         }
 
-        dat = {
+        var dat = {
           "type": "roomText",
           "id": this.id,
           "text": "<color:dd3300> * User not found."
@@ -473,6 +473,7 @@ Chatroom.prototype.onCommand = function (client, cmd) {
 
     case "away":
     case "afk":
+      var dat;
       if(client.afk === true) {
         dat = {
           "type": "roomText",
@@ -540,6 +541,21 @@ Chatroom.prototype.onCommand = function (client, cmd) {
         };
         client.sendRaw(dat);
       }
+      break;
+
+    case "motd":
+      if(!client.mod)
+        return;
+
+      var msg = cmd.substr(cmd.indexOf(' ')+1);
+      this.setMOD(msg);
+
+      client.sendRaw({
+        "type": "roomText",
+        "id": this.id,
+        "text": "<color:dd3300> * MOTD: " + msg
+      });
+
       break;
 
     default:
