@@ -1,10 +1,12 @@
-module.exports = Client;
+const logger = require('./logger');
 
 const Users = require('./user');
 const config = require('./config');
 const request = require('request');
 const moment = require('moment');
 const encoding = require('encoding');
+
+const Access = require('./AccessManager');
 
 module.connections = 0;
 
@@ -14,12 +16,17 @@ function create(ident, override, callback) {
   var url = "http://" + config.authenticator + "/api/2/authCheck.php?ident=" + ident;
   request(url, function (error, response, body) {
     if(error) { console.error("Error with auth request, ", error); return;  }
-    console.log("Response: " + response.statusCode);
+
+    if(response.statusCode != 200) {
+      logger.error("Error creating Client, authCheck response: " + response.statusCode);
+      callback('error', null);
+    }
+
     try {
       var res = JSON.parse(body);
     } catch (e) {
-      console.error("Error getting auth status from site", e);
-      console.log(body);
+      logger.error("Error getting auth status from site", e);
+      logger.log(body);
       return;
     }
 
@@ -32,7 +39,20 @@ function create(ident, override, callback) {
       client.mod = res.mod;
       client.beta = res.beta;
 
-      console.log(client.username);
+      logger.log(client.username + ' (' + client.blid ') connected');
+
+      if(Access.isBanned(res.blid)) {
+        logger.log(client.username + ' (' + client.blid ') is banned!');
+        var ban = Access.getBan(blid);
+
+        client.sendObject({
+          "call": "banned",
+          "reason": ban.reason,
+          "timeRemaining": ban.duration - (moment().diff(ban.time, 'seconds'))
+        });
+        client.disconnect(2);
+        return callback('banned', null);
+      }
 
       Users.get(client.blid, function(user) {
         user.setUsername(client.username);
@@ -41,15 +61,15 @@ function create(ident, override, callback) {
           user.setPrimaryClient(client);
         }
         callback(null, client);
-      }.bind({client: client, override: override, callback: callback}));
+      });
     } else {
       return callback('auth', null);
     }
-  }.bind({callback: callback, override: override}));
+  });
 }
 
 function Client() {
-  this.cid = module.connections;
+  this.warnings = 0;
 
   this.mod = false;
   this.admin = false;
@@ -61,12 +81,12 @@ function Client() {
 
   this.messageHistory = [];
 
-  //todo: friends loading
-
   module.clientgroup.push(this);
-
-  module.connections++;
 }
+
+//================================================================
+// Client connections
+//================================================================
 
 var broadcast = function (str) {
   for(var i = 0; i < module.clientgroup.length; i++) {
@@ -79,54 +99,23 @@ var broadcast = function (str) {
   }
 }
 
-Client.prototype.pushMessageHistory = function(msg, room) {
-  if(this.messageHistory[room.id] == null)
-    this.messageHistory[room.id] = [];
-
-  var mh = this.messageHistory[room.id];
-
-  var obj = {
-    "msg": msg,
-    "time": moment()
-  };
-
-  mh.unshift(obj);
-  if(mh.length > 5) {
-    mh.splice(0, 5);
+var broadcastObject = function (obj) {
+  var str;
+  try {
+    str = JSON.stringify(obj)
+  } catch (e) {
+    logger.log("JSON stringify error", e);
+    return;
   }
-}
 
-Client.prototype.spamCheck = function(msg, room) {
-  if(this.messageHistory[room.id] == null)
-    this.messageHistory[room.id] = [];
-
-  var mh = this.messageHistory[room.id];
-
-  if(mh.length > 0) {
-    var last = mh[0]
-    if(last.msg == msg) {
-      this.sendObject({
-        "type": "roomText",
-        "id": room.id,
-        "text": "<color:dd3300> * Don't repeat yourself."
-      });
-      return false;
+  for(var i = 0; i < module.clientgroup.length; i++) {
+    var cl = module.clientgroup[i];
+    try {
+      cl.write(str);
+    } catch (e) {
+      continue;
     }
   }
-
-  if(mh.length >= 5) {
-    var prev = mh[4];
-    if(moment().diff(prev.time, 'milliseconds') < 5000) {
-      this.sendObject({
-        "type": "roomText",
-        "id": room.id,
-        "text": "<color:dd3300> * You're typing too fast!"
-      });
-      return false;
-    }
-  }
-
-  return true;
 }
 
 Client.prototype.sendObject = function(obj) {
@@ -144,7 +133,7 @@ Client.prototype.disconnect = function(reason) {
 
   // 0 - server shutdown
   // 1 - other sign-in
-  // 2 - barred
+  // 2 - banned
   // 3 - kick
 
   var dat = {
@@ -156,6 +145,100 @@ Client.prototype.disconnect = function(reason) {
   this.cleanUp();
 }
 
+
+Client.prototype.sendRaw = function (dat) {
+  this.write(JSON.stringify(dat));
+}
+
+Client.prototype.cleanUp = function (reason) {
+  if(reason == null)
+    reason = -1;
+
+  var cl = this;
+  Users.get(this.blid, function(user) {
+    user.removeClient(cl);
+
+    cl.rooms.forEach(function(room) {
+      room.removeUser(cl, reason);
+    });
+  });
+
+  var idx = module.clientgroup.indexOf(cl);
+  module.clientgroup.splice(idx, 1);
+}
+
+//================================================================
+// Chat
+//================================================================
+
+Client.prototype.pushMessageHistory = function(msg, room) {
+  var client = this;
+  if(client.messageHistory[room.id] == null)
+    client.messageHistory[room.id] = [];
+
+  var mh = client.messageHistory[room.id];
+
+  var obj = {
+    "msg": msg,
+    "time": moment()
+  };
+
+  client.messageHistory.push(obj);
+  client.lastMessage = obj;
+}
+
+Client.prototype.spamCheck = function(msg, room) {
+  var client = this;
+
+  if(client.messageHistory[room.id] == null)
+    client.messageHistory[room.id] = [];
+
+  var mh = client.messageHistory[room.id];
+
+  if(mh.length > 0) {
+    var last = client.lastMessage;
+    if(last.msg.trim() == msg.trim()) {
+      this.sendObject({
+        "type": "roomText",
+        "id": room.id,
+        "text": "<color:dd3300> * Don't repeat yourself."
+      });
+      return false;
+    }
+  }
+
+  //5 messages in 5 seconds
+  if(mh.length >= 5) {
+    var prev = mh[mh.length-5];
+    if(moment().diff(prev.time, 'milliseconds') < 5000) {
+      client.sendObject({
+        "type": "roomText",
+        "id": room.id,
+        "text": "<color:dd3300> * You're typing too fast!"
+      });
+      client.issueWarning();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+Client.prototype.issueWarning = function() {
+  var client = this;
+  client.warnings++;
+  logger.log(client.username + ' (' + client.blid + ') now has ' + client.warnings + ' warnings');
+
+  if(client.warnings) {
+
+  }
+}
+
+
+//================================================================
+// Activity
+//================================================================
+
 Client.prototype.setLocation = function (act, loc) {
   this.activity = act;
 
@@ -165,6 +248,11 @@ Client.prototype.setLocation = function (act, loc) {
     this.location = "";
   }
 };
+
+
+//================================================================
+// Friends
+//================================================================
 
 Client.prototype.sendFriendsList = function () {
   var cl = this;
@@ -236,27 +324,6 @@ Client.prototype.sendFriendRequests = function () {
       cl.write(JSON.stringify(dat));
     }
   }.bind({cl: cl}));
-}
-
-Client.prototype.sendRaw = function (dat) {
-  this.write(JSON.stringify(dat));
-}
-
-Client.prototype.cleanUp = function (reason) {
-  if(reason == null)
-    reason = -1;
-
-  var cl = this;
-  Users.get(this.blid, function(user) {
-    user.removeClient(cl);
-
-    cl.rooms.forEach(function(room) {
-      room.removeUser(cl, reason);
-    }.bind({cl: cl, reason: reason}));
-  }.bind({cl: cl, reason: reason}));
-
-  var idx = module.clientgroup.indexOf(this);
-  module.clientgroup.splice(idx, 1);
 }
 
 Client.prototype._addToRoom = function (g) {

@@ -30,7 +30,7 @@ qaRoom.userRequirement = "beta";
 
 
 function pushNotification(con, title, text, image, duration, callback) {
-  dat = {
+  var dat = {
     "type":"notification",
     "title":title,
     "text":text,
@@ -39,7 +39,7 @@ function pushNotification(con, title, text, image, duration, callback) {
     "callback":callback
   };
 
-  str = JSON.stringify(dat);
+  var str = JSON.stringify(dat);
   //console.log(str);
   con.write(str + '\r\n');
 }
