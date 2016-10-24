@@ -42,9 +42,9 @@ var start = function() {
     });
   });
 
-  module.chatServer.listen(27003);
+  module.chatServer.listen(27005);
   module.listening = true;
-  logger.log("Listening on port " + (27003));
+  logger.log("Listening on port " + (27005));
 }
 
 module.exports = {start};
