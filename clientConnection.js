@@ -284,6 +284,7 @@ ClientConnection.prototype.setStatus = function(status) {
     if(module.clients[friendId] != null) {
       module.clients[friendId].sendObject({
         type: "friendStatus",
+        blid: client.blid,
         status: status
       });
     }
