@@ -24,7 +24,7 @@ var getUserData = function(blid, callback) {
     module.loadCallbacks = [];
   }
 
-  if(module.userData[blid] != undefined) {
+  if(module.userData[blid] != undefined) { // desync problems? TODO
     logger.log("Loaded " + blid + " from memory");
     callback(module.userData[blid], null);
   } else {
@@ -63,7 +63,6 @@ var _loadUserData = function(id) {
       var user = data;
 
       var callbacks = module.loadCallbacks[blid];
-      logger.log('Callbacks for ' + blid + ': ' + (callbacks.length));
       for(i in callbacks) {
         var cb = callbacks[i];
         if(typeof cb === "function")
@@ -71,7 +70,6 @@ var _loadUserData = function(id) {
       }
 
       module.loadCallbacks[blid] = null;
-      logger.log('Callbacks for ' + blid + ' complete');
     });
     db.close();
   });

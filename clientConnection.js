@@ -114,6 +114,7 @@ var createNew = function(socket) {
           logger.log(JSON.stringify(connection.persist));
 
           connection.sendFriendList();
+          connection.setStatus('online');
 
           // TODO room lookup
           global.gd.addClient(connection);
@@ -321,8 +322,6 @@ ClientConnection.prototype.sendFriendList = function() {
   });
 
   async.parallel(calls, function(err, res) {
-    logger.log('error: ' + err);
-    logger.log('res: ' + res);
     client.sendObject({
       type: "friendsList",
       friends: res
