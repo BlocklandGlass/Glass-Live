@@ -254,7 +254,9 @@ ClientConnection.prototype.disconnect = function(code) {
 
 ClientConnection.prototype.cleanUp = function() {
   var client = this;
-  client.setStatus('offline');
+
+  if(client.persist != null)
+    client.setStatus('offline');
 
   if(client.disconnectReason == null)
     client.disconnectReason = -1;
