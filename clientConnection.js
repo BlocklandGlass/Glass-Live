@@ -112,6 +112,7 @@ var createNew = function(socket) {
           });
 
           connection.sendFriendList();
+          connection.sendFriendRequests();
           connection.setStatus('online');
 
           // TODO room lookup
@@ -168,6 +169,17 @@ var createNew = function(socket) {
           message: "This user is offline."
         })
       })
+    }
+  });
+
+  onnection.on('messageTyping', (data) => {
+    var target = data.target;
+    if(module.clients[target] != null) {
+      module.clients[target].sendObject({
+        type: "messageTyping",
+        sender: connection.blid,
+        typing: data.typing
+      });
     }
   });
 
@@ -343,6 +355,45 @@ ClientConnection.prototype.sendFriendList = function() {
   async.parallel(calls, function(err, res) {
     client.sendObject({
       type: "friendsList",
+      friends: res
+    });
+  })
+}
+
+ClientConnection.prototype.sendFriendRequests = function() {
+  var client = this;
+  var friendIds = client.persist.requests;
+
+  var calls = [];
+
+  friendIds.forEach(function(blid) {
+    calls.push(function(callback) {
+      if(module.clients[blid] != null) {
+        var obj = module.clients[blid].getReference();
+        callback(null, obj);
+      } else {
+        Database.getUsername(blid, function(name, err) {
+          if(err != null) {
+            logger.error('Error loading friend BLID ' + blid + ' for ' + client.blid + ':', err);
+            //continue anyways
+            callback(null, null);
+            return;
+          }
+
+          var obj = {
+            username: name,
+            blid: blid,
+            status: "offline"
+          };
+          callback(null, obj);
+        })
+      }
+    });
+  });
+
+  async.parallel(calls, function(err, res) {
+    client.sendObject({
+      type: "friendRequests",
       friends: res
     });
   })
