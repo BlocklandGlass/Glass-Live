@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 module.roomCt = 0;
 
 function Chatroom(name, icon) {
@@ -132,7 +134,10 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
     sender: client.username,
     sender_id: client.blid,
 
-    msg: msg
+    msg: msg,
+
+    timestamp: moment().unix(),
+    datetime: moment().format('h:mm:ss a')
   });
 }
 
