@@ -106,6 +106,13 @@ var createNew = function(socket) {
     global.gd.sendClientMessage(connection, data.message);
   });
 
+  connection.on('getRoomList', () => {
+    connection.sendObject({
+      type: "roomList",
+      rooms: require('./chatRoom').getList()
+    });
+  });
+
   return connection;
 }
 

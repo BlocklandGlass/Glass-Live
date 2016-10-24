@@ -33,6 +33,25 @@ var getFromId = function(id) {
   return module.rooms[id];
 }
 
+var getList = function() {
+  var rooms = [];
+
+  if(module.rooms == null)
+    module.rooms = {};
+
+  for(i in module.rooms) {
+    var room = module.rooms[i];
+    rooms.push({
+      id: room.id,
+      image: room.icon,
+      title: room.name,
+      users: room.clients.length
+    });
+  }
+
+  return rooms;
+}
+
 Chatroom.prototype.addClient = function(client, isAuto) {
   var room = this;
 
@@ -141,4 +160,4 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
   });
 }
 
-module.exports = {create, getFromId};
+module.exports = {create, getFromId, getList};
