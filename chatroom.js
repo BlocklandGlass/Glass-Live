@@ -1,3 +1,5 @@
+module.roomCt = 0;
+
 function Chatroom(name, icon) {
   this.name = name;
   this.icon = icon;
@@ -12,17 +14,29 @@ var create = function(name, icon) {
   var room = new Chatroom(name, icon);
 
   if(module.rooms == null)
-    module.rooms = [];
+    module.rooms = {};
 
-  module.rooms.push(room);
+  module.rooms[room.id] = room;
 
   return room;
 }
 
+var getFromId = function(id) {
+  if(module.rooms == null)
+    module.rooms = {};
+
+  if(module.rooms[id] == null)
+    return false;
+
+  return module.rooms[id];
+}
+
 Chatroom.prototype.addClient = function(client, isAuto) {
   var room = this;
-  if(room.clients.indexOf(client) == -1) {
-    room.clients.push(client);
+
+  var idx = room.clients.indexOf(client);
+  if(idx > -1) {
+    room.clients.splice(idx, 1);
   }
 
   client.sendObject({
@@ -33,6 +47,54 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     motd: room.motd,
 
     clients: room.getClientList()
+  });
+
+  room.clients.push(client);
+
+  room.sendObject({
+    type: "roomUserJoin",
+    id: room.id,
+
+    username: client.username,
+    blid: client.blid,
+
+    admin: client.isAdmin,
+    mod: client.isMod
+  });
+
+  client._didEnterRoom(room.id);
+}
+
+Chatroom.prototype.removeClient = function(client, reason) {
+  var room = this;
+  if(reason == null)
+    reason = -1;
+
+  var idx = room.clients.indexOf(client);
+  if(idx > -1) {
+    room.clients.splice(idx, 1);
+  } else {
+    return false;
+  }
+
+  room.sendObject({
+    type: "roomUserLeave",
+    id: room.id,
+
+    blid: client.blid,
+    reason: reason
+  });
+}
+
+Chatroom.prototype.kickClient = function(client, reason) {
+  var room = this;
+
+  room.removeClient(client, 2);
+
+  client.sendObject({
+    type: "roomKicked",
+    id: room.id,
+    kickReason: reason
   });
 }
 
@@ -74,4 +136,4 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
   });
 }
 
-module.exports = {create};
+module.exports = {create, getFromId};

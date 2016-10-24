@@ -36,7 +36,9 @@ var start = function() {
     });
 
     socket.on('close', () => {
-
+      if(socket.clientConnection != null) {
+        socket.clientConnection.onDisconnect();
+      }
     });
   });
 
