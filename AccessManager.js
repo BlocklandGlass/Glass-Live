@@ -49,7 +49,7 @@ var getBan = function(id) {
   return module.persist.banned[id];
 }
 
-var ban(blid, duration, reason) {
+var ban = function(blid, duration, reason) {
   if(reason == "" || reason == null) {
     reason = "unspecified";
   }
@@ -67,7 +67,7 @@ var ban(blid, duration, reason) {
   saveData();
 }
 
-var mute(blid, duration, reason) {
+var mute = function(blid, duration, reason) {
   if(reason == "" || reason == null) {
     reason = "unspecified";
   }
@@ -85,7 +85,7 @@ var mute(blid, duration, reason) {
   saveData();
 }
 
-var isBanned(blid) {
+var isBanned = function(blid) {
   var banObj = module.persist.banned[blid];
   if(banObj == null) {
     return false;
@@ -101,7 +101,7 @@ var isBanned(blid) {
   }
 }
 
-var isMute(blid) {
+var isMute = function(blid) {
   var muteObj = module.persist.muted[blid];
   if(muteObj == null) {
     return false;

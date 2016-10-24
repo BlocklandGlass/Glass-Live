@@ -8,6 +8,7 @@
     "moment" : "latest",
     "mongodb" : "latest",
     "cheerio" : "latest",
-    "encoding" : "latest"
+    "encoding" : "latest",
+    "vorpal" : "latest"
   }
 }
