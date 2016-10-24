@@ -62,6 +62,7 @@ var _loadUserData = function(id) {
 
       var user = data;
 
+
       var callbacks = module.loadCallbacks[blid];
       for(i in callbacks) {
         var cb = callbacks[i];

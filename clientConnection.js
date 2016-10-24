@@ -111,8 +111,6 @@ var createNew = function(socket) {
             "status": "success"
           });
 
-          logger.log(JSON.stringify(connection.persist));
-
           connection.sendFriendList();
           connection.setStatus('online');
 
@@ -150,6 +148,26 @@ var createNew = function(socket) {
         message: "Invalid Status",
         openDialog: false
       });
+    }
+  });
+
+  connection.on('message', (data) => {
+    var target = data.target;
+    if(module.clients[target] != null) {
+      module.clients[target].sendDirectMessage(connection, data.message);
+    } else {
+      Database.getUsername(target, function(name, err) {
+        var username = name;
+        if(err != null) {
+          username = 'Blockhead' + target;
+        }
+        connection.sendObject({
+          type: "messageNotification",
+          chat_blid: target,
+          chat_username: username,
+          message: "This user is offline."
+        })
+      })
     }
   });
 
@@ -328,6 +346,16 @@ ClientConnection.prototype.sendFriendList = function() {
       friends: res
     });
   })
+}
+
+ClientConnection.prototype.sendDirectMessage = function(sender, message) {
+  var client = this;
+  client.sendObject({
+    type: "message",
+    sender: sender.username,
+    sender_id: sender.blid,
+    message: message
+  });
 }
 
 ClientConnection.prototype._didEnterRoom = function(id) {
