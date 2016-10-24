@@ -172,7 +172,7 @@ var createNew = function(socket) {
     }
   });
 
-  onnection.on('messageTyping', (data) => {
+  connection.on('messageTyping', (data) => {
     var target = data.target;
     if(module.clients[target] != null) {
       module.clients[target].sendObject({
