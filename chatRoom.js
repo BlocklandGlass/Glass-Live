@@ -124,13 +124,7 @@ Chatroom.prototype.getClientList = function() {
   var clientList = [];
   for(i in room.clients) {
     var client = room.clients[i];
-    clientList.push({
-      username: client.username,
-      blid: client.blid,
-
-      admin: client.isAdmin,
-      mod: client.isMod
-    });
+    clientList.push(client.getReference());
   }
 
   return clientList;

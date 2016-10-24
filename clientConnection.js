@@ -1,8 +1,10 @@
 const EventEmitter = require('events');
+const async = require('async');
 const Auth = require('./authCheck');
 const Access = require('./accessManager');
 
 const logger = require('./logger');
+const Database = require('./database');
 
 class ClientConnection extends EventEmitter {}
 
@@ -90,13 +92,32 @@ var createNew = function(socket) {
         });
         return;
       } else {
-        connection.sendObject({
-          "call": "auth",
-          "status": "success"
-        });
+        Database.getUserData(connection.blid, function(data, err) {
+          if(err != null) {
+            logger.error('Failed to load data for clientConnection ' + connection.blid + ':', err);
+            connection.sendObject({
+              type: 'error',
+              message: "Glass Live encountered an internal error and was unable to load your data.<br><br>This issue has been recorded. Sorry for any inconvenience",
+              showDialog: true
+            });
+            connection.disconnect();
+            return;
+          }
+          logger.log('Got user data for clientConnection ' + connection.blid)
+          connection.persist = data.data;
 
-        // TODO room lookup
-        global.gd.addClient(connection);
+          connection.sendObject({
+            "call": "auth",
+            "status": "success"
+          });
+
+          logger.log(JSON.stringify(connection.persist));
+
+          connection.sendFriendList();
+
+          // TODO room lookup
+          global.gd.addClient(connection);
+        })
       }
     })
   });
@@ -111,6 +132,24 @@ var createNew = function(socket) {
       type: "roomList",
       rooms: require('./chatRoom').getList()
     });
+  });
+
+  connection.on('setStatus', (data) => {
+    var stats = [
+      'online',
+      'away',
+      'busy'
+    ];
+
+    if(stats.indexOf(data.status.toLowercas()) > -1) {
+      connection.setStatus(data.status);
+    } else {
+      connection.sendObject({
+        type: "error",
+        message: "Invalid Status",
+        openDialog: false
+      });
+    }
   });
 
   return connection;
@@ -207,6 +246,78 @@ ClientConnection.prototype.cleanUp = function() {
     client.socket.destroy();
   }
   client.socket = undefined;
+}
+
+ClientConnection.prototype.getReference = function() {
+  var client = this;
+  return {
+    username: client.username,
+    blid: client.blid,
+
+    admin: client.isAdmin,
+    mod: client.isMod,
+
+    status: client.status
+  };
+}
+
+ClientConnection.prototype.setStatus = function(status) {
+  var client = this;
+  var rooms = require('./chatRoom');
+
+  client.status = status;
+
+  for(i in client.rooms) {
+    var id = client.rooms[i];
+    rooms.getFromId(id).sendObject({
+      type: "roomUserStatus",
+      blid: client.blid,
+      status: status
+    });
+  }
+
+  logger.log('TODO : setStatus friends');
+}
+
+ClientConnection.prototype.sendFriendList = function() {
+  var client = this;
+  var friendIds = client.persist.friends;
+
+  var calls = [];
+
+  friendIds.forEach(function(blid) {
+    calls.push(function(callback) {
+      if(module.clients[blid] != null) {
+        var obj = module.clients[blid].getReference();
+        callback(null, obj);
+      } else {
+        Database.getUsername(blid, function(name, err) {
+          if(err != null) {
+            logger.error('Error loading friend BLID ' + blid + ' for ' + client.blid + ':', err);
+            //continue anyways
+            callback(null, null);
+            return;
+          }
+
+          var obj = {
+            username: name,
+            blid: blid,
+            status: "offline"
+          };
+          callback(null, obj);
+        })
+      }
+    });
+  });
+
+  async.parallel(calls, function(err, res) {
+    logger.log('error: ' + err);
+    logger.log('res: ' + res);
+    client.sendObject({
+      type: "friendsList",
+      friends: res
+    });
+  })
 }
 
 ClientConnection.prototype._didEnterRoom = function(id) {

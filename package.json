@@ -9,6 +9,7 @@
     "mongodb" : "latest",
     "cheerio" : "latest",
     "encoding" : "latest",
-    "vorpal" : "latest"
+    "vorpal" : "latest",
+    "async" : "latest"
   }
 }
