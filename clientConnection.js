@@ -223,6 +223,8 @@ ClientConnection.prototype.disconnect = function(code) {
 
 ClientConnection.prototype.cleanUp = function() {
   var client = this;
+  client.setStatus('offline');
+
   if(client.disconnectReason == null)
     client.disconnectReason = -1;
 
@@ -276,7 +278,15 @@ ClientConnection.prototype.setStatus = function(status) {
     });
   }
 
-  logger.log('TODO : setStatus friends');
+  for(i in client.persist.friends) {
+    var friendId = client.persist.friends[i];
+    if(module.clients[friendId] != null) {
+      module.clients[friendId].sendObject({
+        type: "friendStatus",
+        status: status
+      });
+    }
+  }
 }
 
 ClientConnection.prototype.sendFriendList = function() {
