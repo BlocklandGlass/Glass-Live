@@ -255,9 +255,6 @@ ClientConnection.prototype.disconnect = function(code) {
 ClientConnection.prototype.cleanUp = function() {
   var client = this;
 
-  if(client.persist != null)
-    client.setStatus('offline');
-
   if(client.disconnectReason == null)
     client.disconnectReason = -1;
 
@@ -269,6 +266,9 @@ ClientConnection.prototype.cleanUp = function() {
     var id = roomsIn[i];
     rooms.getFromId(id).removeClient(client, client.disconnectReason);
   }
+
+  if(client.persist != null)
+    client.setStatus('offline');
 
   if(module.clients[client.blid] != null && client.blid != null)
     module.clients[client.blid] = undefined;
