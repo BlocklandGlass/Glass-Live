@@ -165,6 +165,32 @@ var createNew = function(socket) {
     }
   });
 
+  connection.on('friendDecline', (data) => {
+    var target = parseInt(data.blid);
+    if(target != NaN && target >= 0) {
+      connection.declineFriendRequest(data.blid);
+    } else {
+      connection.sendObject({
+        type: 'error',
+        message: "Invalid BLID!",
+        showDialog: false
+      });
+    }
+  });
+
+  connection.on('friendRemove', (data) => {
+    var target = parseInt(data.blid);
+    if(target != NaN && target >= 0) {
+      connection.removeFriend(data.blid);
+    } else {
+      connection.sendObject({
+        type: 'error',
+        message: "Invalid BLID!",
+        showDialog: false
+      });
+    }
+  });
+
   connection.on('setStatus', (data) => {
     var stats = [
       'online',
@@ -478,8 +504,6 @@ ClientConnection.prototype.onFriendRequest = function(sender) {
 ClientConnection.prototype.acceptFriendRequest = function(blid) {
   var client = this;
   var idx = client.persist.requests.indexOf(blid);
-  logger.log(client.blid + ' accepting friend request from ' + blid + ', idx ' + idx);
-  logger.log(JSON.stringify(client.persist.requests));
 
   if(idx > -1) {
     client.persist.requests.splice(idx, 1);
@@ -514,6 +538,17 @@ ClientConnection.prototype.acceptFriendRequest = function(blid) {
   }
 }
 
+ClientConnection.prototype.declineFriendRequest = function(blid) {
+  var client = this;
+  var idx = client.persist.requests.indexOf(blid);
+
+  if(idx == -1)
+    return;
+
+  client.persist.requests.splice(idx, 1);
+  client.savePersist();
+}
+
 ClientConnection.prototype.addFriend = function(blid, wasAccepted) {
   var client = this;
 
@@ -524,7 +559,7 @@ ClientConnection.prototype.addFriend = function(blid, wasAccepted) {
   client.persist.friends.push(blid);
   client.savePersist();
 
-  if(module.clients[blid]) {
+  if(module.clients[blid] != null) {
     //not the cleanest way to do this...
     var friend = module.clients[blid].getReference();
     friend.type = "friendAdd";
@@ -539,6 +574,64 @@ ClientConnection.prototype.addFriend = function(blid, wasAccepted) {
         });
         return;
       }
+
+      client.sendObject({
+        type: 'friendAdd',
+        username: name,
+        blid: blid
+      })
+    })
+  }
+}
+
+ClientConnection.prototype.removeFriend = function(blid) {
+  var client = this;
+  var idx = client.persist.friends.indexOf(blid);
+  if(idx == -1)
+    return;
+
+  client.persist.friends.splice(idx, 1);
+  client.savePersist();
+
+  if(module.clients[blid] != null) {
+    //not the cleanest way to do this...
+    var friend = module.clients[blid].getReference();
+    friend.type = "friendRemove";
+    client.sendObject(friend);
+
+    var ref = client.getReference();
+    ref.type = "friendRemove";
+    module.clients[blid].sendObject(ref);
+
+    var idx = module.clients[blid].persist.friends.indexOf(client.blid);
+    if(idx == -1)
+      return;
+
+    module.clients[blid].persist.friends.splice(idx, 1);
+    module.clients[blid].savePersist();
+
+  } else {
+    Database.getUserData(blid, function(data, err) {
+      if(err != null) {
+        client.sendObject({
+          type: 'error',
+          message: 'removeFriend called but unable to find username! ' + blid,
+          showDialog: false
+        });
+        return;
+      }
+
+      client.sendObject({
+        type: 'friendRemove',
+        username: data.username,
+        blid: blid
+      });
+
+      var idx = data.friends.indexOf(client.blid);
+      if(idx > -1)
+        data.friends.splice(idx, 1);
+
+      Database.saveUserData(blid, data);
     })
   }
 }
