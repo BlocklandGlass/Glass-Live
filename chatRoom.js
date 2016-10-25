@@ -80,7 +80,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     blid: client.blid,
 
     admin: client.isAdmin,
-    mod: client.isMod
+    mod: client.isMod,
 
     status: client.status
   });
