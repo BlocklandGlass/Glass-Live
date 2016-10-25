@@ -83,7 +83,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     mod: client.isMod,
 
     status: client.status,
-    icon: client.icon
+    icon: client.getIcon()
   });
 
   client._didEnterRoom(room.id);

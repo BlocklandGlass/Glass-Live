@@ -73,8 +73,6 @@ var createNew = function(socket) {
       connection.isMod = res.mod;
       connection.isBeta = res.beta;
 
-      module.clients[connection.blid] = connection;
-
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
       if(Access.isBanned(connection.blid)) { // TODO this is temp, will be replaced by permissions
@@ -121,6 +119,12 @@ var createNew = function(socket) {
 
           connection.persist.username = res.username;
           connection.savePersist();
+
+          if(module.clients[connection.blid] != null) {
+            module.clients[connection.blid].disconnect();
+          }
+
+          module.clients[connection.blid] = connection;
 
           // TODO room lookup
           global.gd.addClient(connection);
