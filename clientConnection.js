@@ -374,6 +374,7 @@ ClientConnection.prototype.setStatus = function(status) {
     var id = client.rooms[i];
     rooms.getFromId(id).sendObject({
       type: "roomUserStatus",
+      id: id,
       blid: client.blid,
       status: status
     });
@@ -658,6 +659,11 @@ ClientConnection.prototype.savePersist = function() {
 
 ClientConnection.prototype.setIcon = function(icon, force) {
   var client = this;
+
+  logger.log("Setting icon to: " + icon);
+  logger.log("Allowed idx: " + Icons.allowed.indexOf(icon));
+  logger.log("Restricted idx: " + Icons.restricted.indexOf(icon));
+
   if(Icons.allowed.indexOf(icon) > -1) {
     client.persist.icon = icon;
   } else if(Icons.restricted.indexOf(icon) > -1) {
@@ -702,6 +708,7 @@ ClientConnection.prototype._notifiyIconChange = function() {
     var id = client.rooms[i];
     rooms.getFromId(id).sendObject({
       type: "roomUserIcon",
+      id: id,
       blid: client.blid,
       icon: icon
     });
