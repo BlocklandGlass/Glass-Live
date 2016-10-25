@@ -355,7 +355,8 @@ ClientConnection.prototype.getReference = function() {
     admin: client.isAdmin,
     mod: client.isMod,
 
-    status: client.status
+    status: client.status,
+    icon: client.getIcon()
   };
 }
 
