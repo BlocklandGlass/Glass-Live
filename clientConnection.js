@@ -6,6 +6,8 @@ const Access = require('./accessManager');
 const logger = require('./logger');
 const Database = require('./database');
 
+const Icons = require('./icons.json');
+
 class ClientConnection extends EventEmitter {}
 
 var getFromBlid = function(blid) {
@@ -207,6 +209,10 @@ var createNew = function(socket) {
         openDialog: false
       });
     }
+  });
+
+  connection.on('setIcon', (data) => {
+    connection.setIcon(data.icon, false);
   });
 
   connection.on('message', (data) => {
@@ -642,6 +648,69 @@ ClientConnection.prototype.savePersist = function() {
     Database.saveUserData(client.blid, client.persist);
   } else {
     logger.error('ClientConnection::savePersist: persist is null for blid ' + client.blid + '!');
+  }
+}
+
+ClientConnection.prototype.setIcon = function(icon, force) {
+  var client = this;
+  if(Icons.allowed.indexOf(icon) > -1) {
+    client.persist.icon = icon;
+  } else if(Icons.restricted.indexOf(icon) > -1) {
+    if(client.isMod || client.isAdmin || force) {
+      client.persist.icon = icon;
+    } else {
+      client.sendObject({
+        type: "error",
+        message: "You dont have permission to use that icon!",
+        showDialog: true
+      });
+    }
+  } else {
+    client.sendObject({
+      type: "error",
+      message: "Icon doesn't exist! Setting to default...",
+      showDialog: false
+    });
+    client.persist.icon = "user";
+  }
+
+  client.savePersist();
+  client._notifiyIconChange();
+}
+
+ClientConnection.prototype.getIcon = function () {
+  var client = this;
+  if(client.persist.icon == null) {
+    client.persist.icon = "user";
+    client.savePersist();
+  }
+
+  return client.persist.icon;
+}
+
+ClientConnection.prototype._notifiyIconChange = function() {
+  var client = this;
+  var rooms = require('./chatRoom');
+  var icon = client.getIcon();
+
+  for(i in client.rooms) {
+    var id = client.rooms[i];
+    rooms.getFromId(id).sendObject({
+      type: "roomUserIcon",
+      blid: client.blid,
+      icon: icon
+    });
+  }
+
+  for(i in client.persist.friends) {
+    var friendId = client.persist.friends[i];
+    if(module.clients[friendId] != null) {
+      module.clients[friendId].sendObject({
+        type: "friendIcon",
+        blid: client.blid,
+        icon: icon
+      });
+    }
   }
 }
 
