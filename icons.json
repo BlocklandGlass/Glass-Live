@@ -111,7 +111,7 @@
     "user_ballplayer_black",
     "user_ballplayer",
     "user_astronaut",
-    "user_alien",
+    "user_alien"
   ],
   "restricted": [
     "zootool",
@@ -3903,6 +3903,6 @@
     "user_imprisoned_female_black",
     "user_imprisoned_female",
     "user_imprisoned_black",
-    "user_imprisoned",
+    "user_imprisoned"
     ]
 }
