@@ -104,7 +104,9 @@ var createNew = function(socket) {
             return;
           }
           logger.log('Got user data for clientConnection ' + connection.blid)
-          connection.persist = data.data;
+
+          logger.log('Data: ' + JSON.stringify(data));
+          connection.persist = data;
 
           connection.sendObject({
             "call": "auth",
@@ -114,6 +116,9 @@ var createNew = function(socket) {
           connection.sendFriendList();
           connection.sendFriendRequests();
           connection.setStatus('online');
+
+          connection.persist.username = res.username;
+          connection.savePersist();
 
           // TODO room lookup
           global.gd.addClient(connection);
@@ -132,6 +137,32 @@ var createNew = function(socket) {
       type: "roomList",
       rooms: require('./chatRoom').getList()
     });
+  });
+
+  connection.on('friendRequest', (data) => {
+    var target = parseInt(data.target);
+    if(target != NaN && target >= 0) {
+      connection.sendFriendRequest(data.target);
+    } else {
+      connection.sendObject({
+        type: 'error',
+        message: "Invalid BLID!",
+        showDialog: true
+      });
+    }
+  });
+
+  connection.on('friendAccept', (data) => {
+    var target = parseInt(data.blid);
+    if(target != NaN && target >= 0) {
+      connection.acceptFriendRequest(data.blid);
+    } else {
+      connection.sendObject({
+        type: 'error',
+        message: "Invalid BLID!",
+        showDialog: false
+      });
+    }
   });
 
   connection.on('setStatus', (data) => {
@@ -396,7 +427,7 @@ ClientConnection.prototype.sendFriendRequests = function() {
   async.parallel(calls, function(err, res) {
     client.sendObject({
       type: "friendRequests",
-      friends: res
+      requests: res
     });
   })
 }
@@ -409,6 +440,116 @@ ClientConnection.prototype.sendDirectMessage = function(sender, message) {
     sender_id: sender.blid,
     message: message
   });
+}
+
+ClientConnection.prototype.sendFriendRequest = function(to) {
+  var client = this;
+
+  if(module.clients[to] != null) {
+    module.clients[to].onFriendRequest(client);
+  } else {
+    Database.getUserData(to, function(data, err) {
+      if(err != null) {
+        logger.log('sendFriendRequest data error: ' + err);
+        return;
+      }
+
+      data.requests.push(client.blid);
+      Database.saveUserData(to, data);
+    });
+  }
+}
+
+ClientConnection.prototype.onFriendRequest = function(sender) {
+  var client = this;
+  if(client.persist.requests.indexOf(sender.blid) > -1)
+    return;
+
+  client.persist.requests.push(sender.blid);
+  client.savePersist();
+
+  client.sendObject({
+    type: "friendRequest",
+    sender: sender.username,
+    sender_blid: sender.blid
+  });
+}
+
+ClientConnection.prototype.acceptFriendRequest = function(blid) {
+  var client = this;
+  var idx = client.persist.requests.indexOf(blid);
+  logger.log(client.blid + ' accepting friend request from ' + blid + ', idx ' + idx);
+  logger.log(JSON.stringify(client.persist.requests));
+
+  if(idx > -1) {
+    client.persist.requests.splice(idx, 1);
+    client.addFriend(blid, false);
+    //we dont need to savePersist as ::addFriend does that
+
+    if(module.clients[blid] != null) {
+      module.clients[blid].addFriend(client.blid, true);
+    } else {
+      Database.getUserData(blid, function(data, err) {
+        if(err != null) {
+          logger.log('acceptFriendRequest data error: ' + err);
+          return;
+        }
+
+        if(data.friends.indexOf(client.blid) == -1)
+          data.friends.push(client.blid);
+
+        var index = data.requests.indexOf(client.blid);
+        if(index > -1)
+          data.requests.splice(index, 1);
+
+        Database.saveUserData(blid, data);
+      });
+    }
+  } else {
+    client.sendObject({
+      type: 'error',
+      message: "You don't have a friend request from that person!",
+      showDialog: true
+    });
+  }
+}
+
+ClientConnection.prototype.addFriend = function(blid, wasAccepted) {
+  var client = this;
+
+  var idx = client.persist.friends.indexOf(blid);
+  if(idx > -1)
+    return;
+
+  client.persist.friends.push(blid);
+  client.savePersist();
+
+  if(module.clients[blid]) {
+    //not the cleanest way to do this...
+    var friend = module.clients[blid].getReference();
+    friend.type = "friendAdd";
+    client.sendObject(friend);
+  } else {
+    Database.getUsername(blid, function(name, err) {
+      if(err != null) {
+        client.sendObject({
+          type: 'error',
+          message: 'addFriend called but unable to find username! ' + blid,
+          showDialog: false
+        });
+        return;
+      }
+    })
+  }
+}
+
+ClientConnection.prototype.savePersist = function() {
+  var client = this;
+  if(client.persist != null) {
+    Database.saveUserData(client.blid, client.persist);
+  } else {
+    logger.error('ClientConnection::savePersist: persist is null for blid ' + client.blid + '!');
+  }
 }
 
 ClientConnection.prototype._didEnterRoom = function(id) {

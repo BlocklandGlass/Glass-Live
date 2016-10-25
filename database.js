@@ -10,7 +10,7 @@ var getUsername = function(blid, cb) {
     if(err != null) {
       cb(null, err);
     } else {
-      cb(data.data.username, null);
+      cb(data.username, null);
     }
   })
 }
@@ -60,14 +60,18 @@ var _loadUserData = function(id) {
     db.collection('users').findOne({"blid":blid}, function(err, data) {
       assert.equal(null, err);
 
-      var user = data;
+      if(data == null || data.data == null) {
+        logger.log('Creating new data for ' + blid);
+        data = _createNewData(blid);
+      }
 
+      module.userData[blid] = data.data;
 
       var callbacks = module.loadCallbacks[blid];
       for(i in callbacks) {
         var cb = callbacks[i];
         if(typeof cb === "function")
-          cb(user, null);
+          cb(data.data, null);
       }
 
       module.loadCallbacks[blid] = null;
@@ -76,4 +80,46 @@ var _loadUserData = function(id) {
   });
 }
 
-module.exports = {getUserData, getUsername};
+var saveUserData = function(blid, data, callback) {
+  if(module.userData[blid] == null) {
+    //we haven't loaded! we shouldnt be saving
+    logger.error('saveUserData: Attempted to save for ' + blid + ', but data wasn\'t loaded!');
+    return;
+  }
+
+  if(callback == null)
+    callback = function(){/*nothing*/};
+
+  module.userData[blid] = data;
+
+  var url = 'mongodb://blocklandglass.com:27017/glassLive';
+  MongoClient.connect(url, function(err, db) {
+    if(err != null) {
+      callback(err);
+      return;
+    }
+
+    db.collection('users').update({"blid": blid}, {"blid": blid, "data": data}, {upsert: true}, function(err, result) {
+      if(err != null) {
+        callback(err);
+        return;
+      }
+      logger.log("Saved " + blid);
+      callback(null);
+    });
+    db.close();
+  });
+}
+
+var _createNewData = function(blid) {
+  return {
+    blid: blid,
+    data: {
+      friends: [],
+      requests: [],
+      username: null
+    }
+  };
+}
+
+module.exports = {getUserData, getUsername, saveUserData};
