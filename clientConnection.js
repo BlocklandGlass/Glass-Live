@@ -404,7 +404,12 @@ ClientConnection.prototype.sendFriendList = function() {
         var obj = module.clients[blid].getReference();
         callback(null, obj);
       } else {
-        Database.getUsername(blid, function(name, err) {
+        Database.getUserData(blid, function(data, err) {
+          var name = data.username;
+          var icon = data.icon;
+          if(icon == null)
+            icon = "user";
+
           if(err != null) {
             logger.error('Error loading friend BLID ' + blid + ' for ' + client.blid + ':', err);
             //continue anyways
@@ -415,7 +420,8 @@ ClientConnection.prototype.sendFriendList = function() {
           var obj = {
             username: name,
             blid: blid,
-            status: "offline"
+            status: "offline",
+            icon: icon
           };
           callback(null, obj);
         })
