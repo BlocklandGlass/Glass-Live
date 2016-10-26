@@ -204,7 +204,7 @@ var createNew = function(socket) {
       'busy'
     ];
 
-    if(stats.indexOf(data.status.toLowercas()) > -1) {
+    if(stats.indexOf(data.status.toLowerCase()) > -1) {
       connection.setStatus(data.status);
     } else {
       connection.sendObject({
