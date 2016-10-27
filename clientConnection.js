@@ -126,8 +126,19 @@ var createNew = function(socket) {
 
           module.clients[connection.blid] = connection;
 
-          // TODO room lookup
-          global.gd.addClient(connection);
+          var rooms = require('./chatRoom').getAll();
+          for(i in rooms) {
+            var room = rooms[i];
+            if(room.default) {
+              room.addClient(connection, true);
+            }
+
+            if(room.requirement != null) {
+              if(connection[room.requirement] == true) {
+                room.addClient(connection, true);
+              }
+            }
+          }
         })
       }
     })

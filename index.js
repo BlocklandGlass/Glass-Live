@@ -4,4 +4,15 @@ const chatroom = require('./chatRoom');
 
 chatServer.start();
 
-global.gd = chatroom.create("General Discussion", "tree");
+chatroom.create("General Discussion", "tree")
+  .setDefault(true);
+
+chatroom.create("Help", "help");
+
+chatroom.create("Servers", "server");
+
+chatroom.create("Quality Assurance", "tree_red")
+  .setRequirement('isBeta');
+
+chatroom.create("Staff", "balance_unbalance")
+  .setRequirement('isMod');

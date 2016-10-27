@@ -8,6 +8,9 @@ function Chatroom(name, icon) {
 
   this.id = module.roomCt++;
 
+  this.default = false;
+  this.requirement = null
+
   this.clients = [];
   this.motd = "TODO -> MOTD loading/saving";
 }
@@ -50,6 +53,20 @@ var getList = function() {
   }
 
   return rooms;
+}
+
+var getAll = function() {
+  return module.rooms;
+}
+
+Chatroom.prototype.setDefault = function(bool) {
+  this.default = bool;
+  return this;
+}
+
+Chatroom.prototype.setRequirement = function(key) {
+  this.requirement = key;
+  return this;
 }
 
 Chatroom.prototype.addClient = function(client, isAuto) {
@@ -168,4 +185,4 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
   });
 }
 
-module.exports = {create, getFromId, getList};
+module.exports = {create, getFromId, getList, getAll};
