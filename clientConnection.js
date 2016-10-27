@@ -145,8 +145,10 @@ var createNew = function(socket) {
   });
 
   connection.on('roomChat', (data) => {
-    // TODO room lookup
-    global.gd.sendClientMessage(connection, data.message);
+    var room = require('./chatRoom').getFromId(data.room);
+    if(room != false) {
+      room.sendClientMessage(connection, data.message);
+    }
   });
 
   connection.on('getRoomList', () => {
