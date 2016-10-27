@@ -130,6 +130,17 @@ Chatroom.prototype.getClientList = function() {
     clientList.push(client.getReference());
   }
 
+  clientList.push({
+    username: "GlassBot",
+    blid: -1,
+
+    admin: true,
+    mod: true,
+
+    status: "online",
+    icon: "balance_unbalance"
+  });
+
   return clientList;
 }
 
