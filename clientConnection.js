@@ -120,6 +120,8 @@ var createNew = function(socket) {
           connection.persist.username = res.username;
           connection.savePersist();
 
+          connection.permissionSet = Permissions.createSet(connection.persist);
+
           if(module.clients[connection.blid] != null) {
             module.clients[connection.blid].disconnect();
           }
@@ -716,6 +718,10 @@ ClientConnection.prototype.getIcon = function () {
   }
 
   return client.persist.icon;
+}
+
+ClientConnection.prototype.hasPermission = function() {
+
 }
 
 ClientConnection.prototype._notifiyIconChange = function() {
