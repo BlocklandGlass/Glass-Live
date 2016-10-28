@@ -1,10 +1,10 @@
 const EventEmitter = require('events');
 const async = require('async');
 const Auth = require('./authCheck');
-const Access = require('./accessManager');
 
 const logger = require('./logger');
 const Database = require('./database');
+const Permissions = require('./permissions');
 
 const Icons = require('./icons.json');
 
@@ -75,74 +75,81 @@ var createNew = function(socket) {
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
-      if(Access.isBanned(connection.blid)) { // TODO this is temp, will be replaced by permissions
-        logger.log(connection.username + ' (' + connection.blid + ') is banned!');
+      Database.getUserData(connection.blid, function(data, err) {
+        if(err != null) {
+          logger.error('Failed to load data for clientConnection ' + connection.blid + ':', err);
+          connection.sendObject({
+            type: 'error',
+            message: "Glass Live encountered an internal error and was unable to load your data.<br><br>This issue has been recorded. Sorry for any inconvenience",
+            showDialog: true
+          });
+          connection.disconnect();
+          return;
+        }
+        logger.log('Got user data for clientConnection ' + connection.blid)
 
-        var ban = Access.getBan(blid);
+        logger.log('Data: ' + JSON.stringify(data));
+
+        connection.persist = data;
+        connection.persist.username = res.username;
+        connection.savePersist();
+
+        connection._permissionSet = Permissions.createSet(connection.persist);
+        connection.listPermissions();
+
+
+        if(!connection.hasPermission('service.use')) {
+          logger.log("Insufficient Permission: service.use");
+          if(connection.isTempPermission('service.use')) {
+            var tempData = connection.getTempPermData('service.use');
+            connection.sendObject({
+              type: "barred",
+              reason: tempData.reason,
+              duration: tempData.duration,
+              remaining: tempData.duration-moment().diff(tempData.startTime, 'seconds')
+            });
+          } else {
+            connection.sendObject({
+              type: "barred",
+              reason: "You've been permanently barred from Glass Live",
+              duration: -1,
+              remaining: -1
+            });
+          }
+          connection.disconnect();
+          return;
+        }
+
+
         connection.sendObject({
           "call": "auth",
-          "status": "banned",
-          "action": "none" //general solution is to just get a new ident
+          "status": "success"
         });
 
-        connection.sendObject({
-          "call": "banned",
-          "reason": ban.reason,
-          "timeRemaining": ban.duration - (moment().diff(ban.time, 'seconds'))
-        });
-        return;
-      } else {
-        Database.getUserData(connection.blid, function(data, err) {
-          if(err != null) {
-            logger.error('Failed to load data for clientConnection ' + connection.blid + ':', err);
-            connection.sendObject({
-              type: 'error',
-              message: "Glass Live encountered an internal error and was unable to load your data.<br><br>This issue has been recorded. Sorry for any inconvenience",
-              showDialog: true
-            });
-            connection.disconnect();
-            return;
-          }
-          logger.log('Got user data for clientConnection ' + connection.blid)
+        connection.sendFriendList();
+        connection.sendFriendRequests();
+        connection.setStatus('online');
 
-          logger.log('Data: ' + JSON.stringify(data));
-          connection.persist = data;
+        if(module.clients[connection.blid] != null) {
+          module.clients[connection.blid].disconnect();
+        }
 
-          connection.sendObject({
-            "call": "auth",
-            "status": "success"
-          });
+        module.clients[connection.blid] = connection;
 
-          connection.sendFriendList();
-          connection.sendFriendRequests();
-          connection.setStatus('online');
-
-          connection.persist.username = res.username;
-          connection.savePersist();
-
-          connection.permissionSet = Permissions.createSet(connection.persist);
-
-          if(module.clients[connection.blid] != null) {
-            module.clients[connection.blid].disconnect();
+        var rooms = require('./chatRoom').getAll();
+        for(i in rooms) {
+          var room = rooms[i];
+          if(room.default) {
+            room.addClient(connection, true);
           }
 
-          module.clients[connection.blid] = connection;
-
-          var rooms = require('./chatRoom').getAll();
-          for(i in rooms) {
-            var room = rooms[i];
-            if(room.default) {
+          if(room.requirement != null) {
+            if(connection[room.requirement] == true) {
               room.addClient(connection, true);
             }
-
-            if(room.requirement != null) {
-              if(connection[room.requirement] == true) {
-                room.addClient(connection, true);
-              }
-            }
           }
-        })
-      }
+        }
+      })
     })
   });
 
@@ -672,6 +679,10 @@ ClientConnection.prototype.removeFriend = function(blid) {
 ClientConnection.prototype.savePersist = function() {
   var client = this;
   if(client.persist != null) {
+    if(client._permissionSet != null) {
+      client.persist.permissions = client._permissionSet.perms;
+      client.persist.tempPermissions = client._permissionSet.tempPermissions;
+    }
     Database.saveUserData(client.blid, client.persist);
   } else {
     logger.error('ClientConnection::savePersist: persist is null for blid ' + client.blid + '!');
@@ -720,8 +731,38 @@ ClientConnection.prototype.getIcon = function () {
   return client.persist.icon;
 }
 
-ClientConnection.prototype.hasPermission = function() {
+ClientConnection.prototype.hasPermission = function(perm) {
+  var client = this;
+  return client._permissionSet.hasPermission(perm);
+}
 
+ClientConnection.prototype.isTempPermission = function(perm) {
+  var client = this;
+  return client._permissionSet.isTempPermission(perm);
+}
+
+ClientConnection.prototype.getTempPermData = function(perm) {
+  var client = this;
+  return client._permissionSet.getTempData(perm);
+}
+
+
+ClientConnection.prototype.listPermissions = function() {
+  var client = this;
+  var perms = Permissions.getAll();
+
+  logger.log(client.username + " (" + client.blid + ") permissions:");
+
+  for(i in perms) {
+    var perm = perms[i];
+    var val = client.hasPermission(perm);
+    if(client.isTempPermission(perm)) {
+      var data = client.getTempPermData(perm);
+      logger.log(perm + "\t" + (val ? "yes" : "no") + "\t" + data.duration + "\t" + data.reason);
+    } else {
+      logger.log(perm + "\t" + (val ? "yes" : "no"));
+    }
+  }
 }
 
 ClientConnection.prototype._notifiyIconChange = function() {

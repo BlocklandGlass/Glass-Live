@@ -1,5 +1,23 @@
 const moment = require('moment');
 
+var getAll = function() {
+  if(module.permission == null)
+    module.permission = {};
+
+  var perms = [];
+  for(perm in module.permission) {
+    perms.push(perm);
+  }
+  return perms;
+}
+
+var createSet = function(persist) {
+  if(persist == null)
+    persist = {};
+
+  return new PermissionSet(persist);
+}
+
 function Permission(name, desc, isDefault) {
   this.name = name;
   this.desc = desc;
@@ -38,7 +56,7 @@ function PermissionSet(data) { //this is from clientConnection.persist.permissio
   if(this.temp == null)
     this.temp = {};
 
-  this.cleanTemps();
+  this.checkTemps();
 }
 
 var loadPermissions = function() {
@@ -77,7 +95,7 @@ PermissionSet.prototype.hasPermission = function(perm) {
 PermissionSet.prototype.isTempPermission = function(perm) {
   var set = this;
   var tempData = set.getTempData(perm);
-  
+
   if(tempData != false) {
     return true;
   }
@@ -92,12 +110,14 @@ PermissionSet.prototype.getTempData = function(perm) {
   if(set.temp[perm] != null) {
     return set.temp[perm];
   }
+
+  return false;
 }
 
 PermissionSet.prototype.checkTemps = function() {
   var set = this;
 
-  var temps = set.temp.slice(0);
+  var temps = set.temp;
   for(perm in temps) {
     var obj = temps[perm];
     if(moment().diff(obj.startTime, 'seconds') > obj.duration) {
@@ -106,3 +126,20 @@ PermissionSet.prototype.checkTemps = function() {
     }
   }
 }
+
+PermissionSet.prototype.newTempPermission = function(perm, value, duration, reason) {
+  var set = this;
+  duration = parseInt(duration);
+  if(duration < 0 || duration == NaN)
+    duration = 0;
+
+  set.temp[perm] = {
+    value: value,
+    startTime: moment(),
+    duration: duration, //seconds
+    reason: reason
+  };
+}
+
+loadPermissions();
+module.exports = {createSet, getAll};
