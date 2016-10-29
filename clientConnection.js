@@ -98,10 +98,10 @@ var createNew = function(socket) {
         connection.listPermissions();
 
 
-        if(!connection.hasPermission('service.use')) {
-          logger.log("Insufficient Permission: service.use");
-          if(connection.isTempPermission('service.use')) {
-            var tempData = connection.getTempPermData('service.use');
+        if(!connection.hasPermission('service_use')) {
+          logger.log("Insufficient Permission: service_use");
+          if(connection.isTempPermission('service_use')) {
+            var tempData = connection.getTempPermData('service_use');
             connection.sendObject({
               type: "barred",
               reason: tempData.reason,
@@ -155,8 +155,33 @@ var createNew = function(socket) {
 
   connection.on('roomChat', (data) => {
     var room = require('./chatRoom').getFromId(data.room);
+    if(!connection.hasPermission('rooms_talk')) {
+      connection.sendObject({
+        type: 'roomText',
+        id: data.room,
+        text: "You don't have permission to talk!"
+      })
+      return;
+    }
+
     if(room != false) {
       room.sendClientMessage(connection, data.message);
+    }
+  });
+
+  connection.on('roomCommand', (data) => {
+    var room = require('./chatRoom').getFromId(data.room);
+    var msg = data.message;
+
+    if(msg == null || msg.trim() == "")
+      return;
+
+    if(room != false) {
+      var args = msg.split(' ');
+      var call = args[0].substr(1);
+      args.splice(0, 1);
+      logger.log('Got command: ' + call);
+      room.handleCommand(connection, call, args);
     }
   });
 
@@ -681,7 +706,8 @@ ClientConnection.prototype.savePersist = function() {
   if(client.persist != null) {
     if(client._permissionSet != null) {
       client.persist.permissions = client._permissionSet.perms;
-      client.persist.tempPermissions = client._permissionSet.tempPermissions;
+      client.persist.tempPermissions = client._permissionSet.temp;
+      logger.log(client.persist.tempPermissions);
     }
     Database.saveUserData(client.blid, client.persist);
   } else {
@@ -746,6 +772,11 @@ ClientConnection.prototype.getTempPermData = function(perm) {
   return client._permissionSet.getTempData(perm);
 }
 
+ClientConnection.prototype.setTempPerm = function(perm, val, duration, reason) {
+  var client = this;
+  client._permissionSet.newTempPermission(perm, val, duration, reason);
+  client.savePersist();
+}
 
 ClientConnection.prototype.listPermissions = function() {
   var client = this;

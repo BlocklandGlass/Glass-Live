@@ -1,5 +1,7 @@
 const moment = require('moment');
 
+const logger = require('./logger');
+
 module.roomCt = 0;
 
 function Chatroom(name, icon) {
@@ -13,6 +15,8 @@ function Chatroom(name, icon) {
 
   this.clients = [];
   this.motd = "TODO -> MOTD loading/saving";
+
+  this.commandSet = require('./roomCommands').newCommandSet(this);
 }
 
 var create = function(name, icon) {
@@ -183,6 +187,38 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
     timestamp: moment().unix(),
     datetime: moment().format('h:mm:ss a')
   });
+}
+
+Chatroom.prototype.findClientByName = function(name, exact) {
+  var room = this;
+
+  var closestMatch;
+
+  for(i in room.clients) {
+    var cl = room.clients[i];
+    if(cl.username.toLowerCase() == name.toLowerCase()) {
+      return cl;
+    }
+
+    if(cl.username.toLowerCase().indexOf(name.toLowerCase()) == 0) {
+      closestMatch = cl;
+    }
+  }
+
+  if(exact || closestMatch == null) {
+    return false;
+  } else {
+    return closestMatch;
+  }
+}
+
+Chatroom.prototype.handleCommand = function(client, command, args) {
+  var room = this;
+  try {
+    room.commandSet.emit(command, client, args)
+  } catch (e) {
+    logger.error("Error handling command " + command, e);
+  }
 }
 
 module.exports = {create, getFromId, getList, getAll};

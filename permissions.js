@@ -63,15 +63,15 @@ var loadPermissions = function() {
   if(module.loadedPermissions)
     return;
 
-  new Permission('service.use', "Can use live", true); // barred
+  new Permission('service_use', "Can use live", true); // barred
 
-  new Permission('rooms.join', "Can join rooms freely", true); //banned
-  new Permission('rooms.talk', "Can talk in rooms", true);
+  new Permission('rooms_join', "Can join rooms freely", true); //banned
+  new Permission('rooms_talk', "Can talk in rooms", true);
 
-  new Permission('message.public', "Can message anyone", true);
-  new Permission('message.friends', "Can message friends", true);
+  new Permission('message_public', "Can message anyone", true);
+  new Permission('message_friends', "Can message friends", true);
 
-  new Permission('friends.request', "Can send friend requests", true);
+  new Permission('friends_request', "Can send friend requests", true);
 }
 
 PermissionSet.prototype.hasPermission = function(perm) {
@@ -120,9 +120,9 @@ PermissionSet.prototype.checkTemps = function() {
   var temps = set.temp;
   for(perm in temps) {
     var obj = temps[perm];
-    if(moment().diff(obj.startTime, 'seconds') > obj.duration) {
+    if(moment().diff(moment.unix(obj.startTime), 'seconds') > obj.duration) {
       //expired
-      set.temp[perm] = undefined;
+      delete set.temp[perm];
     }
   }
 }
@@ -135,7 +135,7 @@ PermissionSet.prototype.newTempPermission = function(perm, value, duration, reas
 
   set.temp[perm] = {
     value: value,
-    startTime: moment(),
+    startTime: moment().unix(),
     duration: duration, //seconds
     reason: reason
   };
