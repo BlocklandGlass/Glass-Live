@@ -730,7 +730,7 @@ ClientConnection.prototype.setIcon = function(icon, force) {
     } else {
       client.sendObject({
         type: "error",
-        message: "You dont have permission to use that icon!",
+        message: "You don't have permission to use that icon!",
         showDialog: true
       });
     }
