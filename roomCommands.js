@@ -44,6 +44,15 @@ var newCommandSet = function(room) {
     }
   })
 
+  commandSet.on('motd', (client, args) => {
+    room.setMOTD(args.join(' '));
+    room.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: "* " + client.username + " has set the MOTD to " + args.join(' ')
+    })
+  });
+
   return commandSet;
 }
 

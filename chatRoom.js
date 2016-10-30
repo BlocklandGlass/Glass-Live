@@ -14,9 +14,10 @@ function Chatroom(name, icon) {
   this.requirement = null
 
   this.clients = [];
-  this.motd = "TODO -> MOTD loading/saving";
 
   this.commandSet = require('./roomCommands').newCommandSet(this);
+
+  this.loadPersist();
 }
 
 var create = function(name, icon) {
@@ -63,6 +64,40 @@ var getAll = function() {
   return module.rooms;
 }
 
+Chatroom.prototype.loadPersist = function() {
+  var room = this;
+  var fs = require('fs');
+  var file = './save/' + room.name.toLowerCase().replace(/ /g, '_') + '.json';
+  try {
+    fs.statSync(file);
+    room.persist = require(file);
+  } catch (e) {
+    room.persist = {
+      motd: "MOTD not set"
+    };
+  }
+}
+
+Chatroom.prototype.savePersist = function() {
+  var room = this;
+  if(room.persist == null)
+    return;
+
+  var fs = require('fs');
+  var file = './save/' + room.name.toLowerCase().replace(/ /g, '_') + '.json';
+  try {
+    fs.writeFileSync(file, JSON.stringify(room.persist));
+  } catch (e) {
+    logger.error('Error saving chatroom persist!', e);
+  }
+}
+
+Chatroom.prototype.setMOTD = function(motd) {
+  var room = this;
+  room.persist.motd = motd;
+  room.savePersist();
+}
+
 Chatroom.prototype.setDefault = function(bool) {
   this.default = bool;
   return this;
@@ -86,7 +121,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     title: room.name,
     id: room.id,
 
-    motd: room.motd,
+    motd: room.persist.motd,
 
     clients: room.getClientList()
   });
