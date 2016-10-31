@@ -1,11 +1,19 @@
 const moment = require('moment');
 
 var onRoomMessage = function(room, sender, message) {
+  if(message == message.toUpperCase()) {
+    sendRoomMessage(room, "No yelling, please!");
+    issueWarning(sender, 1, room);
+  }
+
   var words = message.toLowerCase().split(/ /g);
   for(i in words) {
     var word = words[i];
     if(word == "@glassbot") {
-      sendRoomMessage(room, "That's me!");
+      if(module._lastHello == null || moment().diff(moment.unix(module._lastHello), 'seconds') > 45) {
+        sendRoomMessage(room, "That's me!");
+        module._lastHello = moment().unix();
+      }
     }
 
     if(word == "nigger" || word == "nig" || word == "nigg") {
@@ -24,24 +32,43 @@ var onRoomMessage = function(room, sender, message) {
 }
 
 var sendRoomMessage = function(room, message) {
-  setTimeout(function() {
-      room.sendObject({
-      type: "roomMessage",
-      room: room.id,
+  if(room == null)
+    return;
 
-      sender: "GlassBot",
-      sender_id: -1,
+  room.sendObject({
+    type: "roomMessage",
+    room: room.id,
 
-      msg: message,
+    sender: "GlassBot",
+    sender_id: -1,
 
-      timestamp: moment().unix(),
-      datetime: moment().format('h:mm:ss a')
-    });
-  }, Math.floor(Math.random()*1000)+100);
+    msg: message,
+
+    timestamp: moment().unix(),
+    datetime: moment().format('h:mm:ss a')
+  });
 }
 
 var doRoomsBan = function(client, duration, reason) {
   client.roomBan(duration, reason);
+}
+
+var issueWarning = function(client, amt, room) {
+  if(client.persist.warnings == null)
+    client.persist.warnings = 0;
+
+  client.persist.warnings += amt;
+  client.savePersist();
+
+  var warnings = client.persist.warnings;
+
+  if(room != null) {
+    room.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: '<color:9b59b6> * ' + client.username + ' now has ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings') + '!'
+    });
+  }
 }
 
 module.exports = {onRoomMessage, sendRoomMessage};
