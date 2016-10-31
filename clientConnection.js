@@ -146,6 +146,7 @@ var createNew = function(socket) {
 
         connection.sendFriendList();
         connection.sendFriendRequests();
+        connection.sendBlockedList();
         connection.setStatus('online');
 
         if(module.clients[connection.blid] != null) {
@@ -313,6 +314,14 @@ var createNew = function(socket) {
         typing: data.typing
       });
     }
+  });
+
+  connection.on('block', (data) => {
+    connection.block(data.blid);
+  });
+
+  connection.on('unblock', (data) => {
+    connection.unblock(data.blid);
   });
 
   return connection;
@@ -544,6 +553,50 @@ ClientConnection.prototype.sendFriendRequests = function() {
     client.sendObject({
       type: "friendRequests",
       requests: res
+    });
+  })
+}
+
+ClientConnection.prototype.sendBlockedList = function() {
+  var client = this;
+  var friendIds = client.getBlocked();
+
+
+
+  var calls = [];
+
+  friendIds.forEach(function(blid) {
+    calls.push(function(callback) {
+      if(module.clients[blid] != null) {
+        var obj = module.clients[blid].getReference();
+        callback(null, obj);
+      } else {
+        Database.getUsername(blid, function(name, err) {
+          if(err != null) {
+            logger.error('Error loading friend BLID ' + blid + ' for ' + client.blid + ':', err);
+            //continue anyways
+            callback(null, null);
+            return;
+          }
+
+          var obj = {
+            username: name,
+            blid: blid,
+
+            online: false, // depreciated
+
+            status: "offline"
+          };
+          callback(null, obj);
+        })
+      }
+    });
+  });
+
+  async.parallel(calls, function(err, res) {
+    client.sendObject({
+      type: "blockedList",
+      blocked: res
     });
   })
 }
@@ -819,6 +872,49 @@ ClientConnection.prototype.listPermissions = function() {
       logger.log(perm + "\t" + (val ? "yes" : "no"));
     }
   }
+}
+
+ClientConnection.prototype.getBlocked = function() {
+  var client = this;
+  if(client.persist.blocked == null) {
+    client.persist.blocked = [];
+    client.savePersist();
+  }
+
+  return client.persist.blocked;
+}
+
+ClientConnection.prototype.isBlocked = function(blid) {
+  var client = this;
+  if(client.getBlocked().indexOf(blid) > -1)
+    return true;
+
+  return false;
+}
+
+ClientConnection.prototype.block = function(blid) {
+  if(blid < 0 || Math.floor(blid) != blid)
+    return;
+
+  var client = this;
+  if(client.getBlocked().indexOf(blid) > -1)
+    return;
+
+  client.getBlocked().push(blid);
+  client.savePersist();
+}
+
+ClientConnection.prototype.unblock = function(blid) {
+  if(blid < 0 || Math.floor(blid) != blid)
+    return;
+
+  var client = this;
+  var idx = client.getBlocked().indexOf(blid);
+  if(idx == 0)
+    return;
+
+  client.getBlocked().splice(idx, 1);
+  client.savePersist();
 }
 
 ClientConnection.prototype._notifiyIconChange = function() {

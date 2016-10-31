@@ -117,6 +117,7 @@ var _createNewData = function(blid) {
     data: {
       friends: [],
       requests: [],
+      blocked: [],
       username: null
     }
   };
