@@ -73,7 +73,25 @@ var createNew = function(socket) {
       connection.isMod = res.mod;
       connection.isBeta = res.beta;
 
+      connection.version = data.version;
+
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
+
+      if(data.version != null && data.version != "") {
+        var verParts = connection.version.split(/\./g);
+        if(verParts[0] < 3) {
+          //2.x, refuse to connect
+          logger.log('...running unsupported version ' + data.version);
+          connection.disconnect();
+          return;
+        }
+
+        if(verParts[0] == 3 && verParts[1] < 2) {
+          logger.log('...running depreciated version ' + data.version);
+        }
+      } else {
+        logger.log('...without a version field!');
+      }
 
       Database.getUserData(connection.blid, function(data, err) {
         if(err != null) {
@@ -406,6 +424,7 @@ ClientConnection.prototype.getReference = function() {
     admin: client.isAdmin,
     mod: client.isMod,
 
+    online: true, // depreciated
     status: client.status,
     icon: client.getIcon()
   };
@@ -467,6 +486,9 @@ ClientConnection.prototype.sendFriendList = function() {
           var obj = {
             username: name,
             blid: blid,
+
+            online: false, // depreciated
+
             status: "offline",
             icon: icon
           };
@@ -507,6 +529,9 @@ ClientConnection.prototype.sendFriendRequests = function() {
           var obj = {
             username: name,
             blid: blid,
+
+            online: false, // depreciated
+
             status: "offline"
           };
           callback(null, obj);

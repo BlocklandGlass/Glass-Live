@@ -138,6 +138,8 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     admin: client.isAdmin,
     mod: client.isMod,
 
+    online: true, // depreciated
+
     status: client.status,
     icon: client.getIcon()
   });
@@ -193,6 +195,8 @@ Chatroom.prototype.getClientList = function() {
     admin: true,
     mod: true,
 
+    online: true, // depreciated
+
     status: "online",
     icon: "balance_unbalance"
   });
@@ -222,6 +226,8 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
     timestamp: moment().unix(),
     datetime: moment().format('h:mm:ss a')
   });
+
+  require('./glassBot').onRoomMessage(room, client, msg);
 }
 
 Chatroom.prototype.findClientByName = function(name, exact) {
