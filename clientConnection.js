@@ -159,12 +159,7 @@ var createNew = function(socket) {
           if(connection != null) {
             connection.reduceWarnings();
           }
-          connection.sendObject({
-            type: 'error',
-            message: 'debug: warnings decayed!',
-            showDialog: true
-          });
-        }, 30000);
+        }, 300000);
 
         var rooms = require('./chatRoom').getAll();
         for(i in rooms) {
