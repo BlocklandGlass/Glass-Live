@@ -155,6 +155,17 @@ var createNew = function(socket) {
 
         module.clients[connection.blid] = connection;
 
+        connection._warningDecay = setInterval(() => {
+          if(connection != null) {
+            connection.reduceWarnings();
+          }
+          connection.sendObject({
+            type: 'error',
+            message: 'debug: warnings decayed!',
+            showDialog: true
+          });
+        }, 30000);
+
         var rooms = require('./chatRoom').getAll();
         for(i in rooms) {
           var room = rooms[i];
@@ -395,6 +406,8 @@ ClientConnection.prototype.disconnect = function(code) {
 
 ClientConnection.prototype.cleanUp = function() {
   var client = this;
+
+  clearInterval(client._warningDecay);
 
   if(client.disconnectReason == null)
     client.disconnectReason = -1;
@@ -930,6 +943,18 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
     duration: duration,
     reason: reason
   });
+}
+
+ClientConnection.prototype.reduceWarnings = function() {
+  var client = this;
+  if(client.persist.warnings == null)
+    client.persist.warnings = 0;
+
+  if(client.persist.warnings > 0) {
+    client.persist.warnings--;
+  }
+
+  client.savePersist();
 }
 
 ClientConnection.prototype._notifiyIconChange = function() {

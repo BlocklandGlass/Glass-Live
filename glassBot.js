@@ -1,7 +1,7 @@
 const moment = require('moment');
 
 var onRoomMessage = function(room, sender, message) {
-  if(message == message.toUpperCase()) {
+  if(message == message.toUpperCase() && message.length > 5) {
     sendRoomMessage(room, "No yelling, please!");
     issueWarning(sender, 1, room);
   }

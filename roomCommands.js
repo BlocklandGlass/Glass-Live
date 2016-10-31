@@ -81,6 +81,18 @@ var newCommandSet = function(room) {
     }
   })
 
+  commandSet.on('warnings', (client, args) => {
+    var warnings = 0;
+    if(client.persist.warnings != null)
+      warnings = client.persist.warnings;
+
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: ' * You have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
+    });
+  });
+
   return commandSet;
 }
 
