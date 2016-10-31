@@ -41,10 +41,10 @@ var createNew = function(socket) {
       if(error) {
         logger.error('Unable to auth BL_ID ' + data.blid);
         connection.sendObject({
-          "call": "auth",
-          "status": "failed",
-          "action": "reident",
-          "timeout": 5000
+          type: "auth",
+          status: "failed",
+          action: "reident",
+          timeout: 5000
         });
         return;
       }
@@ -57,10 +57,10 @@ var createNew = function(socket) {
       if(res.status != "success") {
         logger.log('authCheck returned non-success: ' + res.status);
         connection.sendObject({
-          "call": "auth",
-          "status": "failed",
-          "action": "reident", //general solution is to just get a new ident
-          "timeout": 5000
+          type: "auth",
+          status: "failed",
+          action: "reident", //general solution is to just get a new ident
+          timeout: 5000
         });
         return;
       }
@@ -122,8 +122,8 @@ var createNew = function(socket) {
 
 
         connection.sendObject({
-          "call": "auth",
-          "status": "success"
+          type: "auth",
+          status: "success"
         });
 
         connection.sendFriendList();
