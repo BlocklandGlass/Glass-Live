@@ -917,6 +917,21 @@ ClientConnection.prototype.unblock = function(blid) {
   client.savePersist();
 }
 
+ClientConnection.prototype.roomBan = function(duration, reason) {
+  var client = this;
+  if(reason == null || reason == "") {
+    reason = "You're banned!";
+  }
+  client.setTempPerm('rooms_join', false, duration, reason);
+  client.setTempPerm('rooms_talk', false, duration, reason);
+  client.sendObject({
+    type: "roomBanned",
+    all: true,
+    duration: duration,
+    reason: reason
+  });
+}
+
 ClientConnection.prototype._notifiyIconChange = function() {
   var client = this;
   var rooms = require('./chatRoom');

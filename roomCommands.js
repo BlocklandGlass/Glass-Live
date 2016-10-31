@@ -25,7 +25,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: '* Muted ' + cl.username + ' for ' + duration + ' seconds'
+        text: ' * Muted ' + cl.username + ' for ' + duration + ' seconds'
       });
 
       cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
@@ -33,13 +33,13 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "* " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
+        text: " * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
       })
     } else {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: '* Unable to find user "' + args.join(' ') + '"'
+        text: ' * Unable to find user "' + args.join(' ') + '"'
       });
     }
   })
@@ -52,6 +52,34 @@ var newCommandSet = function(room) {
       text: "* " + client.username + " has set the MOTD to " + args.join(' ')
     })
   });
+
+  commandSet.on('resetPermissions', (client, args) => {
+    if(!client.isMod)
+      return;
+
+    var cl = room.findClientByName(args.join(' '));
+    if(cl != false) {
+      cl.persist.permissions = {};
+      cl.persist.tempPermissions = {};
+      if(cl._permissionSet != null) {
+        cl._permissionSet.perms = {};
+        cl._permissionSet.temp = {};
+      }
+      cl.savePersist();
+
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Reset permissions for ' + cl.username
+      });
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* Unable to find user "' + args.join(' ') + '"'
+      });
+    }
+  })
 
   return commandSet;
 }
