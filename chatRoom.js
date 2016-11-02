@@ -11,7 +11,7 @@ function Chatroom(name, icon) {
   this.id = module.roomCt++;
 
   this.default = false;
-  this.requirement = null
+  this.requirement = null;
 
   this.clients = [];
 
@@ -166,6 +166,8 @@ Chatroom.prototype.removeClient = function(client, reason) {
     blid: client.blid,
     reason: reason
   });
+
+  client._didLeaveRoom(room.id);
 }
 
 Chatroom.prototype.kickClient = function(client, reason) {

@@ -178,7 +178,63 @@ var createNew = function(socket) {
     })
   });
 
+  connection.on('roomJoin', (data) => {
+    if(connection.isInRoom(data.id)) {
+      connection.sendObject({
+        type: 'error',
+        message: "Already in room"
+      });
+      return;
+    }
+
+    if(!connection.hasPermission('rooms_join')) {
+      connection.sendObject({
+        type: 'messageBox',
+        title: "Insufficient permissions",
+        text: "You don't have permission to join rooms!"
+      })
+      return;
+    }
+
+    var room = require('./chatRoom').getFromId(data.id);
+    if(room != false) {
+      if(room.requirement != null) {
+        if(connection[room.requirement] != true) {
+          connection.sendObject({
+            type: 'error',
+            message: "Missing requirement"
+          });
+          return;
+        }
+      }
+      room.addClient(connection);
+    }
+  });
+
+  connection.on('roomLeave', (data) => {
+    if(!connection.isInRoom(data.id)) {
+      connection.sendObject({
+        type: 'error',
+        message: "Tried to leave room not in"
+      });
+      return;
+    }
+
+    var room = require('./chatRoom').getFromId(data.id);
+    if(room != false) {
+      room.removeClient(connection, 2);
+    }
+  });
+
   connection.on('roomChat', (data) => {
+    if(!connection.isInRoom(data.room)) {
+      connection.sendObject({
+        type: 'error',
+        message: "Tried to send chat while not in room!"
+      });
+      return;
+    }
+
     var room = require('./chatRoom').getFromId(data.room);
     if(!connection.hasPermission('rooms_talk')) {
       connection.sendObject({
@@ -195,6 +251,14 @@ var createNew = function(socket) {
   });
 
   connection.on('roomCommand', (data) => {
+    if(!connection.isInRoom(data.room)) {
+      connection.sendObject({
+        type: 'error',
+        message: "Tried to send command while not in room!"
+      });
+      return;
+    }
+
     var room = require('./chatRoom').getFromId(data.room);
     var msg = data.message;
 
@@ -804,10 +868,6 @@ ClientConnection.prototype.savePersist = function() {
 ClientConnection.prototype.setIcon = function(icon, force) {
   var client = this;
 
-  logger.log("Setting icon to: " + icon);
-  logger.log("Allowed idx: " + Icons.allowed.indexOf(icon));
-  logger.log("Restricted idx: " + Icons.restricted.indexOf(icon));
-
   if(Icons.allowed.indexOf(icon) > -1) {
     client.persist.icon = icon;
   } else if(Icons.restricted.indexOf(icon) > -1) {
@@ -952,6 +1012,11 @@ ClientConnection.prototype.reduceWarnings = function() {
   client.savePersist();
 }
 
+ClientConnection.prototype.isInRoom = function(id) {
+  var client = this;
+  return (client.rooms.indexOf(parseInt(id)) > -1);
+}
+
 ClientConnection.prototype._notifiyIconChange = function() {
   var client = this;
   var rooms = require('./chatRoom');
@@ -985,6 +1050,13 @@ ClientConnection.prototype._didEnterRoom = function(id) {
     return;
 
   client.rooms.push(id);
+}
+
+ClientConnection.prototype._didLeaveRoom = function(id) {
+  var client = this;
+  var idx = client.rooms.indexOf(parseInt(id));
+  if(idx > -1)
+    client.rooms.splice(idx, 1);
 }
 
 module.exports = {createNew, getFromBlid};
