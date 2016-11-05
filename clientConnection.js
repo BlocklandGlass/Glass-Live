@@ -978,14 +978,10 @@ ClientConnection.prototype.unblock = function(blid) {
   var client = this;
   var idx = client.getBlocked().indexOf(blid);
 
-  logger.log('idx: ' + idx);
-
   if(idx == -1)
     return;
 
-  logger.log('not -1');
-
-  client.persist.blocked = client.persist.blocked.splice(idx, 1);
+  client.persist.blocked.splice(idx, 1);
   client.savePersist();
 
   logger.log('saving: ' + JSON.stringify(client.persist.blocked));
