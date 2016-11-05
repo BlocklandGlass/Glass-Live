@@ -675,6 +675,9 @@ ClientConnection.prototype.sendBlockedList = function() {
 
 ClientConnection.prototype.sendDirectMessage = function(sender, message) {
   var client = this;
+  if(client.isBlocked(sender.blid))
+    return;
+
   client.sendObject({
     type: "message",
     sender: sender.username,
@@ -685,6 +688,9 @@ ClientConnection.prototype.sendDirectMessage = function(sender, message) {
 
 ClientConnection.prototype.sendFriendRequest = function(to) {
   var client = this;
+
+  if(client.isBlocked(to))
+    return;
 
   if(module.clients[to] != null) {
     module.clients[to].onFriendRequest(client);
@@ -704,6 +710,9 @@ ClientConnection.prototype.sendFriendRequest = function(to) {
 ClientConnection.prototype.onFriendRequest = function(sender) {
   var client = this;
   if(client.persist.requests.indexOf(sender.blid) > -1)
+    return;
+
+  if(client.isBlocked(sender.blid))
     return;
 
   client.persist.requests.push(sender.blid);
