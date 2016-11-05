@@ -483,8 +483,8 @@ ClientConnection.prototype.cleanUp = function() {
   if(client.persist != null)
     client.setStatus('offline');
 
-  if(module.clients[client.blid] != null && client.blid != null)
-    module.clients[client.blid] = undefined;
+  if(module.clients[client.blid] != null && module.clients[client.blid] == client && client.blid != null)
+    delete module.clients[client.blid];
 
   var idx = module.connections.indexOf(client);
   if(idx > -1)
