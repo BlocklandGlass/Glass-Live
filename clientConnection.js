@@ -675,8 +675,6 @@ ClientConnection.prototype.sendBlockedList = function() {
 
 ClientConnection.prototype.sendDirectMessage = function(sender, message) {
   var client = this;
-  if(client.isBlocked(sender.blid))
-    return;
 
   client.sendObject({
     type: "message",
@@ -688,9 +686,6 @@ ClientConnection.prototype.sendDirectMessage = function(sender, message) {
 
 ClientConnection.prototype.sendFriendRequest = function(to) {
   var client = this;
-
-  if(client.isBlocked(to))
-    return;
 
   if(module.clients[to] != null) {
     module.clients[to].onFriendRequest(client);
@@ -710,9 +705,6 @@ ClientConnection.prototype.sendFriendRequest = function(to) {
 ClientConnection.prototype.onFriendRequest = function(sender) {
   var client = this;
   if(client.persist.requests.indexOf(sender.blid) > -1)
-    return;
-
-  if(client.isBlocked(sender.blid))
     return;
 
   client.persist.requests.push(sender.blid);
@@ -982,15 +974,12 @@ ClientConnection.prototype.block = function(blid) {
 }
 
 ClientConnection.prototype.unblock = function(blid) {
-  if(blid < 0 || Math.floor(blid) != blid)
-    return;
-
   var client = this;
   var idx = client.getBlocked().indexOf(blid);
   if(idx == 0)
     return;
 
-  client.getBlocked().splice(idx, 1);
+  client.persist.blocked = client.getBlocked().splice(idx, 1);
   client.savePersist();
 }
 
