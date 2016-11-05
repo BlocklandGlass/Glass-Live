@@ -115,6 +115,16 @@ var doRoomsBan = function(client, duration, reason) {
   client.roomBan(duration, reason);
 }
 
+var doMute = function(cl, duration, room) {
+  cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
+
+  room.sendObject({
+    type: 'roomText',
+    id: room.id,
+    text: "<color:9b59b6> * GlassBot has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
+  })
+}
+
 var issueWarning = function(client, amt, room) {
   if(client.persist.warnings == null)
     client.persist.warnings = 0;
@@ -130,6 +140,18 @@ var issueWarning = function(client, amt, room) {
       id: room.id,
       text: '<color:9b59b6> * ' + client.username + ' now has ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings') + '!'
     });
+  }
+
+  _warningPunishment(client, warnings, room);
+}
+
+var _warningPunishment = function(client, amt, room) {
+  if(amt == 1) {
+    client.setTempPerm('rooms_talk', false, 5, "You're muted!");
+  }
+
+  if(amt == 2) {
+    doMute(client, 30, room);
   }
 }
 

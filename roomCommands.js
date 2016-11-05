@@ -46,7 +46,7 @@ var newCommandSet = function(room) {
           text: ' * Your mute has expired'
         })
       }, duration*1000);
-      
+
     } else {
       client.sendObject({
         type: 'roomText',
@@ -102,6 +102,20 @@ var newCommandSet = function(room) {
       type: 'roomText',
       id: room.id,
       text: ' * You have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
+    });
+  });
+
+  commandSet.on('resetWarnings', (client, args) => {
+    if(!client.isMod)
+      return;
+
+    client.persist.warnings += amt;
+    client.savePersist();
+
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: ' * Your warnings have been reset'
     });
   });
 
