@@ -976,7 +976,8 @@ ClientConnection.prototype.block = function(blid) {
 ClientConnection.prototype.unblock = function(blid) {
   var client = this;
   var idx = client.getBlocked().indexOf(blid);
-  if(idx == 0)
+
+  if(idx == -1)
     return;
 
   client.persist.blocked = client.getBlocked().splice(idx, 1);
