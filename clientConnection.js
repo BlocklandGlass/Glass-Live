@@ -985,7 +985,7 @@ ClientConnection.prototype.unblock = function(blid) {
 
   logger.log('not -1');
 
-  client.persist.blocked = client.getBlocked().splice(idx, 1);
+  client.persist.blocked = client.persist.blocked.splice(idx, 1);
   client.savePersist();
 
   logger.log('saving: ' + JSON.stringify(client.persist.blocked));
