@@ -974,14 +974,21 @@ ClientConnection.prototype.block = function(blid) {
 }
 
 ClientConnection.prototype.unblock = function(blid) {
+  logger.log('unblock ' + blid);
   var client = this;
   var idx = client.getBlocked().indexOf(blid);
+
+  logger.log('idx: ' + idx);
 
   if(idx == -1)
     return;
 
+  logger.log('not -1');
+
   client.persist.blocked = client.getBlocked().splice(idx, 1);
   client.savePersist();
+
+  logger.log('saving: ' + JSON.stringify(client.persist.blocked));
 }
 
 ClientConnection.prototype.roomBan = function(duration, reason) {
