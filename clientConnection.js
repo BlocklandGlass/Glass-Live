@@ -507,7 +507,7 @@ ClientConnection.prototype.getReference = function() {
 
     online: true, // depreciated
     status: client.status,
-    icon: client.getIcon()
+    icon: (client.hasPermission('rooms_talk') ? client.getIcon() : "sound_mute")
   };
 }
 
@@ -891,7 +891,7 @@ ClientConnection.prototype.setIcon = function(icon, force) {
   }
 
   client.savePersist();
-  client._notifiyIconChange();
+  client._notifyIconChange();
 }
 
 ClientConnection.prototype.getIcon = function () {
@@ -1019,10 +1019,16 @@ ClientConnection.prototype.isInRoom = function(id) {
   return (client.rooms.indexOf(parseInt(id)) > -1);
 }
 
-ClientConnection.prototype._notifiyIconChange = function() {
+ClientConnection.prototype._notifyIconChange = function(to) {
   var client = this;
   var rooms = require('./chatRoom');
-  var icon = client.getIcon();
+
+  var icon;
+  if(to != null) {
+    icon = to;
+  } else {
+    icon = client.getIcon();
+  }
 
   for(i in client.rooms) {
     var id = client.rooms[i];

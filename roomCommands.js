@@ -35,6 +35,18 @@ var newCommandSet = function(room) {
         id: room.id,
         text: " * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
       })
+
+      cl._notifyIconChange("sound_mute");
+
+      setTimeout(function() {
+        cl._notifyIconChange();
+        cl.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: ' * Your mute has expired'
+        })
+      }, duration*1000);
+      
     } else {
       client.sendObject({
         type: 'roomText',
