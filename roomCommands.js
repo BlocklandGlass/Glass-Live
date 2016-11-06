@@ -109,7 +109,7 @@ var newCommandSet = function(room) {
     if(!client.isMod)
       return;
 
-    client.persist.warnings += amt;
+    client.persist.warnings = 0;
     client.savePersist();
 
     client.sendObject({
