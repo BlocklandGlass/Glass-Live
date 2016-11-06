@@ -1,10 +1,110 @@
 const EventEmitter = require('events');
+const moment = require('moment');
 
 class RoomCommands extends EventEmitter {}
+
+global.startTime = moment();
 
 var newCommandSet = function(room) {
   var commandSet = new RoomCommands();
   commandSet.room = room;
+
+  commandSet.on('help', (client, args) => {
+    var command = {};
+    command['help'] = "Shows available commands";
+    command['motd'] = "Prints room's message of the day";
+    command['uptime'] = "How long the Live server has been online";
+    command['time'] = "Server's local time";
+    command['seticon'] = "<icon>\tSets your icon";
+
+    if(client.isMod) {
+      command['setmotd'] = "<motd...>\tSets the room's MOTD";
+
+      command['kick'] = "<username...>\tKicks user from room";
+      command['kickid'] = "<blid>\tKicks user from room";
+
+      command['ban'] = "<duration> <username...>\tBans user from all rooms";
+      command['banid'] = "<duration <blid>\tBans user from room";
+    }
+
+    var msg = "";
+    for(cmd in command) {
+      if(msg != "")
+        msg = msg + '<br>';
+
+      msg = msg + "<color:ff0000>/" + cmd;
+      if(command[cmd].indexOf('\t') > -1) {
+        var field = command[cmd].split('\t');
+        msg = msg + " " + field[0] + " <color:666666>" + field[1];
+      } else {
+        msg = msg + " <color:666666>" + command[cmd];
+      }
+    }
+
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: msg
+    });
+  });
+
+  commandSet.on('motd', (client, args) => {
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: " * MOTD: " + room.persist.motd
+    });
+  });
+
+  commandSet.on('uptime', (client, args) => {
+    var seconds = moment().diff(global.startTime, 'seconds');
+    var minutes = Math.floor(seconds/60);
+    var hours = Math.floor(minutes/60);
+    var days = Math.floor(hours/24);
+
+    seconds = seconds % 60;
+    minutes = minutes % 60;
+    hours = hours % 24;
+
+    str = "";
+    if(days > 0) {
+      str += " " + days + "d";
+    }
+
+    if(hours > 0) {
+      str += " " + hours + "h";
+    }
+
+    if(minutes > 0) {
+      str += " " + minutes + "m";
+    }
+
+    if(seconds > 0) {
+      str += " " + seconds + "s";
+    }
+
+    str = str.trim();
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: " * Uptime: " + str
+    });
+  });
+
+  commandSet.on('time', (client, args) => {
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: " * Local Time: " + moment().format('h:mm:ss a')
+    });
+  });
+
+  commandSet.on('seticon', (client, args) => {
+    var str = args.join(' ');
+    str.trim();
+    client.setIcon(str);
+  });
+
   commandSet.on('ping', (client, args) => {
     client.sendObject({
       type: 'error',
@@ -56,7 +156,7 @@ var newCommandSet = function(room) {
     }
   })
 
-  commandSet.on('motd', (client, args) => {
+  commandSet.on('setmotd', (client, args) => {
     room.setMOTD(args.join(' '));
     room.sendObject({
       type: 'roomText',

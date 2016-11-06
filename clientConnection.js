@@ -145,9 +145,6 @@ var createNew = function(socket) {
           connection.disconnect();
           return;
         }
-        logger.log('Got user data for clientConnection ' + connection.blid)
-
-        logger.log('Data: ' + JSON.stringify(data));
 
         connection.persist = data;
         connection.persist.username = res.username;
@@ -308,7 +305,7 @@ var createNew = function(socket) {
 
     if(room != false) {
       var args = msg.split(' ');
-      var call = args[0].substr(1);
+      var call = args[0].substr(1).toLowerCase();
       args.splice(0, 1);
       logger.log('Got command: ' + call);
       room.handleCommand(connection, call, args);
