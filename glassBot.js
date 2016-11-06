@@ -44,13 +44,13 @@ var onRoomMessage = function(room, sender, message) {
     var word = words[i];
     if(word == "@glassbot") {
       if(module._lastHello == null || moment().diff(moment.unix(module._lastHello), 'seconds') > 45) {
-        sendRoomMessage(room, module.greetings[Math.floor(Math.random() * module.greetings)]);
+        sendRoomMessage(room, module.greetings[Math.floor(Math.random() * module.greetings.length)]);
         module._lastHello = moment().unix();
       }
     }
 
-    if(word == "nigger" || word == "nig" || word == "nigg") {
-      sendRoomMessage(room, "Discimination is not welcome here.");
+    if(module._racialSlurs.indexOf(word.toLowerCase()) > -1) {
+      sendRoomMessage(room, "Discrimination is not welcome here.");
 
       setTimeout(()=>{
         room.sendObject({

@@ -37,6 +37,7 @@ var createNew = function(socket) {
   if(module.connectionHistory == null)
     module.connectionHistory = {};
 
+  var remoteAddress = connection.remoteAddress;
   if(module.connectionHistory[remoteAddress] == null)
     module.connectionHistory[remoteAddress] = [];
 
@@ -47,9 +48,10 @@ var createNew = function(socket) {
       connection.sendObject({
         type: "connectTimeout",
         message: "You're connecting too fast!",
-        timeout: 5000
+        timeout: 10000
       })
       connection.disconnect();
+      logger.log(remoteAddress + ' rejected for too many connect attempts.');
       return;
     }
   }
