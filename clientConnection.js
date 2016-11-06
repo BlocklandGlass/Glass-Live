@@ -34,6 +34,30 @@ var createNew = function(socket) {
   if(module.clients == null)
     module.clients = {};
 
+  if(module.connectionHistory == null)
+    module.connectionHistory = {};
+
+  if(module.connectionHistory[remoteAddress] == null)
+    module.connectionHistory[remoteAddress] = [];
+
+  var connectHistory = module.connectionHistory[remoteAddress];
+  if(connectHistory[2] != null) {
+    if(moment().diff(moment.unix(connectHistory[2].time), 'seconds') <= 10) {
+      //the past 3 connections have been within 10 seconds
+      connection.sendObject({
+        type: "connectTimeout",
+        message: "You're connecting too fast!",
+        timeout: 5000
+      })
+      connection.disconnect();
+      return;
+    }
+  }
+
+  module.connectionHistory[remoteAddress].push({
+    time: moment().unix(),
+  });
+
   module.connections.push(connection);
 
   connection.on('auth', (data) => {
