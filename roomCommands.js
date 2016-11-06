@@ -35,7 +35,7 @@ var newCommandSet = function(room) {
       command['glassUpdate'] = "<version>\tNotifies clients a update is available";
     }
 
-    var msg = "Public Commands:";
+    var msg = "<color:ed7669>Help:<br><color:444444>Public Commands:";
     var i = 0;
     for(cmd in command) {
       if(msg != "")
@@ -46,12 +46,12 @@ var newCommandSet = function(room) {
       }
       i++;
 
-      msg = msg + "<color:ff0000>/" + cmd;
+      msg = msg + "<color:ed7669>/" + cmd;
       if(command[cmd].indexOf('\t') > -1) {
         var field = command[cmd].split('\t');
-        msg = msg + " " + field[0] + " <color:666666>" + field[1];
+        msg = msg + " " + field[0] + " <color:444444>" + field[1];
       } else {
-        msg = msg + " <color:666666>" + command[cmd];
+        msg = msg + " <color:444444>" + command[cmd];
       }
     }
 
