@@ -12,6 +12,20 @@ const moment = require('moment');
 
 class ClientConnection extends EventEmitter {}
 
+var sendObjectAll = function(obj) {
+  if(module.clients == null)
+    module.clients = {};
+
+  for(blid in module.clients) {
+    logger.log('sendObjectAll ' + blid);
+    try {
+      module.clients[blid].sendObject(obj);
+    } catch(e) {
+      logger.log('...failed');
+    }
+  }
+}
+
 var getFromBlid = function(blid) {
   if(module.clients == null)
     module.clients = {};
@@ -1103,4 +1117,4 @@ ClientConnection.prototype._didLeaveRoom = function(id) {
     client.rooms.splice(idx, 1);
 }
 
-module.exports = {createNew, getFromBlid};
+module.exports = {createNew, getFromBlid, sendObjectAll};

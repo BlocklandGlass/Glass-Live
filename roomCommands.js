@@ -31,6 +31,8 @@ var newCommandSet = function(room) {
 
       command['ban'] = "<duration> <username...>\tBans user from all rooms";
       command['banid'] = "<duration <blid>\tBans user from room";
+
+      command['glassUpdate'] = "<version>\tNotifies clients a update is available";
     }
 
     var msg = "Public Commands:";
@@ -273,7 +275,7 @@ var newCommandSet = function(room) {
 
   commandSet.on('setmotd', (client, args) => {
     if(!client.isMod) return;
-    
+
     room.setMOTD(args.join(' '));
     room.sendObject({
       type: 'roomText',
@@ -322,7 +324,7 @@ var newCommandSet = function(room) {
     });
   });
 
-  commandSet.on('resetWarnings', (client, args) => {
+  commandSet.on('resetwarnings', (client, args) => {
     if(!client.isMod)
       return;
 
@@ -333,6 +335,25 @@ var newCommandSet = function(room) {
       type: 'roomText',
       id: room.id,
       text: ' * Your warnings have been reset'
+    });
+  });
+
+  commandSet.on('glassupdate', (client, args) => {
+    if(!client.isMod)
+      return;
+
+    if(args.length != 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Format: /glassUpdate <version>'
+      });
+      return;
+    }
+
+    clientConnection.sendObjectAll({
+      type: 'glassUpdate',
+      version: args[0]
     });
   });
 
