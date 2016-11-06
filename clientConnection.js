@@ -8,6 +8,8 @@ const Permissions = require('./permissions');
 
 const Icons = require('./icons.json');
 
+const moment = require('moment');
+
 class ClientConnection extends EventEmitter {}
 
 var getFromBlid = function(blid) {
