@@ -65,6 +65,19 @@ var createNew = function(socket) {
         return;
       }
 
+      if(res.username.toLowerCase() == "glassbot") {
+        connection.sendObject({
+          type: 'error',
+          message: "That username is not allowed!",
+          showDialog: true
+        });
+        connection.sendObject({
+          type: "auth",
+          status: "failed"
+        });
+        return;
+      }
+
       //auth is a success
       connection.blid = res.blid;
       connection.username = res.username;
