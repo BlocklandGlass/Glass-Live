@@ -459,8 +459,6 @@ ClientConnection.prototype.kick = function(reason) {
     reason: str
   });
 
-  logger.log("TODO : remove client from rooms after kick");
-
   client.disconnect(2);
 }
 

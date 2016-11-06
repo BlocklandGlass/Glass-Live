@@ -1,6 +1,8 @@
 const EventEmitter = require('events');
 const moment = require('moment');
 
+const clientConnection = require('./clientConnection');
+
 class RoomCommands extends EventEmitter {}
 
 global.startTime = moment();
@@ -16,9 +18,13 @@ var newCommandSet = function(room) {
     command['uptime'] = "How long the Live server has been online";
     command['time'] = "Server's local time";
     command['seticon'] = "<icon>\tSets your icon";
+    var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
       command['setmotd'] = "<motd...>\tSets the room's MOTD";
+
+      command['mute'] = "<duration> <username...>\tMutes user for the duration";
+      command['muteid'] = "<duration> <blid>\tMutes user for the duration";
 
       command['kick'] = "<username...>\tKicks user from room";
       command['kickid'] = "<blid>\tKicks user from room";
@@ -27,10 +33,16 @@ var newCommandSet = function(room) {
       command['banid'] = "<duration <blid>\tBans user from room";
     }
 
-    var msg = "";
+    var msg = "Public Commands:";
+    var i = 0;
     for(cmd in command) {
       if(msg != "")
         msg = msg + '<br>';
+
+      if(i == pubCmdCt) {
+        msg = msg + '<br>Mod Commands:<br>';
+      }
+      i++;
 
       msg = msg + "<color:ff0000>/" + cmd;
       if(command[cmd].indexOf('\t') > -1) {
@@ -152,6 +164,101 @@ var newCommandSet = function(room) {
         type: 'roomText',
         id: room.id,
         text: ' * Unable to find user "' + args.join(' ') + '"'
+      });
+    }
+  })
+
+  commandSet.on('muteid', (client, args) => {
+    var duration = parseInt(args[0]);
+
+    if(duration <= 0 || duration == NaN)
+      return; //inavlid
+
+    if(args.length != 2) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Format: /muteid <duration> <blid>'
+      });
+      return;
+    }
+
+    var cl = clientConnection.getFromBlid(args[1])
+    if(cl != false) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Muted ' + cl.username + ' for ' + duration + ' seconds'
+      });
+
+      cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
+
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: " * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
+      })
+
+      cl._notifyIconChange("sound_mute");
+
+      setTimeout(function() {
+        cl._notifyIconChange();
+        cl.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: ' * Your mute has expired'
+        })
+      }, duration*1000);
+
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find blid "' + args[1] + '"'
+      });
+    }
+  })
+
+  commandSet.on('kick', (client, args) => {
+    var cl = room.findClientByName(args.join(' '));
+    if(cl != false) {
+
+      cl.setTempPerm('rooms_join', false, 1000, "You've been kicked!");
+
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: " * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
+      })
+
+      cl.kick();
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find user "' + args.join(' ') + '"'
+      });
+    }
+  })
+
+  commandSet.on('kickid', (client, args) => {
+    var cl = clientConnection.getFromBlid(args[0])
+    if(cl != false) {
+
+      cl.setTempPerm('rooms_join', false, 1000, "You've been kicked!");
+
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: " * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
+      })
+
+      cl.kick();
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find blid "' + args[0] + '"'
       });
     }
   })
