@@ -126,6 +126,8 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('mute', (client, args) => {
+    if(!client.isMod) return;
+
     var duration = parseInt(args[0]);
     args.splice(0, 1);
 
@@ -169,6 +171,8 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('muteid', (client, args) => {
+    if(!client.isMod) return;
+
     var duration = parseInt(args[0]);
 
     if(duration <= 0 || duration == NaN)
@@ -220,6 +224,8 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('kick', (client, args) => {
+    if(!client.isMod) return;
+
     var cl = room.findClientByName(args.join(' '));
     if(cl != false) {
 
@@ -242,6 +248,8 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('kickid', (client, args) => {
+    if(!client.isMod) return;
+
     var cl = clientConnection.getFromBlid(args[0])
     if(cl != false) {
 
@@ -264,6 +272,8 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('setmotd', (client, args) => {
+    if(!client.isMod) return;
+    
     room.setMOTD(args.join(' '));
     room.sendObject({
       type: 'roomText',
