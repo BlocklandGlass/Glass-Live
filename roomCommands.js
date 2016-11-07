@@ -405,9 +405,10 @@ var newCommandSet = function(room) {
 
     var rooms = require('./chatRoom').getAll();
     for(i in rooms) {
-      rooms[i].sendObject({
+      var room = rooms[i];
+      room.sendObject({
         type: 'roomText',
-        id: rooms[i],
+        id: room.id,
         text: msg
       })
     }
