@@ -34,7 +34,7 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory.length > 100)
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
-  var compMessage = replace(/[A-Za-z_]+/g," ");
+  var compMessage = message.replace(/[A-Za-z]+/g," ");
 
   if(compMessage == compMessage.toUpperCase() && compMessage.length > 5) {
     sendRoomMessage(room, "No yelling, please!");
