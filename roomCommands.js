@@ -22,6 +22,8 @@ var newCommandSet = function(room) {
     var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
+      command['announce'] = "<message...>\tBroadcasts a message in all rooms";
+
       command['setmotd'] = "<motd...>\tSets the room's MOTD";
 
       command['mute'] = "<duration> <username...>\tMutes user for the duration";
@@ -391,6 +393,24 @@ var newCommandSet = function(room) {
       id: room.id,
       text: "* " + client.username + " has set the MOTD to " + args.join(' ')
     })
+  });
+
+  commandSet.on('announce', (client, args) => {
+    if(!client.isMod) return;
+
+    if(args.length == 0)
+      return;
+
+    var msg = '<color:54d98c> * ' + args.join(' ');
+
+    var rooms = require('./chatRoom').getAll();
+    for(i in rooms) {
+      rooms[i].sendObject({
+        type: 'roomText',
+        id: rooms[i],
+        text: msg
+      })
+    }
   });
 
   commandSet.on('resetPermissions', (client, args) => {
