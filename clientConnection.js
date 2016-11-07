@@ -26,6 +26,10 @@ var sendObjectAll = function(obj) {
   }
 }
 
+var getAll = function() {
+  return module.clients;
+}
+
 var getFromBlid = function(blid) {
   if(module.clients == null)
     module.clients = {};
@@ -165,7 +169,7 @@ var createNew = function(socket) {
         connection.savePersist();
 
         connection._permissionSet = Permissions.createSet(connection.persist);
-        connection.listPermissions();
+        //connection.listPermissions();
 
 
         if(!connection.hasPermission('service_use')) {
@@ -1156,4 +1160,4 @@ ClientConnection.prototype._didLeaveRoom = function(id) {
     client.rooms.splice(idx, 1);
 }
 
-module.exports = {createNew, getFromBlid, sendObjectAll};
+module.exports = {createNew, getFromBlid, sendObjectAll, getAll};

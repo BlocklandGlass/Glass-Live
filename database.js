@@ -25,15 +25,15 @@ var getUserData = function(blid, callback) {
   }
 
   if(module.userData[blid] != undefined) { // desync problems? TODO
-    logger.log("Loaded " + blid + " from memory");
+    //logger.log("Loaded " + blid + " from memory");
     callback(module.userData[blid], null);
   } else {
     if(module.loadCallbacks[blid] == null) {
       module.loadCallbacks[blid] = [callback];
-      logger.log("Loading " + blid + " from database");
+      //logger.log("Loading " + blid + " from database");
       _loadUserData(blid);
     } else {
-      logger.log("Added another callback to load " + blid + " from database");
+      //logger.log("Added another callback to load " + blid + " from database");
       module.loadCallbacks[blid].push(callback);
     }
   }

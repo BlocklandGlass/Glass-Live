@@ -47,4 +47,12 @@ var start = function() {
   logger.log("Listening on port " + (27005));
 }
 
-module.exports = {start};
+var shutdown = function() {
+  if(module.chatServer != null && module.chatServer.listening) {
+    module.chatServer.close(function(err) {
+      logger.log("No longer listening...");
+    })
+  }
+}
+
+module.exports = {start, shutdown};

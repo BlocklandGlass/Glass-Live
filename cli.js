@@ -1,3 +1,5 @@
+const logger = require('./logger')
+
 var vorpal = require('vorpal')();
 global.vorpal = vorpal;
 
@@ -14,7 +16,40 @@ vorpal.command('kickClient <blid> [reason...]', 'Kicks client from glass live').
   callback();
 });
 
-vorpal.command('killServer', 'Forcefully stops Blockland server').action(function(args, callback) {
-  require('./blocklandWrapper').killServer();
+vorpal.command('listClients', 'Shows clients online').action(function(args, callback) {
+  var clients = require('./clientConnection').getAll();
+  var ct = 0;
+  for(i in clients) {
+    ct++;
+    var cl = clients[i];
+    logger.log(cl.username + '\t' + cl.blid + '\t' + cl.socket.remoteAddress);
+  }
+  logger.log('Displayed ' + ct + ' users');
+  callback();
+});
+
+vorpal.command('shutdown <timeout> [reason...]', 'Issues a \'shutdown\' call to all clients. Timeout in seconds').action(function(args, callback) {
+  var reason;
+  if(args.reason == null) {
+    reason = "";
+  } else {
+    reason = args.reason.join(' ');
+    reason.trim();
+  }
+
+  require('./chatServer').shutdown();
+
+  require('./clientConnection').sendObjectAll({
+    type: 'shutdown',
+    planned: true,
+    reason: reason,
+    timeout: args.timeout*1000
+  });
+
+  logger.log('Quitting...');
+  setTimeout(function() {
+    process.exit(0);
+  }, 1000);
+
   callback();
 });
