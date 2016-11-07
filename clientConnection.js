@@ -676,6 +676,11 @@ ClientConnection.prototype.sendFriendRequests = function() {
             return;
           }
 
+          if(client.persist.getBlocked().indexOf(blid) > -1) {
+            callback(null, null);
+            return;
+          }
+
           var obj = {
             username: name,
             blid: blid,
