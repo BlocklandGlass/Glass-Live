@@ -666,7 +666,7 @@ ClientConnection.prototype.sendFriendRequests = function() {
 
   friendIds.forEach(function(blid) {
     calls.push(function(callback) {
-      if(client.getBlocked().indexOf(parseInt(blid)) > -1) {
+      if(client.getBlocked().indexOf(blid) > -1) {
         callback(null, null);
         return;
       }
@@ -698,6 +698,16 @@ ClientConnection.prototype.sendFriendRequests = function() {
   });
 
   async.parallel(calls, function(err, res) {
+    var idx = 0;
+
+    while(idx < res.length && res.length > 0) {
+      if(res[idx] == null) {
+        res.splice(idx, 1);
+      } else {
+        idx++;
+      }
+    }
+
     client.sendObject({
       type: "friendRequests",
       requests: res
@@ -708,8 +718,6 @@ ClientConnection.prototype.sendFriendRequests = function() {
 ClientConnection.prototype.sendBlockedList = function() {
   var client = this;
   var friendIds = client.getBlocked();
-
-
 
   var calls = [];
 
