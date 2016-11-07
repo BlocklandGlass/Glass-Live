@@ -562,7 +562,9 @@ ClientConnection.prototype.cleanUp = function() {
   if(client.socket != null && !client.socket.destroyed) {
     client.socket.destroy();
   }
-  client.socket = undefined;
+
+  delete client.socket;
+  delete client;
 }
 
 ClientConnection.prototype.getReference = function() {
