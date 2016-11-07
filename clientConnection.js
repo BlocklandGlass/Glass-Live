@@ -203,7 +203,6 @@ var createNew = function(socket) {
         connection.sendFriendList();
         connection.sendFriendRequests();
         connection.sendBlockedList();
-        connection.setStatus('online');
 
         if(module.clients[connection.blid] != null) {
           module.clients[connection.blid].disconnect();
