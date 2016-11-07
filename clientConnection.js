@@ -666,6 +666,11 @@ ClientConnection.prototype.sendFriendRequests = function() {
 
   friendIds.forEach(function(blid) {
     calls.push(function(callback) {
+      if(client.getBlocked().indexOf(blid) > -1) {
+        callback(null, null);
+        return;
+      }
+
       if(module.clients[blid] != null) {
         var obj = module.clients[blid].getReference();
         callback(null, obj);
@@ -674,11 +679,6 @@ ClientConnection.prototype.sendFriendRequests = function() {
           if(err != null) {
             logger.error('Error loading friend BLID ' + blid + ' for ' + client.blid + ':', err);
             //continue anyways
-            callback(null, null);
-            return;
-          }
-
-          if(client.getBlocked().indexOf(blid) > -1) {
             callback(null, null);
             return;
           }
