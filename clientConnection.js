@@ -332,7 +332,7 @@ var createNew = function(socket) {
   connection.on('getRoomList', () => {
     connection.sendObject({
       type: "roomList",
-      rooms: require('./chatRoom').getList()
+      rooms: require('./chatRoom').getList(connection)
     });
   });
 

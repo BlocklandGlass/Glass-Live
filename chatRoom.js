@@ -41,7 +41,7 @@ var getFromId = function(id) {
   return module.rooms[id];
 }
 
-var getList = function() {
+var getList = function(client) {
   var rooms = [];
 
   if(module.rooms == null)
@@ -49,6 +49,12 @@ var getList = function() {
 
   for(i in module.rooms) {
     var room = module.rooms[i];
+    if(client != null && room.requirement != null) {
+      if(client[room.requirement] != true) {
+        continue;
+      }
+    }
+
     rooms.push({
       id: room.id,
       image: room.icon,
