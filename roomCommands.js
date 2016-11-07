@@ -18,6 +18,7 @@ var newCommandSet = function(room) {
     command['uptime'] = "How long the Live server has been online";
     command['time'] = "Server's local time";
     command['seticon'] = "<icon>\tSets your icon";
+    command['getid'] = "<username...>\tReturns BLID of user";
     var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
@@ -30,7 +31,9 @@ var newCommandSet = function(room) {
       command['kickid'] = "<blid>\tKicks user from room";
 
       command['ban'] = "<duration> <username...>\tBans user from all rooms";
-      command['banid'] = "<duration <blid>\tBans user from room";
+      command['banid'] = "<duration <blid>\tBans user from all rooms";
+
+      command['barid'] = "<duration <blid>\tBans user from Glass Live";
 
       command['glassUpdate'] = "<version>\tNotifies clients a update is available";
     }
@@ -119,6 +122,24 @@ var newCommandSet = function(room) {
     client.setIcon(str);
   });
 
+  commandSet.on('getid', (client, args) => {
+
+    var cl = room.findClientByName(args.join(' '));
+    if(cl != false) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * ' + cl.username + '\'s BL_ID is ' + cl.blid
+      });
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find user "' + args.join(' ') + '"'
+      });
+    }
+  })
+
   commandSet.on('ping', (client, args) => {
     client.sendObject({
       type: 'error',
@@ -149,7 +170,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: " * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
+        text: "<color:e74c3c> * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
       })
 
       cl._notifyIconChange("sound_mute");
@@ -194,7 +215,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Muted ' + cl.username + ' for ' + duration + ' seconds'
+        text: '<color:e74c3c> * Muted ' + cl.username + ' for ' + duration + ' seconds'
       });
 
       cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
@@ -236,7 +257,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: " * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
+        text: "<color:e74c3c> * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
       })
 
       cl.kick();
@@ -260,10 +281,98 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: " * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
+        text: "<color:e74c3c> * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
       })
 
       cl.kick();
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find blid "' + args[0] + '"'
+      });
+    }
+  })
+
+  commandSet.on('banid', (client, args) => {
+    if(!client.isMod) return;
+
+    var duration = parseInt(args[0]);
+
+    if(duration <= 0 || duration == NaN)
+      return; //inavlid
+
+    if(args.length < 2) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Format: /banid <duration> <blid> [reason...]'
+      });
+      return;
+    }
+
+    var reason = args.slice(2).join(' ');
+    reason.trim();
+
+    if(reason == "")
+      reason = "You're banned!";
+
+    var cl = clientConnection.getFromBlid(args[1])
+    if(cl != false) {
+
+      cl.setTempPerm('rooms_join', false, duration, reason);
+
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration + " seconds"
+      })
+
+      cl.roomBan(duration, reason);
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find blid "' + args[0] + '"'
+      });
+    }
+  })
+
+  commandSet.on('barid', (client, args) => {
+    if(!client.isMod) return;
+
+    var duration = parseInt(args[0]);
+
+    if(duration <= 0 || duration == NaN)
+      return; //inavlid
+
+    if(args.length < 2) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Format: /barid <duration> <blid> [reason...]'
+      });
+      return;
+    }
+
+    var reason = args.slice(2).join(' ');
+    reason.trim();
+
+    if(reason == "")
+      reason = "You're barred!";
+
+    var cl = clientConnection.getFromBlid(args[1])
+    if(cl != false) {
+
+      cl.setTempPerm('service_use', false, duration, reason);
+
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration + " seconds"
+      })
+
+      cl.bar(duration, reason);
     } else {
       client.sendObject({
         type: 'roomText',

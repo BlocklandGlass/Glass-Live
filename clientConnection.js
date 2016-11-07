@@ -476,6 +476,25 @@ ClientConnection.prototype.kick = function(reason) {
   client.disconnect(2);
 }
 
+ClientConnection.prototype.bar = function(duration, reason) {
+  var client = this;
+
+  var str;
+  if(reason == null) {
+    str = "Unspecified";
+  } else {
+    str = reason;
+  }
+
+  client.sendObject({
+    type: "barred",
+    reason: str,
+    duration: duration
+  });
+
+  client.disconnect(2);
+}
+
 ClientConnection.prototype.onDisconnect = function(code) {
   var client = this;
   if(client.socket != null) {
@@ -1050,6 +1069,11 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
     duration: duration,
     reason: reason
   });
+
+  var rooms = client.rooms.slice();
+  for(i in client.rooms) {
+    require('./chatRoom').getFromId(rooms[i]).removeClient(client, 2);
+  }
 }
 
 ClientConnection.prototype.reduceWarnings = function() {
