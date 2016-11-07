@@ -666,7 +666,7 @@ ClientConnection.prototype.sendFriendRequests = function() {
 
   friendIds.forEach(function(blid) {
     calls.push(function(callback) {
-      if(client.getBlocked().indexOf(blid) > -1) {
+      if(client.getBlocked().indexOf(parseInt(blid)) > -1) {
         callback(null, null);
         return;
       }
