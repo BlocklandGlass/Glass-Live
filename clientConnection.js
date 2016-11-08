@@ -57,7 +57,7 @@ var createNew = function(socket) {
   if(module.connectionHistory == null)
     module.connectionHistory = {};
 
-  var remoteAddress = connection.remoteAddress;
+  var remoteAddress = socket.remoteAddress;
   if(module.connectionHistory[remoteAddress] == null)
     module.connectionHistory[remoteAddress] = [];
 
