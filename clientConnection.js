@@ -83,6 +83,18 @@ var createNew = function(socket) {
   module.connections.push(connection);
 
   connection.on('auth', (data) => {
+
+    if(data.blid == undefined) {
+      //pre 3.2.0 client!
+      connection.sendObject({
+        type: 'messageBox',
+        title: 'Blockland Glass Outdated!',
+        text: 'A major update for Blockland Glass has been released!<br><br>Your version is unable to connect to Glass Live. Please update to the latest version.'
+      });
+
+      return; //leave the connection in limbo as to not cause a reconnect
+    }
+
     Auth.check(data.ident, function(res, error) {
       if(error) {
         logger.error('Unable to auth BL_ID ' + data.blid);
@@ -1062,7 +1074,6 @@ ClientConnection.prototype.block = function(blid) {
 }
 
 ClientConnection.prototype.unblock = function(blid) {
-  logger.log('unblock ' + blid);
   var client = this;
   var idx = client.getBlocked().indexOf(blid);
 
@@ -1071,8 +1082,6 @@ ClientConnection.prototype.unblock = function(blid) {
 
   client.persist.blocked.splice(idx, 1);
   client.savePersist();
-
-  logger.log('saving: ' + JSON.stringify(client.persist.blocked));
 }
 
 ClientConnection.prototype.roomBan = function(duration, reason) {
