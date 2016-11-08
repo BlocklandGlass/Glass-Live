@@ -42,9 +42,11 @@ var start = function() {
     });
   });
 
-  module.chatServer.listen(27005);
+  var port = require('./config.json').port;
+
+  module.chatServer.listen(port);
   module.listening = true;
-  logger.log("Listening on port " + (27005));
+  logger.log("Listening on port " + (port));
 }
 
 var shutdown = function() {

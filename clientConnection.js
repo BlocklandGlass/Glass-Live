@@ -204,8 +204,8 @@ var createNew = function(socket) {
         connection.sendFriendRequests();
         connection.sendBlockedList();
 
-        if(module.clients[connection.blid] != null) {
-          module.clients[connection.blid].disconnect();
+        if(module.clients[connection.blid] != null && module.clients[connection.blid] != connection) {
+          module.clients[connection.blid].disconnect(1);
         }
 
         module.clients[connection.blid] = connection;
