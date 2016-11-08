@@ -155,6 +155,18 @@ var _warningPunishment = function(client, amt, room) {
   if(amt == 2) {
     doMute(client, 30, room);
   }
+
+  if(amt == 3) {
+    doMute(client, 60, room);
+  }
+
+  if(amt == 4) {
+    client.kick("You've reached 4 warnings!");
+  }
+
+  if(amt >= 5) {
+    doRoomsBan(client, 60*Math.pow(5, amt-4), "Greater than 5 warnings");
+  }
 }
 
 module.exports = {onRoomMessage, sendRoomMessage};

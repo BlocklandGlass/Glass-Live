@@ -606,6 +606,7 @@ ClientConnection.prototype.setStatus = function(status) {
     if(module.clients[friendId] != null) {
       module.clients[friendId].sendObject({
         type: "friendStatus",
+        username: client.username,
         blid: client.blid,
         status: status
       });
