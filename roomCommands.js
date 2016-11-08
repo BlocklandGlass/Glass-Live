@@ -335,7 +335,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Unable to find blid "' + args[0] + '"'
+        text: ' * Unable to find blid "' + args[1] + '"'
       });
     }
   })
@@ -379,7 +379,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Unable to find blid "' + args[0] + '"'
+        text: ' * Unable to find blid "' + args[1] + '"'
       });
     }
   })
