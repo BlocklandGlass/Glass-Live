@@ -19,6 +19,21 @@ module._racialSlurs = [
   "spic"
 ]
 
+var _percentUpper = function(str) {
+  var compMessage = str.replace(/[^A-Za-z]+/g," ");
+  var upperCt = 0;
+  for(var i = 0; i < compMessage.length; i++) {
+    var char = compMessage.charAt(i);
+    if(char.toUpperCase() == char) {
+      upperCt++;
+    }
+  }
+
+  require('./logger').log('perc: ' + (upperCt/compMessage.length));
+
+  return upperCt/compMessage.length;
+}
+
 var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory == null)
     sender.roomMessageHistory = [];
@@ -34,9 +49,7 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory.length > 100)
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
-  var compMessage = message.replace(/[^A-Za-z]+/g," ");
-
-  if(compMessage == compMessage.toUpperCase() && compMessage.length > 5) {
+  if(_percentUpper(message) > 0.80 && message.length > 5) {
     sendRoomMessage(room, "No yelling, please!");
     issueWarning(sender, 1, room);
   }

@@ -1094,12 +1094,12 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
   client.sendObject({
     type: "roomBanned",
     all: true,
-    duration: duration,
+    duration: Math.floor(duration/60), // TEMP FIX
     reason: reason
   });
 
   var rooms = client.rooms.slice();
-  for(i in client.rooms) {
+  for(i in rooms) {
     require('./chatRoom').getFromId(rooms[i]).removeClient(client, 2);
   }
 }
