@@ -29,8 +29,6 @@ var _percentUpper = function(str) {
     }
   }
 
-  require('./logger').log('perc: ' + (upperCt/compMessage.length));
-
   return upperCt/compMessage.length;
 }
 

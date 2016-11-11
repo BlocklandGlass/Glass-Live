@@ -14,6 +14,7 @@ var newCommandSet = function(room) {
   commandSet.on('help', (client, args) => {
     var command = {};
     command['help'] = "Shows available commands";
+    command['rules'] = "Shows rules";
     command['motd'] = "Prints room's message of the day";
     command['uptime'] = "How long the Live server has been online";
     command['time'] = "Server's local time";
@@ -64,6 +65,26 @@ var newCommandSet = function(room) {
       type: 'roomText',
       id: room.id,
       text: msg
+    });
+  });
+
+  commandSet.on('rules', (client, args) => {
+    var rules = [
+      "Be respectful",
+      "No spamming",
+      "Don't type in all caps",
+      "No derogatory or discriminatory words or statements",
+    ]
+
+    var str = "Rules:";
+    for(i in rules) {
+      str = str + "<br>" + rules[i];
+    }
+
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: str
     });
   });
 
@@ -414,7 +435,7 @@ var newCommandSet = function(room) {
     }
   });
 
-  commandSet.on('resetPermissions', (client, args) => {
+  commandSet.on('resetperm', (client, args) => {
     if(!client.isMod)
       return;
 
@@ -438,6 +459,43 @@ var newCommandSet = function(room) {
         type: 'roomText',
         id: room.id,
         text: '* Unable to find user "' + args.join(' ') + '"'
+      });
+    }
+  })
+
+  commandSet.on('resetpermid', (client, args) => {
+    if(!client.isMod)
+      return;
+
+    var blid = args[0];
+    var cl = clientConnection.getFromBlid(args[0]);
+    if(cl == false) {
+      var Database = require('./database');
+      Database.getUserData(blid, function(data, err) {
+        if(err != null) {
+          client.sendObject({
+            type: 'roomText',
+            id: room.id,
+            text: '* Error updating user data for blid "' + blid + '"'
+          });
+          return;
+        }
+
+        data.permissions = {};
+        data.tempPermissions = {};
+        Database.saveUserData(blid, data);
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: ' * Reset permissions for ' + data.username + ' (offline)'
+        });
+      });
+    } else {
+      cl.resetPermissions();
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Reset permissions for ' + cl.username
       });
     }
   })

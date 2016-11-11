@@ -1025,6 +1025,16 @@ ClientConnection.prototype.setTempPerm = function(perm, val, duration, reason) {
   client.savePersist();
 }
 
+ClientConnection.prototype.resetPermissions = function() {
+  var client = this;
+  client.persist.permissions = {};
+  client.persist.tempPermissions = {};
+
+  client._permissionSet.delete();
+  client._permissionSet = Permissions.createSet(client.persist);
+  client.savePersist();
+}
+
 ClientConnection.prototype.listPermissions = function() {
   var client = this;
   var perms = Permissions.getAll();
