@@ -95,6 +95,17 @@ var createNew = function(socket) {
       return; //leave the connection in limbo as to not cause a reconnect
     }
 
+    /*if(data.username.trim() == "") {
+      connection.sendObject({
+        type: "auth",
+        status: "failed",
+        action: "reident",
+        debug: "Username was blank!",
+        timeout: 5000
+      });
+      return;
+    }*/
+
     Auth.check(data.ident, function(res, error) {
       if(error) {
         logger.error('Unable to auth BL_ID ' + data.blid);

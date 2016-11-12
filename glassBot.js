@@ -60,6 +60,23 @@ var _percentUpper = function(str) {
   return upperCt/compMessage.length;
 }
 
+var _percentDiscrimination = function(str) {
+  var str = str.toLowerCase();
+  var highPct = 0;
+
+  for(i in module._racialSlurs) {
+    var slur = module._racialSlurs[i];
+    if(str.indexOf(slur) == 0) {
+      var pct = slur.length/str.length;
+      if(pct > highPct) {
+        highPct = pct;
+      }
+    }
+  }
+
+  return highPct;
+}
+
 var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory == null)
     sender.roomMessageHistory = [];
@@ -75,11 +92,12 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory.length > 100)
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
-  if(_percentUpper(message) > 0.75 && message.length > 5) {
+  if(_percentUpper(message) >= 0.75 && message.length > 5) {
     sendRoomMessage(room, "No yelling, please.");
     issueWarning(sender, 1, room);
   }
 
+  var didDisc = false;
   var words = message.toLowerCase().split(/ /g);
   for(i in words) {
     var word = words[i];
@@ -93,7 +111,8 @@ var onRoomMessage = function(room, sender, message) {
     */
 
     // use strpos?
-    if((module._racialSlurs.indexOf(word.toLowerCase()) > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "s") > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "'s") > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "z") > -1)) {
+    if(_percentDiscrimination(word) >= 0.60 && !didDisc) {
+      didDisc = true;
       sendRoomMessage(room, "Discrimination is not welcome here.");
 
       setTimeout(()=>{
