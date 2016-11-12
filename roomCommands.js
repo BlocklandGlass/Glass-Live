@@ -14,10 +14,11 @@ var newCommandSet = function(room) {
   commandSet.on('help', (client, args) => {
     var command = {};
     command['help'] = "Shows available commands";
-    command['rules'] = "Shows rules";
+    command['warnings'] = "Shows how many temporary warnings you have";
+    command['rules'] = "Shows the rules";
     command['motd'] = "Prints room's message of the day";
     command['uptime'] = "How long the Live server has been online";
-    command['time'] = "Server's local time";
+    command['time'] = "The server's local time";
     command['seticon'] = "<icon>\tSets your icon";
     command['getid'] = "<username...>\tReturns BLID of user";
     var pubCmdCt = Object.keys(command).length;
@@ -34,14 +35,19 @@ var newCommandSet = function(room) {
       command['kickid'] = "<blid>\tKicks user from room";
 
       command['ban'] = "<duration> <username...>\tBans user from all rooms";
-      command['banid'] = "<duration <blid>\tBans user from all rooms";
+      command['banid'] = "<duration> <blid>\tBans user from all rooms";
 
-      command['barid'] = "<duration <blid>\tBans user from Glass Live";
+      command['barid'] = "<duration> <blid>\tBans user from Glass Live";
+
+      command['resetperm'] = "<username...>\tResets user's permissions";
+      command['resetpermid'] = "<blid>\tResets user's permissions";
+
+      command['resetwarnings'] = "Resets your warnings";
 
       command['glassUpdate'] = "<version>\tNotifies clients a update is available";
     }
 
-    var msg = "<color:444444>Help:<br>Public Commands:";
+    var msg = "<color:444444><br>Public Commands:";
     var i = 0;
     for(cmd in command) {
       if(msg != "")
@@ -70,13 +76,13 @@ var newCommandSet = function(room) {
 
   commandSet.on('rules', (client, args) => {
     var rules = [
-      "Be respectful",
-      "No spamming",
-      "Don't type in all caps",
-      "No derogatory or discriminatory words or statements",
+      "Be respectful.",
+      "No spamming.",
+      "Don't type in all caps.",
+      "No derogatory/discriminatory words or statements."
     ]
 
-    var str = "Rules:";
+    var str = "<br>Rules:";
     for(i in rules) {
       str = str + "<br>" + rules[i];
     }
@@ -164,6 +170,8 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('ping', (client, args) => {
+    if(!client.isMod) return;
+
     client.sendObject({
       type: 'error',
       message: "pong! " + args.join(' '),
