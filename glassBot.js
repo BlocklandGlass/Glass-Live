@@ -1,22 +1,48 @@
 const moment = require('moment');
 
+/*
 module.greetings = [
   "That's me!",
   "How's it going?",
   "Hello!",
   "Yes?"
 ];
+*/
 
+// no need to add plurals here, they are handled automatically
 module._racialSlurs = [
   "nigger",
+  "niggar",
+  "wigger",
   "nig",
   "nigg",
   "beaner",
+  "faget",
+  "fagit",
+  "faggit",
+  "fagget",
   "faggot",
+  "fagg",
   "fag",
   "sand-nigger",
   "sandnigger",
-  "spic"
+  "sand-niggar",
+  "sand-nig",
+  "sandniggar",
+  "sandnig",
+  "sandnigg",
+  "spic",
+  "kike",
+  "coon",
+  "chink",
+  "cracker",
+  "whitey",
+  "polack",
+  "niglet",
+  "nignog",
+  "nog-nig",
+  "nognig",
+  "nig-nog"
 ]
 
 var _percentUpper = function(str) {
@@ -47,22 +73,25 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory.length > 100)
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
-  if(_percentUpper(message) > 0.80 && message.length > 5) {
-    sendRoomMessage(room, "No yelling, please!");
+  if(_percentUpper(message) > 0.75 && message.length > 5) {
+    sendRoomMessage(room, "No yelling, please.");
     issueWarning(sender, 1, room);
   }
 
   var words = message.toLowerCase().split(/ /g);
   for(i in words) {
     var word = words[i];
+    /*
     if(word == "@glassbot") {
       if(module._lastHello == null || moment().diff(moment.unix(module._lastHello), 'seconds') > 45) {
         sendRoomMessage(room, module.greetings[Math.floor(Math.random() * module.greetings.length)]);
         module._lastHello = moment().unix();
       }
     }
+    */
 
-    if(module._racialSlurs.indexOf(word.toLowerCase()) > -1) {
+    // use strpos?
+    if((module._racialSlurs.indexOf(word.toLowerCase()) > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "s") > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "'s") > -1)) {
       sendRoomMessage(room, "Discrimination is not welcome here.");
 
       setTimeout(()=>{
@@ -100,7 +129,7 @@ var checkMessageHistory = function(sender, message, room) {
 
   if(hist[4] != null) {
     if(moment().diff(moment.unix(hist[4].time), 'seconds') < 5) {
-      sendRoomMessage(room, "Slow down there, sparky!");
+      sendRoomMessage(room, "Slow down.");
       issueWarning(sender, 1, room);
     }
   }
@@ -117,7 +146,7 @@ var checkMessageHistory = function(sender, message, room) {
     }
 
     if(repCount >= 2) {
-      sendRoomMessage(room, "Don't repeat yourself so often");
+      sendRoomMessage(room, "Don't repeat yourself so often.");
       issueWarning(sender, 1, room);
       break;
     }
@@ -160,7 +189,7 @@ var issueWarning = function(client, amt, room) {
 
 var _warningPunishment = function(client, amt, room) {
   if(amt == 1) {
-    client.setTempPerm('rooms_talk', false, 5, "You're muted!");
+    doMute(client, 5, room);
   }
 
   if(amt == 2) {
@@ -172,7 +201,7 @@ var _warningPunishment = function(client, amt, room) {
   }
 
   if(amt == 4) {
-    client.kick("You've reached 4 warnings!");
+    client.kick("You've reached 4 warnings");
   }
 
   if(amt >= 5) {
