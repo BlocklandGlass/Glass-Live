@@ -16,6 +16,8 @@ module._racialSlurs = [
   "wigger",
   "nig",
   "nigg",
+  "nigga",
+  "nigguh",
   "beaner",
   "faget",
   "fagit",
@@ -91,7 +93,7 @@ var onRoomMessage = function(room, sender, message) {
     */
 
     // use strpos?
-    if((module._racialSlurs.indexOf(word.toLowerCase()) > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "s") > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "'s") > -1)) {
+    if((module._racialSlurs.indexOf(word.toLowerCase()) > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "s") > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "'s") > -1) || (module._racialSlurs.indexOf(word.toLowerCase() + "z") > -1)) {
       sendRoomMessage(room, "Discrimination is not welcome here.");
 
       setTimeout(()=>{
