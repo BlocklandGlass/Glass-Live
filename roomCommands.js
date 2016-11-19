@@ -20,7 +20,7 @@ var newCommandSet = function(room) {
     command['uptime'] = "How long the Live server has been online";
     command['time'] = "The server's local time";
     command['seticon'] = "<icon>\tSets your icon";
-    command['getid'] = "<username...>\tReturns BLID of user";
+    // command['getid'] = "<username...>\tReturns BLID of user";
     var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
@@ -41,10 +41,16 @@ var newCommandSet = function(room) {
 
       command['resetperm'] = "<username...>\tResets user's permissions";
       command['resetpermid'] = "<blid>\tResets user's permissions";
+    }
+    
+    var modCmdCt = Object.keys(command).length;
+    
+    if(client.isAdmin) {
+      command['ping'] = "pong";
 
       command['resetwarnings'] = "Resets your warnings";
 
-      command['glassUpdate'] = "<version>\tNotifies clients a update is available";
+      command['glassupdate'] = "<version>\tNotifies clients a update is available";
     }
 
     var msg = "<color:444444><br>Public Commands:";
@@ -55,6 +61,8 @@ var newCommandSet = function(room) {
 
       if(i == pubCmdCt) {
         msg = msg + '<br>Mod Commands:<br>';
+      } else if(i == modCmdCt) {
+        msg = msg + '<br>Admin Commands:<br>';
       }
       i++;
 
@@ -151,6 +159,7 @@ var newCommandSet = function(room) {
     client.setIcon(str);
   });
 
+  /*
   commandSet.on('getid', (client, args) => {
 
     var cl = room.findClientByName(args.join(' '));
@@ -168,9 +177,10 @@ var newCommandSet = function(room) {
       });
     }
   })
+  */
 
   commandSet.on('ping', (client, args) => {
-    if(!client.isMod) return;
+    if(!client.isAdmin) return;
 
     client.sendObject({
       type: 'error',
@@ -521,28 +531,28 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('resetwarnings', (client, args) => {
-    if(!client.isMod)
+    if(!client.isAdmin)
       return;
 
     client.persist.warnings = 0;
     client.savePersist();
-
-    client.sendObject({
+    
+    room.sendObject({
       type: 'roomText',
       id: room.id,
-      text: ' * Your warnings have been reset'
-    });
+      text: "* " + client.username + " reset their warnings"
+    })
   });
 
   commandSet.on('glassupdate', (client, args) => {
-    if(!client.isMod)
+    if(!client.isAdmin)
       return;
 
     if(args.length != 1) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /glassUpdate <version>'
+        text: ' * Format: /glassupdate <version>'
       });
       return;
     }
