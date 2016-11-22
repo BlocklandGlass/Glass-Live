@@ -191,6 +191,12 @@ var doRoomsBan = function(client, duration, reason) {
 var doMute = function(cl, duration, room) {
   cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
 
+  cl._notifyIconChange("sound_mute");
+
+  setTimeout(function() {
+    cl._notifyIconChange();
+  }, duration*1000);
+
   room.sendObject({
     type: 'roomText',
     id: room.id,
