@@ -21,6 +21,8 @@ module._racialSlurs = [
   "niggur",
   "niggar",
   "nigette",
+  "niggerfaggot",
+  "nigger-faggot",
   "wigger",
   "beaner",
   "faget",
