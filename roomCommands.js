@@ -28,19 +28,21 @@ var newCommandSet = function(room) {
 
       command['setmotd'] = "<motd...>\tSets the room's MOTD";
 
-      command['mute'] = "<duration> <username...>\tMutes user for the duration";
-      command['muteid'] = "<duration> <blid>\tMutes user for the duration";
+      command['mute'] = "<seconds> <username...>\tMutes user for the duration";
+      command['muteid'] = "<seconds> <blid>\tMutes user for the duration";
 
       command['kick'] = "<username...>\tKicks user from room";
       command['kickid'] = "<blid>\tKicks user from room";
 
-      command['ban'] = "<duration> <username...>\tBans user from all rooms";
-      command['banid'] = "<duration> <blid>\tBans user from all rooms";
+      command['ban'] = "<seconds> <username...>\tBans user from all rooms";
+      command['banid'] = "<seconds> <blid> [reason...]\tBans user from all rooms";
 
-      command['barid'] = "<duration> <blid>\tBans user from Glass Live";
+      command['barid'] = "<seconds> <blid> [reason...]\tBans user from Glass Live";
+
+      command['resetwarnings'] = "Resets your warnings";
 
       command['resetperm'] = "<username...>\tResets user's permissions";
-      command['resetpermid'] = "<blid>\tResets user's permissions";
+      command['resetpermid'] = "<blid>\tResets online/offline user's permissions";
     }
     
     var modCmdCt = Object.keys(command).length;
@@ -48,9 +50,7 @@ var newCommandSet = function(room) {
     if(client.isAdmin) {
       command['ping'] = "pong";
 
-      command['resetwarnings'] = "Resets your warnings";
-
-      command['glassupdate'] = "<version>\tNotifies clients a update is available";
+      command['glassupdate'] = "<version>\tNotifies clients an update is available";
     }
 
     var msg = "<color:444444><br>Public Commands:";
@@ -84,10 +84,10 @@ var newCommandSet = function(room) {
 
   commandSet.on('rules', (client, args) => {
     var rules = [
-      "Be respectful.",
-      "No spamming.",
-      "Don't type in all caps.",
-      "No derogatory/discriminatory words or statements."
+      "1. Do be respectful.",
+      "2. Do not spam.",
+      "3. Do not type in all caps.",
+      "4. Do not use derogatory/discriminatory words or statements."
     ]
 
     var str = "<br>Rules:";
@@ -246,7 +246,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /muteid <duration> <blid>'
+        text: ' * Format: /muteid <seconds> <blid>'
       });
       return;
     }
@@ -347,7 +347,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /banid <duration> <blid> [reason...]'
+        text: ' * Format: /banid <seconds> <blid> [reason...]'
       });
       return;
     }
@@ -391,7 +391,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /barid <duration> <blid> [reason...]'
+        text: ' * Format: /barid <seconds> <blid> [reason...]'
       });
       return;
     }
@@ -531,7 +531,7 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('resetwarnings', (client, args) => {
-    if(!client.isAdmin)
+    if(!client.isMod)
       return;
 
     client.persist.warnings = 0;
