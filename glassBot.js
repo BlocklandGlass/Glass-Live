@@ -72,8 +72,8 @@ var _percentUpper = function(str) {
   return upperCt/compMessage.length;
 }
 
-var _percentDiscrimination = function(str) {
-  var str = str.toLowerCase();
+var _percentDiscrimination = function(word) {
+  var str = word.toLowerCase();
   var highPct = 0;
 
   for(i in module._racialSlurs) {
@@ -85,6 +85,8 @@ var _percentDiscrimination = function(str) {
       }
     }
   }
+
+  require('./logger').log("discrim: " + word + "\t" + highPct);
 
   return highPct;
 }
@@ -123,9 +125,10 @@ var onRoomMessage = function(room, sender, message) {
     */
 
     // use strpos?
-    if(_percentDiscrimination(word) >= 0.60 && !didDisc) {
+    word.trim();
+    if(word.length > 0 && _percentDiscrimination(word) >= 0.60 && !didDisc) {
       didDisc = true;
-      sendRoomMessage(room, "Discrimination is not welcome here.");
+      sendRoomMessage(room, "Discrimination is not welcome here. (" + word + ")");
 
       setTimeout(()=>{
         room.sendObject({
