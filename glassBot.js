@@ -86,8 +86,6 @@ var _percentDiscrimination = function(word) {
     }
   }
 
-  require('./logger').log("discrim: " + word + "\t" + highPct);
-
   return highPct;
 }
 
@@ -126,7 +124,7 @@ var onRoomMessage = function(room, sender, message) {
 
     // use strpos?
     word.trim();
-    if(word.length > 0 && _percentDiscrimination(word) >= 0.60 && !didDisc) {
+    if(word.length > 0 && _percentDiscrimination(word) >= 0.80 && !didDisc) {
       didDisc = true;
       sendRoomMessage(room, "Discrimination is not welcome here. (" + word + ")");
 

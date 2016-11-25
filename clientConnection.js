@@ -242,6 +242,9 @@ var createNew = function(socket) {
         var rooms = require('./chatRoom').getAll();
         for(i in rooms) {
           var room = rooms[i];
+          if(!connection.hasPermission('rooms_join'))
+            break;
+            
           if(room.default) {
             room.addClient(connection, true);
           }
@@ -969,7 +972,6 @@ ClientConnection.prototype.savePersist = function() {
     if(client._permissionSet != null) {
       client.persist.permissions = client._permissionSet.perms;
       client.persist.tempPermissions = client._permissionSet.temp;
-      logger.log(client.persist.tempPermissions);
     }
     Database.saveUserData(client.blid, client.persist);
   } else {

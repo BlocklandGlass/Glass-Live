@@ -49,11 +49,7 @@ var getList = function(client) {
 
   for(i in module.rooms) {
     var room = module.rooms[i];
-
-    logger.log('cli: ' + (client != null));
-    logger.log('req: ' + room.requirement);
-    logger.log('val: ' + client[room.requirement]);
-    logger.log('has: ' + (client[room.requirement] != true));
+    
     if(client != null && room.requirement != null) {
       if(client[room.requirement] != true) {
         continue;

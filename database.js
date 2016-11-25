@@ -88,7 +88,7 @@ var saveUserData = function(blid, data, callback) {
   }
 
   if(callback == null)
-    callback = function(err){ if(err!=null) { logger.error(err); } };
+    callback = function(err){ if(err!=null) { logger.error("Save error: " + err); } };
 
   module.userData[blid] = data;
 
