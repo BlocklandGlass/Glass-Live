@@ -230,7 +230,7 @@ var issueWarning = function(client, amt, room) {
     client.sendObject({
       type: 'roomText',
       id: room.id,
-      text: '* You now have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
+      text: '<color:e74c3c> * You now have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
     });
   }
 
