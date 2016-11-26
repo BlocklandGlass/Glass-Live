@@ -207,7 +207,7 @@ Chatroom.prototype.getClientList = function() {
     online: true, // depreciated
 
     status: "online",
-    icon: "balance_unbalance"
+    icon: "balance"
   });
 
   return clientList;
