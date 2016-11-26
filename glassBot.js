@@ -124,7 +124,7 @@ var onRoomMessage = function(room, sender, message) {
 
     // use strpos?
     word.trim();
-    if(word.length > 0 && _percentDiscrimination(word) >= 0.80 && !didDisc) {
+    if(word.length > 0 && _percentDiscrimination(word) >= 0.90 && !didDisc) {
       didDisc = true;
       sendRoomMessage(room, "Discrimination is not welcome here. (" + word + ")");
 
@@ -132,9 +132,9 @@ var onRoomMessage = function(room, sender, message) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' for ' +  60*5 + ' seconds'
+          text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' (' + sender.blid + ') from public rooms for ' +  60*5 + ' seconds'
         });
-        doRoomsBan(sender, 60*5, "Discimination is not welcome")
+        doRoomsBan(sender, 60*5, "Discimination: " + word)
       }, 1100);
     }
   }
@@ -216,11 +216,21 @@ var issueWarning = function(client, amt, room) {
 
   var warnings = client.persist.warnings;
 
+  /*
   if(room != null) {
     room.sendObject({
       type: 'roomText',
       id: room.id,
-      text: '<color:9b59b6> * ' + client.username + ' now has ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings') + '!'
+      text: '<color:9b59b6> * ' + client.username + ' now has ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
+    });
+  }
+  */
+  
+  if(room != null) {
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: '* You now have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
     });
   }
 
