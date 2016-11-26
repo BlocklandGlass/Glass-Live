@@ -518,7 +518,7 @@ ClientConnection.prototype.bar = function(duration, reason) {
   client.sendObject({
     type: "barred",
     reason: str,
-    duration: duration
+    duration: Math.floor(duration/60) // TEMP FIX
   });
 
   client.disconnect(2);
