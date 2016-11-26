@@ -13,9 +13,10 @@ module.greetings = [
 module._racialSlurs = [
   "nigger",
   "nig",
+  "niga",
   "nigg",
+  "nigga",
   "nigor",
-  "nigra",
   "nigre",
   "nigar",
   "niggur",
