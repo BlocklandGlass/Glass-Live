@@ -28,6 +28,7 @@ module._racialSlurs = [
   "beaner",
   "faget",
   "fagit",
+  "fagot",
   "faggit",
   "fagget",
   "faggot",
