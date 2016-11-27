@@ -12,7 +12,9 @@ module.greetings = [
 // no need to add plurals here, they are handled automatically
 module._racialSlurs = [
   "nigger",
+  "niggers",
   "nig",
+  "nigs",
   "niga",
   "nigg",
   "nigga",
@@ -26,6 +28,7 @@ module._racialSlurs = [
   "nigger-faggot",
   "wigger",
   "beaner",
+  "beaners",
   "faget",
   "fagit",
   "fagot",
@@ -34,6 +37,7 @@ module._racialSlurs = [
   "faggot",
   "fagg",
   "fag",
+  "fags",
   "sand-nigger",
   "sandnigger",
   "sand-niggar",
@@ -41,11 +45,13 @@ module._racialSlurs = [
   "sandniggar",
   "sandnig",
   "spic",
+  "spics",
   "kike",
+  "kikes",
   "coon",
+  "coons",
   "coonass",
   "chink",
-  "cracker",
   "polack",
   "niglet",
   "nig-let",
@@ -57,7 +63,6 @@ module._racialSlurs = [
   "redneck",
   "tarbaby",
   "tar-baby",
-  "pikey",
   "paki"
 ]
 
