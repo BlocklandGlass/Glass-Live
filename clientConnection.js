@@ -518,7 +518,7 @@ ClientConnection.prototype.bar = function(duration, reason) {
   client.sendObject({
     type: "barred",
     reason: str,
-    duration: Math.floor(duration/60) // TEMP FIX
+    duration: duration
   });
 
   client.disconnect(2);
@@ -1117,7 +1117,7 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
   client.sendObject({
     type: "roomBanned",
     all: true,
-    duration: Math.floor(duration/60), // TEMP FIX
+    duration: duration,
     reason: reason
   });
 
