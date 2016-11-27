@@ -1110,7 +1110,7 @@ ClientConnection.prototype.unblock = function(blid) {
 ClientConnection.prototype.roomBan = function(duration, reason) {
   var client = this;
   if(reason == null || reason == "") {
-    reason = "You're banned!";
+    reason = "No reason specified.";
   }
   client.setTempPerm('rooms_join', false, duration, reason);
   client.setTempPerm('rooms_talk', false, duration, reason);
