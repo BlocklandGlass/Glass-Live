@@ -355,8 +355,10 @@ var newCommandSet = function(room) {
     var reason = args.slice(2).join(' ');
     reason.trim();
 
+    /*
     if(reason == "")
       reason = "You're banned!";
+    */
 
     var cl = clientConnection.getFromBlid(args[1])
     if(cl != false) {
@@ -399,8 +401,10 @@ var newCommandSet = function(room) {
     var reason = args.slice(2).join(' ');
     reason.trim();
 
+    /*
     if(reason == "")
       reason = "You're barred!";
+    */
 
     var cl = clientConnection.getFromBlid(args[1])
     if(cl != false) {
