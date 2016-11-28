@@ -45,7 +45,9 @@ module._racialSlurs = [
   "sandniggar",
   "sandnig",
   "spic",
+  "spicc",
   "spics",
+  "spiccs",
   "kike",
   "kikes",
   "coon",
@@ -63,7 +65,9 @@ module._racialSlurs = [
   "redneck",
   "tarbaby",
   "tar-baby",
-  "paki"
+  "paki",
+  "gook",
+  "gooks"
 ]
 
 var _percentUpper = function(str) {
