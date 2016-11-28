@@ -1,6 +1,8 @@
 const EventEmitter = require('events');
 const moment = require('moment');
 
+const Database = require('./database');
+
 const clientConnection = require('./clientConnection');
 
 class RoomCommands extends EventEmitter {}
@@ -44,9 +46,9 @@ var newCommandSet = function(room) {
       command['resetperm'] = "<username...>\tResets user's permissions";
       command['resetpermid'] = "<blid>\tResets online/offline user's permissions";
     }
-    
+
     var modCmdCt = Object.keys(command).length;
-    
+
     if(client.isAdmin) {
       command['ping'] = "pong";
 
@@ -159,7 +161,7 @@ var newCommandSet = function(room) {
     client.setIcon(str);
   });
 
-  /*
+
   commandSet.on('getid', (client, args) => {
 
     var cl = room.findClientByName(args.join(' '));
@@ -177,7 +179,7 @@ var newCommandSet = function(room) {
       });
     }
   })
-  */
+
 
   commandSet.on('ping', (client, args) => {
     if(!client.isAdmin) return;
@@ -347,10 +349,12 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /banid <seconds> <blid> [reason...]'
+        text: ' * Format: /banid <minutes> <blid> [reason...]'
       });
       return;
     }
+
+    duration = duration*60; //minutes to seconds
 
     var reason = args.slice(2).join(' ');
     reason.trim();
@@ -373,11 +377,36 @@ var newCommandSet = function(room) {
 
       cl.roomBan(duration, reason);
     } else {
-      client.sendObject({
-        type: 'roomText',
-        id: room.id,
-        text: ' * Unable to find blid "' + args[1] + '"'
-      });
+      Database.getUserData(args[1], function(data, err) {
+        if(err != null) {
+          client.sendObject({
+            type: 'roomText',
+            id: room.id,
+            text: ' * Unable to find blid "' + args[1] + '"'
+          });
+          return;
+        }
+
+        var permSet = require('./permissions').createSet(data);
+        /* copied from clientConnection.js ClientConnection.prototype.roomBan */
+        if(reason == null || reason == "") {
+          reason = "No reason specified.";
+        }
+        permSet.newTempPermission('rooms_join', false, duration, reason);
+        permSet.newTempPermission('rooms_talk', false, duration, reason);
+
+        /* copied from ClientConnection.prototype.savePersist */
+        data.permissons = permSet.perms;
+        data.tempPermissons = permSet.temp;
+
+        Database.saveUserData(args[1], data);
+
+        room.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: '<color:e74c3c> * ' + client.username + ' banned offline user "' + data.username + '" (' + args[1] + '): ' + reason;
+        });
+      })
     }
   })
 
@@ -419,11 +448,32 @@ var newCommandSet = function(room) {
 
       cl.bar(duration, reason);
     } else {
-      client.sendObject({
-        type: 'roomText',
-        id: room.id,
-        text: ' * Unable to find blid "' + args[1] + '"'
-      });
+      Database.getUserData(args[1], function(data, err) {
+        if(err != null) {
+          client.sendObject({
+            type: 'roomText',
+            id: room.id,
+            text: ' * Unable to find blid "' + args[1] + '"'
+          });
+          return;
+        }
+
+        var permSet = require('./permissions').createSet(data);
+
+        permSet.newTempPermission('service_use', false, duration, reason);
+
+        /* copied from ClientConnection.prototype.savePersist */
+        data.permissons = permSet.perms;
+        data.tempPermissons = permSet.temp;
+
+        Database.saveUserData(args[1], data);
+
+        room.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: '<color:e74c3c> * ' + client.username + ' barred offline user "' + data.username + '" (' + args[1] + '): ' + reason
+        });
+      })
     }
   })
 
@@ -492,7 +542,6 @@ var newCommandSet = function(room) {
     var blid = args[0];
     var cl = clientConnection.getFromBlid(args[0]);
     if(cl == false) {
-      var Database = require('./database');
       Database.getUserData(blid, function(data, err) {
         if(err != null) {
           client.sendObject({
@@ -540,7 +589,7 @@ var newCommandSet = function(room) {
 
     client.persist.warnings = 0;
     client.savePersist();
-    
+
     room.sendObject({
       type: 'roomText',
       id: room.id,

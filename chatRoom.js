@@ -49,7 +49,7 @@ var getList = function(client) {
 
   for(i in module.rooms) {
     var room = module.rooms[i];
-    
+
     if(client != null && room.requirement != null) {
       if(client[room.requirement] != true) {
         continue;
@@ -265,7 +265,14 @@ Chatroom.prototype.findClientByName = function(name, exact) {
 Chatroom.prototype.handleCommand = function(client, command, args) {
   var room = this;
   try {
-    room.commandSet.emit(command, client, args)
+    var ct = room.commandSet.emit(command, client, args)
+    if(ct == 0) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: "<color:e74c3c> * Command not found"
+      })
+    }
   } catch (e) {
     logger.error("Error handling command " + command, e);
   }
