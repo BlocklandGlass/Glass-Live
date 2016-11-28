@@ -36,10 +36,10 @@ var newCommandSet = function(room) {
       command['kick'] = "<username...>\tKicks user from room";
       command['kickid'] = "<blid>\tKicks user from room";
 
-      command['ban'] = "<seconds> <username...>\tBans user from all rooms";
-      command['banid'] = "<seconds> <blid> [reason...]\tBans user from all rooms";
+      command['ban'] = "<minutes> <username...>\tBans user from all rooms";
+      command['banid'] = "<minutes> <blid> [reason...]\tBans user from all rooms";
 
-      command['barid'] = "<seconds> <blid> [reason...]\tBans user from Glass Live";
+      command['barid'] = "<minutes> <blid> [reason...]\tBans user from Glass Live";
 
       command['resetwarnings'] = "Resets your warnings";
 
@@ -340,7 +340,7 @@ var newCommandSet = function(room) {
   commandSet.on('banid', (client, args) => {
     if(!client.isMod) return;
 
-    var duration = parseInt(args[0]);
+    var duration = parseInt(args[0])*60;
 
     if(duration <= 0 || duration == NaN)
       return; //inavlid
@@ -353,8 +353,6 @@ var newCommandSet = function(room) {
       });
       return;
     }
-
-    duration = duration*60; //minutes to seconds
 
     var reason = args.slice(2).join(' ');
     reason.trim();
@@ -372,7 +370,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration + " seconds"
+        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration + " minutes"
       })
 
       cl.roomBan(duration, reason);
@@ -404,8 +402,60 @@ var newCommandSet = function(room) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:e74c3c> * ' + client.username + ' banned offline user "' + data.username + '" (' + args[1] + '): ' + reason;
+          text: '<color:e74c3c> * ' + client.username + ' banned offline user "' + data.username + '" (' + args[1] + '): ' + reason
         });
+      })
+    }
+  })
+
+  commandSet.on('unbanid', (client, args) => {
+    if(!client.isMod) return;
+
+    if(args.length < 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Format: /unbanid <blid>'
+      });
+      return;
+    }
+
+    var cl = clientConnection.getFromBlid(args[1])
+    if(cl != false) {
+
+      cl.setTempPerm('rooms_join', true, 1, "");
+
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: "<color:e74c3c> * Unbanned " + cl.username + " (" + cl.blid + ")"
+      })
+    } else {
+      Database.getUserData(args[0], function(data, err) {
+        if(err != null) {
+          client.sendObject({
+            type: 'roomText',
+            id: room.id,
+            text: ' * Unable to find blid "' + args[1] + '"'
+          });
+          return;
+        }
+
+        var permSet = require('./permissions').createSet(data);
+
+        permSet.newTempPermission('rooms_join', true, 1, "");
+
+        /* copied from ClientConnection.prototype.savePersist */
+        data.permissons = permSet.perms;
+        data.tempPermissons = permSet.temp;
+
+        Database.saveUserData(args[0], data);
+
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: "<color:e74c3c> * Unbanned " + data.username + " (" + args[0] + ")"
+        })
       })
     }
   })
@@ -413,7 +463,7 @@ var newCommandSet = function(room) {
   commandSet.on('barid', (client, args) => {
     if(!client.isMod) return;
 
-    var duration = parseInt(args[0]);
+    var duration = parseInt(args[0])*60;
 
     if(duration <= 0 || duration == NaN)
       return; //inavlid
@@ -422,7 +472,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /barid <seconds> <blid> [reason...]'
+        text: ' * Format: /barid <minutes> <blid> [reason...]'
       });
       return;
     }
@@ -443,7 +493,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration + " seconds"
+        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration + " minutes"
       })
 
       cl.bar(duration, reason);
