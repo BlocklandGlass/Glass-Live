@@ -542,9 +542,12 @@ ClientConnection.prototype.onDisconnect = function(code) {
 
 ClientConnection.prototype.disconnect = function(code) {
   var client = this;
+  if(code == null)
+    code = -1;
+  
   if(client.socket != null) {
     client.sendObject({
-      type: "disconnect",
+      type: "disconnected",
       reason: code
     });
 
