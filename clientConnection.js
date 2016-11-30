@@ -502,7 +502,7 @@ ClientConnection.prototype.kick = function(reason) {
     reason: str
   });
 
-  client.disconnect(2);
+  client.disconnect();
 }
 
 ClientConnection.prototype.bar = function(duration, reason) {
@@ -521,7 +521,7 @@ ClientConnection.prototype.bar = function(duration, reason) {
     duration: duration
   });
 
-  client.disconnect(2);
+  client.disconnect();
 }
 
 ClientConnection.prototype.onDisconnect = function(code) {
