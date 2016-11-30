@@ -84,12 +84,26 @@ var _percentUpper = function(str) {
 }
 
 var _percentDiscrimination = function(word) {
-  var str = word.toLowerCase();
+  var str = word.toLowerCase().replace(/[^A-Za-z]+/g,"");
   var highPct = 0;
 
   for(i in module._racialSlurs) {
     var slur = module._racialSlurs[i];
     if(str.indexOf(slur) == 0) {
+      var pct = slur.length/str.length;
+      if(pct > highPct) {
+        highPct = pct;
+      }
+    }
+
+    if(str.indexOf(slur+"s") == 0) {
+      var pct = slur.length/str.length;
+      if(pct > highPct) {
+        highPct = pct;
+      }
+    }
+
+    if(str.indexOf(slur+"es") == 0) {
       var pct = slur.length/str.length;
       if(pct > highPct) {
         highPct = pct;
@@ -121,6 +135,7 @@ var onRoomMessage = function(room, sender, message) {
   }
 
   var didDisc = false;
+  var didLength = false;
   var words = message.toLowerCase().split(/ /g);
   for(i in words) {
     var word = words[i];
@@ -147,6 +162,12 @@ var onRoomMessage = function(room, sender, message) {
         });
         doRoomsBan(sender, 60*5, "Discimination: " + word)
       }, 1100);
+    }
+
+    if(word.length > 20 && !didLength) {
+      didLength = true;
+      sendRoomMessage(room, "Is that a word? Seems a little long");
+      issueWarning(sender, 1, room);
     }
   }
 }
@@ -236,7 +257,7 @@ var issueWarning = function(client, amt, room) {
     });
   }
   */
-  
+
   if(room != null) {
     client.sendObject({
       type: 'roomText',
