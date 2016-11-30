@@ -115,7 +115,7 @@ var onRoomMessage = function(room, sender, message) {
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
   if(_percentUpper(message) >= 0.75 && message.length > 5) {
-    sendRoomMessage(room, "No yelling, please.");
+    sendRoomMessage(room, "Avoid all caps.");
     issueWarning(sender, 1, room);
   }
 
@@ -145,13 +145,13 @@ var onRoomMessage = function(room, sender, message) {
           id: room.id,
           text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' (' + sender.blid + ') from public rooms for ' +  60*5 + ' seconds'
         });
-        doRoomsBan(sender, 60*5, "Discimination: " + word)
+        doRoomsBan(sender, 60*5, "Discrimination: " + word)
       }, 1100);
     }
 
     if(word.length > 20 && !didLength) {
       didLength = true;
-      sendRoomMessage(room, "Is that a word? Seems a little long");
+      sendRoomMessage(room, "Is that a word? Seems a little long.");
       issueWarning(sender, 1, room);
     }
   }
@@ -268,6 +268,11 @@ var _warningPunishment = function(client, amt, room) {
   }
 
   if(amt == 4) {
+    room.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: "<color:9b59b6> * GlassBot kicked " + cl.username + " (" + cl.blid + ")"
+    })
     client.kick("You've reached 4 warnings");
   }
 
