@@ -12,9 +12,7 @@ module.greetings = [
 // no need to add plurals here, they are handled automatically
 module._racialSlurs = [
   "nigger",
-  "niggers",
   "nig",
-  "nigs",
   "niga",
   "nigg",
   "nigga",
@@ -25,10 +23,8 @@ module._racialSlurs = [
   "niggar",
   "nigette",
   "niggerfaggot",
-  "nigger-faggot",
   "wigger",
   "beaner",
-  "beaners",
   "faget",
   "fagit",
   "fagot",
@@ -38,36 +34,23 @@ module._racialSlurs = [
   "fagg",
   "fag",
   "fags",
-  "sand-nigger",
   "sandnigger",
-  "sand-niggar",
-  "sand-nig",
   "sandniggar",
   "sandnig",
   "spic",
-  "spicc",
-  "spics",
-  "spiccs",
   "kike",
-  "kikes",
   "coon",
-  "coons",
   "coonass",
   "chink",
   "polack",
   "niglet",
-  "nig-let",
   "nignog",
-  "nig-nog",
-  "nognig",
-  "nog-nig",
   "hillbilly",
   "redneck",
   "tarbaby",
-  "tar-baby",
   "paki",
   "gook",
-  "gooks"
+  "wetback"
 ]
 
 var _percentUpper = function(str) {
@@ -102,8 +85,10 @@ var _percentDiscrimination = function(word) {
         highPct = pct;
       }
     }
+    
+    // note: using "es" will get people banned for words such as "spicES" - do not want another spicy incident again
 
-    if(str.indexOf(slur+"es") == 0) {
+    if(str.indexOf(slur+"'s") == 0) {
       var pct = slur.length/str.length;
       if(pct > highPct) {
         highPct = pct;
