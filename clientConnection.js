@@ -463,7 +463,7 @@ var createNew = function(socket) {
         type: "messageNotification",
           chat_blid: target,
           chat_username: connection.username,
-          message: "This user does not accept messages from strangers."
+          message: "This user does not accept messages from strangers or has their status set to 'busy'."
       });
     }
 
