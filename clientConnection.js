@@ -455,6 +455,17 @@ var createNew = function(socket) {
       })
     }
   });
+  
+  connection.on('messagePrivate', (data) => {
+    var target = data.target;
+    if(module.clients[target] != null) {
+      module.clients[target].sendObject({
+        type: "messageNotification",
+          chat_blid: target,
+          chat_username: connection.username,
+          message: "This user does not accept messages from strangers."
+      });
+    }
 
   connection.on('messageTyping', (data) => {
     var target = data.target;
