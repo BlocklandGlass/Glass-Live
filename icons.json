@@ -1,5 +1,6 @@
 {
   "allowed": [
+    "user",
     "user_zorro",
     "user_yoda",
     "user_wicket",
@@ -29,6 +30,7 @@
     "user_soldier",
     "user_silhouette",
     "user_scream",
+    "user_santa",
     "user_samurai",
     "user_sailor_black",
     "user_sailor",
