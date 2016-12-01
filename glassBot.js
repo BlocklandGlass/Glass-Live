@@ -79,19 +79,21 @@ var _percentDiscrimination = function(word) {
       }
     }
 
-    if(str.indexOf(slur+"s") == 0) {
-      var pct = slur.length/str.length;
-      if(pct > highPct) {
-        highPct = pct;
-      }
-    }
-    
     // note: using "es" will get people banned for words such as "spicES" - do not want another spicy incident again
 
-    if(str.indexOf(slur+"'s") == 0) {
-      var pct = slur.length/str.length;
-      if(pct > highPct) {
-        highPct = pct;
+    var plurals = [
+      "s",
+      "'s",
+      "z",
+      "'z"
+    ];
+
+    for(i in plurals) {
+      if(str.indexOf(slur+plurals[i]) == 0) {
+        var pct = slur.length/str.length;
+        if(pct > highPct) {
+          highPct = pct;
+        }
       }
     }
   }
@@ -143,9 +145,9 @@ var onRoomMessage = function(room, sender, message) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' (' + sender.blid + ') from public rooms for ' +  60*5 + ' seconds'
+          text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' (' + sender.blid + ') from public rooms for ' +  60*15 + ' seconds'
         });
-        doRoomsBan(sender, 60*5, "Discrimination: " + word)
+        doRoomsBan(sender, 60*15, "Discrimination: " + word)
       }, 1100);
     }
 
