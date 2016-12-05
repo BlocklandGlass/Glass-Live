@@ -1,4 +1,5 @@
 const moment = require('moment');
+const logger = require('./logger');
 
 /*
 module.greetings = [
@@ -54,16 +55,22 @@ module._racialSlurs = [
 ]
 
 var _percentUpper = function(str) {
-  var compMessage = str.replace(/[^A-Za-z]+/g," ");
+  var compMessage = str.replace(/[^A-Za-z]+/g," ").trim();
+
   var upperCt = 0;
   for(var i = 0; i < compMessage.length; i++) {
     var char = compMessage.charAt(i);
     if(char.toUpperCase() == char) {
+      logger.log(char + ' is capital');
       upperCt++;
     }
   }
 
-  return upperCt/compMessage.length;
+  if(compMessage.length > 0) {
+    return upperCt/compMessage.length;
+  } else {
+    return 0;
+  }
 }
 
 var _percentDiscrimination = function(word) {

@@ -485,7 +485,7 @@ var createNew = function(socket) {
       connection.sendObject({
         type: "userAvatar",
         blid: data.blid,
-        avatar: module.clients[data.blid].avatar
+        avatar: module.clients[data.blid].avatarData
       });
     }
   });
