@@ -1,6 +1,7 @@
 const cli = require('./cli');
 const chatServer = require('./chatServer');
 const chatroom = require('./chatRoom');
+const masterServer = require('./masterServer');
 
 chatServer.start();
 
@@ -16,3 +17,5 @@ chatroom.create("Quality Assurance", "tree_red")
 
 chatroom.create("Staff", "balance_unbalance")
   .setRequirement('isMod');
+
+masterServer.queryMasterServer();

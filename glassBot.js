@@ -123,7 +123,7 @@ var onRoomMessage = function(room, sender, message) {
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
   if(_percentUpper(message) >= 0.75 && message.length > 5) {
-    sendRoomMessage(room, "Avoid all caps.");
+    sendRoomMessage(room, "Avoid using all caps.");
     issueWarning(sender, 1, room);
   }
 
@@ -157,7 +157,7 @@ var onRoomMessage = function(room, sender, message) {
       }, 1100);
     }
 
-    if(word.length > 20 && !didLength) {
+    if(word.length > 20 && !didLength && word.indexOf("http") != 0) {
       didLength = true;
       sendRoomMessage(room, "Is that a word? Seems a little long.");
       issueWarning(sender, 1, room);

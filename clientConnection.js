@@ -490,6 +490,63 @@ var createNew = function(socket) {
     }
   });
 
+  connection.on('updateLocation', (data) => {
+    // location - menus, singleplayer, hosting, playing, hosting_lan, playing_lan
+    // address - address, only for server/hosting
+
+    connection.location = data.location;
+    connection.locationAddress = data.address;
+
+    logger.log(connection.username + " is now " + data.location);
+
+    if(data.location == "hosting" || data.location == "playing") {
+      var masterServer = require('./masterServer');
+
+      masterServer.getFromAddress(data.address, function(server, err) {
+        if(err != null) {
+          logger.error("Error getting ServerInfo for " + data.address + ": " + err);
+          return;
+        }
+
+        var title;
+        if(server == false) {
+          title = "Server Currently Unlisted";
+        } else {
+          title = server.getTitle();
+        }
+
+        logger.log(connection.username + " is now playing " + title);
+
+        for(i in connection.persist.friends) {
+          var friendId = connection.persist.friends[i];
+          if(module.clients[friendId] != null) {
+            module.clients[friendId].sendObject({
+
+              type: "friendLocation",
+              username: connection.username,
+              blid: connection.blid,
+              location: data.location,
+              address: data.address,
+              serverTitle: title
+            });
+          }
+        }
+      })
+    } else {
+      for(i in connection.persist.friends) {
+        var friendId = connection.persist.friends[i];
+        if(module.clients[friendId] != null) {
+          module.clients[friendId].sendObject({
+            type: "friendLocation",
+            username: connection.username,
+            blid: connection.blid,
+            location: data.location
+          });
+        }
+      }
+    }
+  })
+
   return connection;
 }
 

@@ -370,7 +370,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration + " minutes"
+        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration/60 + " minutes"
       })
 
       cl.roomBan(duration, reason);
@@ -493,7 +493,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration + " minutes"
+        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration/60 + " minutes"
       })
 
       cl.bar(duration, reason);
