@@ -104,7 +104,6 @@ var saveUserData = function(blid, data, callback) {
         callback(err);
         return;
       }
-      logger.log("Saved " + blid);
       callback(null);
     });
     db.close();
