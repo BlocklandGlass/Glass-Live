@@ -61,7 +61,6 @@ var _percentUpper = function(str) {
   for(var i = 0; i < compMessage.length; i++) {
     var char = compMessage.charAt(i);
     if(char.toUpperCase() == char) {
-      logger.log(char + ' is capital');
       upperCt++;
     }
   }
