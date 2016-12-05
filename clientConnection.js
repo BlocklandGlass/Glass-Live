@@ -244,7 +244,7 @@ var createNew = function(socket) {
           var room = rooms[i];
           if(!connection.hasPermission('rooms_join'))
             break;
-            
+
           if(room.default) {
             room.addClient(connection, true);
           }
@@ -475,6 +475,21 @@ var createNew = function(socket) {
     connection.unblock(data.blid);
   });
 
+  connection.on('avatar', (data) => {
+    delete data['type'];
+    connection.avatarData = data;
+  });
+
+  connection.on('getAvatar', (data) => {
+    if(module.clients[data.blid] != null) {
+      connection.sendObject({
+        type: "userAvatar",
+        blid: data.blid,
+        avatar: module.clients[data.blid].avatar
+      });
+    }
+  });
+
   return connection;
 }
 
@@ -544,7 +559,7 @@ ClientConnection.prototype.disconnect = function(code) {
   var client = this;
   if(code == null)
     code = -1;
-  
+
   if(client.socket != null) {
     client.sendObject({
       type: "disconnected",
