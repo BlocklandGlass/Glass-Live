@@ -151,7 +151,7 @@ var onRoomMessage = function(room, sender, message) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' (' + sender.blid + ') from public rooms for ' +  60*15 + ' seconds'
+          text: '<color:9b59b6> * GlassBot banned ' + sender.username + ' (' + sender.blid + ') from public rooms for ' +  15 + ' minutes'
         });
         doRoomsBan(sender, 60*15, "Discrimination: " + word)
       }, 1100);
