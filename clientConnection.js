@@ -515,16 +515,18 @@ var createNew = function(socket) {
           title = server.getTitle();
         }
 
+        connection.locationName = title;
+
         logger.log(connection.username + " is now playing " + title);
 
         for(i in connection.persist.friends) {
           var friendId = connection.persist.friends[i];
           if(module.clients[friendId] != null) {
             module.clients[friendId].sendObject({
-
               type: "friendLocation",
               username: connection.username,
               blid: connection.blid,
+
               location: data.location,
               address: data.address,
               serverTitle: title
@@ -533,6 +535,7 @@ var createNew = function(socket) {
         }
       })
     } else {
+      module.clients[blid].locationName = "";
       for(i in connection.persist.friends) {
         var friendId = connection.persist.friends[i];
         if(module.clients[friendId] != null) {
@@ -725,6 +728,12 @@ ClientConnection.prototype.sendFriendList = function() {
     calls.push(function(callback) {
       if(module.clients[blid] != null) {
         var obj = module.clients[blid].getReference();
+        var locationData = {
+          location: module.clients[blid].location,
+          address: module.clients[blid].locationAddress,
+          serverTitle: module.clients[blid].locationName
+        }
+        obj.locationData = locationData;
         callback(null, obj);
       } else {
         Database.getUserData(blid, function(data, err) {

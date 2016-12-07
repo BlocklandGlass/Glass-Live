@@ -111,6 +111,9 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory == null)
     sender.roomMessageHistory = [];
 
+  if(room.name == "Staff")
+    return;
+
   checkMessageHistory(sender, message, room);
 
   sender.roomMessageHistory.push({
