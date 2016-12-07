@@ -535,7 +535,7 @@ var createNew = function(socket) {
         }
       })
     } else {
-      module.clients[blid].locationName = "";
+      connection.locationName = "";
       for(i in connection.persist.friends) {
         var friendId = connection.persist.friends[i];
         if(module.clients[friendId] != null) {
