@@ -160,7 +160,7 @@ var onRoomMessage = function(room, sender, message) {
       }, 1100);
     }
 
-    if(word.length > 25 && !didLength && word.indexOf("http") != 0) {
+    if(word.length > 35 && !didLength && word.indexOf("http://") != 0 && word.indexOf("https://") != 0) {
       didLength = true;
       sendRoomMessage(room, "Is that a word? Seems a little long.");
       issueWarning(sender, 1, room);
