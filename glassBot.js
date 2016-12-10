@@ -13,6 +13,7 @@ module.greetings = [
 // no need to add plurals here, they are handled automatically
 module._racialSlurs = [
   "nigger",
+  "niggers",
   "nig",
   "niga",
   "nigg",
@@ -46,8 +47,6 @@ module._racialSlurs = [
   "polack",
   "niglet",
   "nignog",
-  "hillbilly",
-  "redneck",
   "tarbaby",
   "paki",
   "gook",
@@ -208,7 +207,7 @@ var checkMessageHistory = function(sender, message, room) {
     }
 
     if(repCount >= 2) {
-      sendRoomMessage(room, "Don't repeat yourself so often.");
+      sendRoomMessage(room, "Don't spam.");
       issueWarning(sender, 1, room);
       break;
     }
@@ -217,6 +216,17 @@ var checkMessageHistory = function(sender, message, room) {
 
 var doRoomsBan = function(client, duration, reason) {
   client.roomBan(duration, reason);
+}
+
+var doKick = function(cl, reason, room) {
+  if(room != null) {
+    room.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: "<color:9b59b6> * GlassBot kicked " + cl.username + " (" + cl.blid + ")"
+    })
+  }
+  cl.kick(reason);
 }
 
 var doMute = function(cl, duration, room) {
@@ -228,11 +238,13 @@ var doMute = function(cl, duration, room) {
     cl._notifyIconChange();
   }, duration*1000);
 
-  room.sendObject({
-    type: 'roomText',
-    id: room.id,
-    text: "<color:9b59b6> * GlassBot has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
-  })
+  if(duration > 5) {
+    room.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: "<color:9b59b6> * GlassBot has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
+    })
+  }
 }
 
 var issueWarning = function(client, amt, room) {
@@ -258,7 +270,7 @@ var issueWarning = function(client, amt, room) {
     client.sendObject({
       type: 'roomText',
       id: room.id,
-      text: '<color:e74c3c> * You now have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
+      text: '<color:e74c3c> * You now have ' + warnings + ' temporary ' + (warnings == 1 ? 'warning' : 'warnings')
     });
   }
 
@@ -279,12 +291,7 @@ var _warningPunishment = function(client, amt, room) {
   }
 
   if(amt == 4) {
-    room.sendObject({
-      type: 'roomText',
-      id: room.id,
-      text: "<color:9b59b6> * GlassBot kicked " + cl.username + " (" + cl.blid + ")"
-    })
-    client.kick("You've reached 4 warnings");
+    doKick(client, "You've reached 4 warnings", room);
   }
 
   if(amt >= 5) {
