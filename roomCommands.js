@@ -41,7 +41,8 @@ var newCommandSet = function(room) {
 
       command['barid'] = "<minutes> <blid> <reason...>\tBans user from Glass Live";
 
-      command['resetwarnings'] = "Resets your warnings";
+      command['resetwarnings'] = "<username...>\tResets user's warnings";
+      command['resetwarningsid'] = "<blid>\tResets user's warnings";
 
       command['resetperm'] = "<username...>\tResets user's permissions";
       command['resetpermid'] = "<blid>\tResets online/offline user's permissions";
@@ -639,16 +640,49 @@ var newCommandSet = function(room) {
   commandSet.on('resetwarnings', (client, args) => {
     if(!client.isMod) return;
 
-    client.persist.warnings = 0;
-    client.savePersist();
+    var cl = room.findClientByName(args.join(' '));
+    if(cl != false) {
+      cl.persist.warnings = 0;
+      cl.savePersist();
 
-    room.sendObject({
-      type: 'roomText',
-      id: room.id,
-      text: "* " + client.username + " reset their warnings"
-    })
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: " * " + client.username + " reset " + cl.username + "'s warnings"
+      });
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* Unable to find user "' + args.join(' ') + '"'
+      });
+    }
   });
+  
+  commandSet.on('resetwarningsid', (client, args) => {
+    if(!client.isMod)
+      return;
+    
+    var blid = args[0];
+    var cl = clientConnection.getFromBlid(args[0]);
+    if(cl != false) {
+      cl.persist.warnings = 0;
+      cl.savePersist();
 
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: " * " + client.username + " reset " + cl.username + "'s warnings"
+      });
+    } else {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Unable to find blid "' + args[0] + '"'
+      });
+    }
+  });
+  
   commandSet.on('glassupdate', (client, args) => {
     if(!client.isAdmin) return;
 
