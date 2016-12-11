@@ -22,7 +22,7 @@ var newCommandSet = function(room) {
     command['uptime'] = "How long the Live server has been online";
     command['time'] = "The server's local time";
     command['seticon'] = "<icon>\tSets your icon";
-    // command['getid'] = "<username...>\tReturns BLID of user";
+    command['getid'] = "<username...>\tReturns BLID of user";
     var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
@@ -36,10 +36,10 @@ var newCommandSet = function(room) {
       command['kick'] = "<username...>\tKicks user from room";
       command['kickid'] = "<blid>\tKicks user from room";
 
-      command['ban'] = "<minutes> <username...>\tBans user from all rooms";
-      command['banid'] = "<minutes> <blid> [reason...]\tBans user from all rooms";
+      command['banid'] = "<minutes> <blid> <reason...>\tBans user from all rooms";
+      command['unbanid'] = "<blid>\tUnbans user from all rooms";
 
-      command['barid'] = "<minutes> <blid> [reason...]\tBans user from Glass Live";
+      command['barid'] = "<minutes> <blid> <reason...>\tBans user from Glass Live";
 
       command['resetwarnings'] = "Resets your warnings";
 
@@ -86,7 +86,7 @@ var newCommandSet = function(room) {
 
   commandSet.on('rules', (client, args) => {
     var rules = [
-      "1. Do be respectful.",
+      "1. Be respectful.",
       "2. Do not spam.",
       "3. Do not type in all caps.",
       "4. Do not use derogatory/discriminatory words or statements."
@@ -349,7 +349,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /banid <minutes> <blid> [reason...]'
+        text: ' * Format: /banid <minutes> <blid> <reason...>'
       });
       return;
     }
@@ -357,10 +357,14 @@ var newCommandSet = function(room) {
     var reason = args.slice(2).join(' ');
     reason.trim();
 
-    /*
-    if(reason == "")
-      reason = "You're banned!";
-    */
+    if(reason == "") {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * You must specify a reason'
+      });
+      return;
+    }
 
     var cl = clientConnection.getFromBlid(args[1])
     if(cl != false) {
@@ -370,7 +374,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration/60 + " minutes"
+        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration/60 + " minutes: " + reason
       })
 
       cl.roomBan(duration, reason);
@@ -387,9 +391,6 @@ var newCommandSet = function(room) {
 
         var permSet = require('./permissions').createSet(data);
         /* copied from clientConnection.js ClientConnection.prototype.roomBan */
-        if(reason == null || reason == "") {
-          reason = "No reason specified.";
-        }
         permSet.newTempPermission('rooms_join', false, duration, reason);
         permSet.newTempPermission('rooms_talk', false, duration, reason);
 
@@ -472,7 +473,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Format: /barid <minutes> <blid> [reason...]'
+        text: ' * Format: /barid <minutes> <blid> <reason...>'
       });
       return;
     }
@@ -480,10 +481,14 @@ var newCommandSet = function(room) {
     var reason = args.slice(2).join(' ');
     reason.trim();
 
-    /*
-    if(reason == "")
-      reason = "You're barred!";
-    */
+    if(reason == "") {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * You must specify a reason'
+      });
+      return;
+    }
 
     var cl = clientConnection.getFromBlid(args[1])
     if(cl != false) {
@@ -493,7 +498,7 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration/60 + " minutes"
+        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration/60 + " minutes: " + reason
       })
 
       cl.bar(duration, reason);
@@ -558,8 +563,7 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('resetperm', (client, args) => {
-    if(!client.isMod)
-      return;
+    if(!client.isMod) return;
 
     var cl = room.findClientByName(args.join(' '));
     if(cl != false) {
@@ -586,8 +590,7 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('resetpermid', (client, args) => {
-    if(!client.isMod)
-      return;
+    if(!client.isMod) return;
 
     var blid = args[0];
     var cl = clientConnection.getFromBlid(args[0]);
@@ -629,13 +632,12 @@ var newCommandSet = function(room) {
     client.sendObject({
       type: 'roomText',
       id: room.id,
-      text: ' * You have ' + warnings + ' ' + (warnings == 1 ? 'warning' : 'warnings')
+      text: ' * You have ' + warnings + ' temporary ' + (warnings == 1 ? 'warning' : 'warnings')
     });
   });
 
   commandSet.on('resetwarnings', (client, args) => {
-    if(!client.isMod)
-      return;
+    if(!client.isMod) return;
 
     client.persist.warnings = 0;
     client.savePersist();
@@ -648,8 +650,7 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('glassupdate', (client, args) => {
-    if(!client.isAdmin)
-      return;
+    if(!client.isAdmin) return;
 
     if(args.length != 1) {
       client.sendObject({
