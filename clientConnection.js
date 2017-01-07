@@ -414,6 +414,71 @@ var createNew = function(socket) {
     }
   });
 
+  connection.on('friendInvite', (data) => {
+    if(connection.location != "hosting" && connection.location != "playing") {
+      connection.sendObject({
+        type: 'error',
+        message: "Nothing to invite to! " + connection.location,
+        showDialog: false
+      });
+      return;
+    }
+
+    var target = parseInt(data.blid);
+    if(target != NaN && target >= 0) {
+      var idx = connection.persist.friends.indexOf(target);
+      if(idx > -1) {
+        var cl = module.clients[target];
+
+        if(connection.inviteTime == null) {
+          connection.inviteTime = {};
+        }
+
+        if(connection.inviteTime[target] != null) {
+          if(moment().unix() - connection.inviteTime[target] < 10) {
+            connection.sendObject({
+              type: 'error',
+              message: "You're inviting too fast!",
+              showDialog: true
+            });
+            return;
+          }
+        }
+
+        if(cl != null) {
+          cl.sendObject({
+            type: 'friendInvite',
+            sender: connection.blid,
+
+            location: connection.location,
+            address: connection.locationAddress,
+            serverTitle: connection.locationName
+          });
+        } else {
+          connection.sendObject({
+            type: 'error',
+            message: "Friend offline, can't invite",
+            showDialog: false
+          });
+        }
+
+        connection.inviteTime[target] = moment().unix();
+      } else {
+        connection.sendObject({
+          type: 'error',
+          message: "You're not friends!",
+          showDialog: true
+        });
+      }
+    } else {
+      connection.sendObject({
+        type: 'error',
+        message: "Invalid BLID!",
+        showDialog: false
+      });
+    }
+  });
+
   connection.on('setStatus', (data) => {
     var stats = [
       'online',
@@ -455,7 +520,7 @@ var createNew = function(socket) {
       })
     }
   });
-  
+
   connection.on('messagePrivate', (data) => {
     var target = data.target;
     if(module.clients[target] != null) {
@@ -466,6 +531,7 @@ var createNew = function(socket) {
           message: "This user does not accept messages from strangers or has their status set to 'busy'."
       });
     }
+  });
 
   connection.on('messageTyping', (data) => {
     var target = data.target;
