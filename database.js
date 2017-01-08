@@ -5,6 +5,13 @@ const request = require('request');
 
 const logger = require('./logger');
 
+const Config = require('./config');
+if(Config.username == null || Config.password == null) {
+  console.log('config needs MongoDb auth');
+  process.exit(1);
+  return;
+}
+
 var getUsername = function(blid, cb) {
   getUserData(blid, function(data, err) {
     if(err != null) {
@@ -43,7 +50,6 @@ var _loadUserData = function(id) {
   var blid = id;
   var url = 'mongodb://blocklandglass.com:27017/glassLive';
   MongoClient.connect(url, function(err, db) {
-
     if(err != null) {
       logger.error('Database error getting ' + blid);
       logger.error(err);
@@ -57,26 +63,45 @@ var _loadUserData = function(id) {
       return;
     }
 
-    db.collection('users').findOne({"blid":blid}, function(err, data) {
-      assert.equal(null, err);
-
-      if(data == null || data.data == null) {
-        logger.log('Creating new data for ' + blid);
-        data = _createNewData(blid);
+    db.authenticate(Config.username, Config.password, function(err, result) {
+      if(result !== true) {
+        logger.error('Database authentication failed (_loadUserData)');
       }
 
-      module.userData[blid] = data.data;
-
-      var callbacks = module.loadCallbacks[blid];
-      for(i in callbacks) {
-        var cb = callbacks[i];
-        if(typeof cb === "function")
-          cb(data.data, null);
+      if(err != null) {
+        logger.error('Database error getting ' + blid);
+        logger.error(err);
+        var callbacks = module.loadCallbacks[blid];
+        for(i in callbacks) {
+          var cb = callbacks[i];
+          if(typeof cb === "function")
+            cb(null, 'Failed to connect');
+        }
+        module.loadCallbacks[blid] = null;
+        return;
       }
 
-      module.loadCallbacks[blid] = null;
+      db.collection('users').findOne({"blid":blid}, function(err, data) {
+        assert.equal(null, err);
+
+        if(data == null || data.data == null) {
+          logger.log('Creating new data for ' + blid);
+          data = _createNewData(blid);
+        }
+
+        module.userData[blid] = data.data;
+
+        var callbacks = module.loadCallbacks[blid];
+        for(i in callbacks) {
+          var cb = callbacks[i];
+          if(typeof cb === "function")
+            cb(data.data, null);
+        }
+
+        module.loadCallbacks[blid] = null;
+      });
+      db.close();
     });
-    db.close();
   });
 }
 
@@ -99,14 +124,22 @@ var saveUserData = function(blid, data, callback) {
       return;
     }
 
-    db.collection('users').update({"blid": blid}, {"blid": blid, "data": data}, {upsert: true}, function(err, result) {
-      if(err != null) {
-        callback(err);
+    db.authenticate(Config.username, Config.password, function(err, result) {
+      if(result !== true) {
+        logger.error('Database authentication failed');
+        callback('Auth failed');
         return;
       }
-      callback(null);
+
+      db.collection('users').update({"blid": blid}, {"blid": blid, "data": data}, {upsert: true}, function(err, result) {
+        if(err != null) {
+          callback(err);
+          return;
+        }
+        callback(null);
+      });
+      db.close();
     });
-    db.close();
   });
 }
 
