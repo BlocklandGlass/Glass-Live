@@ -175,6 +175,12 @@ var createNew = function(socket) {
         logger.log('...without a version field!');
       }
 
+      connection.isBeta = false;
+      if(verParts[0] > 3) {
+        logger.log('...running Glass in-dev ' + data.version);
+        connection.isBeta = true;
+      }
+
       Database.getUserData(connection.blid, function(data, err) {
         if(err != null) {
           logger.error('Failed to load data for clientConnection ' + connection.blid + ':', err);
@@ -452,7 +458,7 @@ var createNew = function(socket) {
 
             location: connection.location,
             address: connection.locationAddress,
-            
+
             serverTitle: data.name,
             passworded: data.passworded
           });
