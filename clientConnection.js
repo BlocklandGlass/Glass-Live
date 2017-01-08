@@ -452,7 +452,9 @@ var createNew = function(socket) {
 
             location: connection.location,
             address: connection.locationAddress,
-            serverTitle: connection.locationName
+            
+            serverTitle: data.name,
+            passworded: data.passworded
           });
         } else {
           connection.sendObject({
