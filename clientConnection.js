@@ -426,7 +426,7 @@ var createNew = function(socket) {
 
     var target = parseInt(data.blid);
     if(target != NaN && target >= 0) {
-      var idx = connection.persist.friends.indexOf(target);
+      var idx = connection.persist.friends.indexOf(data.blid);
       if(idx > -1) {
         var cl = module.clients[target];
 
