@@ -161,6 +161,8 @@ var createNew = function(socket) {
 
       connection.privacy = {};
 
+      logger.log(JSON.stringify(data));
+
       if(data.viewLocation == null)
         data.viewLocation = "me";
 
@@ -169,6 +171,8 @@ var createNew = function(socket) {
 
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
+
+      logger.log(JSON.stringify(connection.privacy));
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
@@ -582,6 +586,7 @@ var createNew = function(socket) {
     if(module.clients[data.blid] != null) {
       var perm = module.clients[data.blid].privacy.avatar;
       var allowed = false;
+      logger.log('Getting avatar with perm: ' + perm);
       switch(perm) {
         case "anyone":
           allowed = true;
@@ -661,7 +666,7 @@ var createNew = function(socket) {
       })
     } else {
       connection.locationName = "";
-      
+
       if(connection.privacy.location == "me")
         return;
 
