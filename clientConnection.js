@@ -161,8 +161,6 @@ var createNew = function(socket) {
 
       connection.privacy = {};
 
-      logger.log(JSON.stringify(data));
-
       if(data.viewLocation == null)
         data.viewLocation = "me";
 
@@ -171,8 +169,6 @@ var createNew = function(socket) {
 
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
-
-      logger.log(JSON.stringify(connection.privacy));
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
