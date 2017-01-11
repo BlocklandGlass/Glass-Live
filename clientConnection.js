@@ -595,6 +595,7 @@ var createNew = function(socket) {
         case "friends":
           var cl = module.clients[data.blid];
           var idx = cl.persist.friends.indexOf(connection.blid);
+          logger.log('friend idx: ' + idx);
           allowed = (idx > -1);
 
         case "me":
@@ -618,6 +619,11 @@ var createNew = function(socket) {
       }
     }
   });
+
+  connection.on('updatePrivacy', (data) => {
+    connection.privacy.avatar = data.viewAvatar.toLowerCase();
+    connection.privacy.location = data.viewLocation.toLowerCase();
+  })
 
   connection.on('updateLocation', (data) => {
     // location - menus, singleplayer, hosting, playing, hosting_lan, playing_lan
