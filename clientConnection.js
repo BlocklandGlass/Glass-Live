@@ -187,7 +187,7 @@ var createNew = function(socket) {
           logger.log('...running depreciated version ' + data.version);
         }
 
-        if(verParts[0] > 3 || version.indexOf("indev") > -1 || version.indexOf("beta") > -1) {
+        if(verParts[0] > 3 || data.version.indexOf("indev") > -1 || data.version.indexOf("beta") > -1) {
           logger.log('...running Glass in-dev ' + data.version);
           connection.isBeta = true;
         }
