@@ -624,6 +624,9 @@ var createNew = function(socket) {
   connection.on('updatePrivacy', (data) => {
     connection.privacy.avatar = data.viewAvatar.toLowerCase();
     connection.privacy.location = data.viewLocation.toLowerCase();
+
+
+    connection.locationPrivateSent = false;
   })
 
   connection.on('updateLocation', (data) => {
@@ -634,6 +637,23 @@ var createNew = function(socket) {
     connection.locationAddress = data.address;
 
     logger.log(connection.username + " is now " + data.location);
+
+    if(connection.privacy.location == "me" && connection.locationPrivateSent !== true) {
+      for(i in connection.persist.friends) {
+        var friendId = connection.persist.friends[i];
+        if(module.clients[friendId] != null) {
+          module.clients[friendId].sendObject({
+            type: "friendLocation",
+            username: connection.username,
+            blid: connection.blid,
+
+            location: "private"
+          });
+        }
+      }
+      connection.locationPrivateSent = true;
+      return;
+    }
 
     if(data.location == "hosting" || data.location == "playing") {
       var masterServer = require('./masterServer');
@@ -655,9 +675,6 @@ var createNew = function(socket) {
 
         logger.log(connection.username + " is now playing " + title);
 
-        if(connection.privacy.location == "me")
-          return;
-
         for(i in connection.persist.friends) {
           var friendId = connection.persist.friends[i];
           if(module.clients[friendId] != null) {
@@ -675,9 +692,6 @@ var createNew = function(socket) {
       })
     } else {
       connection.locationName = "";
-
-      if(connection.privacy.location == "me")
-        return;
 
       for(i in connection.persist.friends) {
         var friendId = connection.persist.friends[i];
