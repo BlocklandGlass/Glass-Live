@@ -467,6 +467,9 @@ var createNew = function(socket) {
 
 
         if(cl != null) {
+          logger.log('inviter location: ' + connection.locationAddress);
+          logger.log('invitee location: ' + cl.locationAddress);
+          
           if(cl.locationAddress != connection.locationAddress) {
             cl.sendObject({
               type: 'friendInvite',
@@ -477,6 +480,12 @@ var createNew = function(socket) {
 
               serverTitle: data.name,
               passworded: data.passworded
+            });
+
+            connection.sendObject({
+              type: 'messageBox',
+              title: "Invite Sent"
+              text: "You invited " + cl.username + " to " + data.name + "!",
             });
           } else {
             connection.sendObject({
