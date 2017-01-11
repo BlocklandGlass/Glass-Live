@@ -17,11 +17,13 @@ var sendObjectAll = function(obj) {
     module.clients = {};
 
   for(blid in module.clients) {
-    logger.log('sendObjectAll ' + blid);
+    if(module.clients[blid].socket == null || module.clients[blid].socket.destroyed)
+      continue;
+
     try {
       module.clients[blid].sendObject(obj);
     } catch(e) {
-      logger.log('...failed');
+      continue;
     }
   }
 }
@@ -157,6 +159,17 @@ var createNew = function(socket) {
 
       connection.version = data.version;
 
+      connection.privacy = {};
+
+      if(data.viewLocation == null)
+        data.viewLocation = "me";
+
+      if(data.viewAvatar == null)
+        data.viewAvatar = "me";
+
+      connection.privacy.location = data.viewLocation.toLowerCase();
+      connection.privacy.avatar = data.viewAvatar.toLowerCase();
+
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
       if(data.version != null && data.version != "") {
@@ -176,7 +189,7 @@ var createNew = function(socket) {
       }
 
       connection.isBeta = false;
-      if(verParts[0] > 3) {
+      if(verParts[0] > 3 || version.indexOf("indev") > -1 || version.indexOf("beta") > -1) {
         logger.log('...running Glass in-dev ' + data.version);
         connection.isBeta = true;
       }
@@ -567,11 +580,35 @@ var createNew = function(socket) {
 
   connection.on('getAvatar', (data) => {
     if(module.clients[data.blid] != null) {
-      connection.sendObject({
-        type: "userAvatar",
-        blid: data.blid,
-        avatar: module.clients[data.blid].avatarData
-      });
+      var perm = module.clients[data.blid].privacy.avatar;
+      var allowed = false;
+      switch(perm) {
+        case "anyone":
+          allowed = true;
+          break;
+
+        case "friend":
+          allowed = (module.clients[data.blid].persis.friends.indexOf(connection.blid) > -1);
+
+        case "me":
+        default:
+          allowed = false;
+      }
+
+      if(allowed) {
+        connection.sendObject({
+          type: "userAvatar",
+          blid: data.blid,
+          private: false,
+          avatar: module.clients[data.blid].avatarData
+        });
+      } else {
+        connection.sendObject({
+          type: "userAvatar",
+          blid: data.blid,
+          private: true
+        });
+      }
     }
   });
 
@@ -595,7 +632,7 @@ var createNew = function(socket) {
 
         var title;
         if(server == false) {
-          title = "Server Currently Unlisted";
+          title = data.serverName;
         } else {
           title = server.getTitle();
         }
@@ -603,6 +640,9 @@ var createNew = function(socket) {
         connection.locationName = title;
 
         logger.log(connection.username + " is now playing " + title);
+
+        if(connection.privacy.location == "me")
+          return;
 
         for(i in connection.persist.friends) {
           var friendId = connection.persist.friends[i];
@@ -621,6 +661,10 @@ var createNew = function(socket) {
       })
     } else {
       connection.locationName = "";
+      
+      if(connection.privacy.location == "me")
+        return;
+
       for(i in connection.persist.friends) {
         var friendId = connection.persist.friends[i];
         if(module.clients[friendId] != null) {

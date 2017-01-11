@@ -85,7 +85,6 @@ var _loadUserData = function(id) {
         assert.equal(null, err);
 
         if(data == null || data.data == null) {
-          logger.log('Creating new data for ' + blid);
           data = _createNewData(blid);
         }
 
