@@ -586,7 +586,7 @@ var createNew = function(socket) {
     if(module.clients[data.blid] != null) {
       var perm = module.clients[data.blid].privacy.avatar;
       var allowed = false;
-      logger.log('Getting avatar with perm: ' + perm);
+
       switch(perm) {
         case "anyone":
           allowed = true;
@@ -595,12 +595,13 @@ var createNew = function(socket) {
         case "friends":
           var cl = module.clients[data.blid];
           var idx = cl.persist.friends.indexOf(connection.blid);
-          logger.log('friend idx: ' + idx);
-          allowed = (idx > -1);
+          allowed = (idx > -1) || (data.blid == connection.blid);
+          break;
 
         case "me":
         default:
-          allowed = false;
+          allowed = (data.blid == connection.blid);
+          break;
       }
 
       if(allowed) {
