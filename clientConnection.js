@@ -467,9 +467,6 @@ var createNew = function(socket) {
 
 
         if(cl != null) {
-          logger.log('inviter location: ' + connection.locationAddress);
-          logger.log('invitee location: ' + cl.locationAddress);
-
           if(cl.locationAddress != connection.locationAddress) {
             cl.sendObject({
               type: 'friendInvite',
@@ -489,9 +486,9 @@ var createNew = function(socket) {
             });
           } else {
             connection.sendObject({
-              type: 'error',
-              message: "They're already in here!",
-              showDialog: true
+              type: 'messageBox',
+              title: "Already Here",
+              text: cl.username + " is already playing " + data.name + "!",
             });
           }
         } else {
