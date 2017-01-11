@@ -172,6 +172,8 @@ var createNew = function(socket) {
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
+
+      connection.isBeta = false;
       if(data.version != null && data.version != "") {
         var verParts = connection.version.split(/\./g);
         if(verParts[0] < 3) {
@@ -184,14 +186,13 @@ var createNew = function(socket) {
         if(verParts[0] == 3 && verParts[1] < 2) {
           logger.log('...running depreciated version ' + data.version);
         }
+
+        if(verParts[0] > 3 || version.indexOf("indev") > -1 || version.indexOf("beta") > -1) {
+          logger.log('...running Glass in-dev ' + data.version);
+          connection.isBeta = true;
+        }
       } else {
         logger.log('...without a version field!');
-      }
-
-      connection.isBeta = false;
-      if(verParts[0] > 3 || version.indexOf("indev") > -1 || version.indexOf("beta") > -1) {
-        logger.log('...running Glass in-dev ' + data.version);
-        connection.isBeta = true;
       }
 
       Database.getUserData(connection.blid, function(data, err) {
