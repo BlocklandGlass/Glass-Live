@@ -127,6 +127,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     type: (isAuto ? "roomJoinAuto" : "roomJoin"),
     title: room.name,
     id: room.id,
+    icon: room.icon,
 
     motd: room.persist.motd,
 
