@@ -593,7 +593,7 @@ var createNew = function(socket) {
           break;
 
         case "friend":
-          allowed = (module.clients[data.blid].persis.friends.indexOf(connection.blid) > -1);
+          allowed = (module.clients[data.blid].persist.friends.indexOf(connection.blid) > -1);
 
         case "me":
         default:
