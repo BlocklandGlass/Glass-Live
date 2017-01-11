@@ -689,6 +689,7 @@ var createNew = function(socket) {
         }
 
         connection.locationName = title;
+        connection.locationPassworded = data.passworded;
 
         logger.log(connection.username + " is now " + connection.location + " " + title);
 
@@ -697,11 +698,14 @@ var createNew = function(socket) {
           if(module.clients[friendId] != null) {
             module.clients[friendId].sendObject({
               type: "friendLocation",
+
               username: connection.username,
               blid: connection.blid,
 
               location: data.location,
               address: data.address,
+
+              passworded: data.passworded,
               serverTitle: title
             });
           }
@@ -716,8 +720,10 @@ var createNew = function(socket) {
         if(module.clients[friendId] != null) {
           module.clients[friendId].sendObject({
             type: "friendLocation",
+
             username: connection.username,
             blid: connection.blid,
+
             location: data.location
           });
         }
@@ -906,7 +912,8 @@ ClientConnection.prototype.sendFriendList = function() {
         var locationData = {
           location: module.clients[blid].location,
           address: module.clients[blid].locationAddress,
-          serverTitle: module.clients[blid].locationName
+          serverTitle: module.clients[blid].locationName,
+          passworded: module.clients[blid].locationPassworded
         }
         obj.locationData = locationData;
         callback(null, obj);
