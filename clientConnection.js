@@ -465,17 +465,26 @@ var createNew = function(socket) {
           }
         }
 
+
         if(cl != null) {
-          cl.sendObject({
-            type: 'friendInvite',
-            sender: connection.blid,
+          if(cl.locationAddress != connection.locationAddress) {
+            cl.sendObject({
+              type: 'friendInvite',
+              sender: connection.blid,
 
-            location: connection.location,
-            address: connection.locationAddress,
+              location: connection.location,
+              address: connection.locationAddress,
 
-            serverTitle: data.name,
-            passworded: data.passworded
-          });
+              serverTitle: data.name,
+              passworded: data.passworded
+            });
+          } else {
+            connection.sendObject({
+              type: 'error',
+              message: "They're already in here!",
+              showDialog: true
+            });
+          }
         } else {
           connection.sendObject({
             type: 'error',
@@ -638,7 +647,7 @@ var createNew = function(socket) {
     connection.location = data.location;
     connection.locationAddress = data.address;
 
-    logger.log(connection.username + " is now " + data.location + " at " + data.address);
+    logger.log(connection.username + " is now " + data.location);
 
     if(connection.privacy.location == "me" && connection.locationPrivateSent !== true) {
       for(i in connection.persist.friends) {
@@ -694,6 +703,7 @@ var createNew = function(socket) {
       })
     } else {
       connection.locationName = "";
+      connection.locationAddress = "";
 
       for(i in connection.persist.friends) {
         var friendId = connection.persist.friends[i];
