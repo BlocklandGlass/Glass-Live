@@ -173,7 +173,7 @@ var createNew = function(socket) {
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
 
-      connection.isBeta = false;
+      //connection.isBeta = false;
       if(data.version != null && data.version != "") {
         var verParts = connection.version.split(/\./g);
         if(verParts[0] < 3) {
@@ -187,10 +187,10 @@ var createNew = function(socket) {
           logger.log('...running depreciated version ' + data.version);
         }
 
-        if(verParts[0] > 3 || data.version.indexOf("indev") > -1 || data.version.indexOf("beta") > -1) {
+        /*if(verParts[0] > 3 || data.version.indexOf("indev") > -1 || data.version.indexOf("beta") > -1) {
           logger.log('...running Glass in-dev ' + data.version);
           connection.isBeta = true;
-        }
+        }*/
       } else {
         logger.log('...without a version field!');
       }
