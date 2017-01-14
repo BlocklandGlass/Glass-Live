@@ -45,7 +45,7 @@ var getFromBlid = function(blid) {
 var createNew = function(socket) {
   var connection = new ClientConnection();
 
-  connection.status = "hidden";
+  connection.status = "online";
   connection.socket = socket;
 
   connection.rooms = [];
