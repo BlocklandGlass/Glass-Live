@@ -159,6 +159,7 @@ var createNew = function(socket) {
 
       connection.version = data.version;
 
+      connection.autoJoinRooms = data.autoJoinRooms;
       connection.privacy = {};
 
       if(data.viewLocation == null)
@@ -169,6 +170,9 @@ var createNew = function(socket) {
 
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
+
+      if(connection.autoJoinRooms == null)
+        connection.autoJoinRooms = true;
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
@@ -259,19 +263,21 @@ var createNew = function(socket) {
           }
         }, 300000);
 
-        var rooms = require('./chatRoom').getAll();
-        for(i in rooms) {
-          var room = rooms[i];
-          if(!connection.hasPermission('rooms_join'))
-            break;
+        if(connection.autoJoinRooms) {
+          var rooms = require('./chatRoom').getAll();
+          for(i in rooms) {
+            var room = rooms[i];
+            if(!connection.hasPermission('rooms_join'))
+              break;
 
-          if(room.default) {
-            room.addClient(connection, true);
-          }
-
-          if(room.requirement != null) {
-            if(connection[room.requirement] == true) {
+            if(room.default) {
               room.addClient(connection, true);
+            }
+
+            if(room.requirement != null) {
+              if(connection[room.requirement] == true) {
+                room.addClient(connection, true);
+              }
             }
           }
         }
