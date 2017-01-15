@@ -106,6 +106,28 @@ var _percentDiscrimination = function(word) {
   return highPct;
 }
 
+var filterString = function(str) {
+  var words = str.split(' ');
+  var str = "";
+  for(i in words) {
+    var word = words[i];
+
+    var highPct = _percentDiscrimination(word);
+
+    if(highPct > 0.90) {
+      for(var i = 0; i < word.length; i++) {
+        str += "*";
+      }
+    } else {
+      str += word;
+    }
+    str += " ";
+  }
+
+  str.trim();
+  return str;
+}
+
 var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory == null)
     sender.roomMessageHistory = [];
@@ -145,7 +167,7 @@ var onRoomMessage = function(room, sender, message) {
 
     // use strpos?
     word.trim();
-    if(word.length > 0 && _percentDiscrimination(word) >= 0.90 && !didDisc) {
+    /*if(word.length > 0 && _percentDiscrimination(word) >= 0.90 && !didDisc) {
       didDisc = true;
       sendRoomMessage(room, "Discrimination is not welcome here. (" + word + ")");
 
@@ -157,7 +179,7 @@ var onRoomMessage = function(room, sender, message) {
         });
         doRoomsBan(sender, 60*15, "Discrimination: " + word)
       }, 1100);
-    }
+    }*/
 
     if(word.length > 35 && !didLength && word.indexOf("http://") != 0 && word.indexOf("https://") != 0) {
       didLength = true;
@@ -299,4 +321,4 @@ var _warningPunishment = function(client, amt, room) {
   }
 }
 
-module.exports = {onRoomMessage, sendRoomMessage};
+module.exports = {onRoomMessage, sendRoomMessage, filterString};

@@ -223,6 +223,10 @@ Chatroom.prototype.sendObject = function(obj) {
 }
 
 Chatroom.prototype.sendClientMessage = function(client, msg) {
+  var glassBot = require('./glassBot');
+
+  msg = glassBot.filterString(msg);
+
   var room = this;
   room.sendObject({
     type: "roomMessage",
@@ -237,7 +241,7 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
     datetime: moment().format('h:mm:ss a')
   });
 
-  require('./glassBot').onRoomMessage(room, client, msg);
+  glassBot.onRoomMessage(room, client, msg);
 }
 
 Chatroom.prototype.findClientByName = function(name, exact) {
