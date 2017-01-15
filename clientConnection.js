@@ -158,8 +158,6 @@ var createNew = function(socket) {
       connection.isBeta = res.beta;
 
       connection.version = data.version;
-
-      connection.autoJoinRooms = data.autoJoinRooms;
       connection.privacy = {};
 
       if(data.viewLocation == null)
@@ -171,11 +169,13 @@ var createNew = function(socket) {
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
 
-      if(connection.autoJoinRooms == null)
+      if(data.autoJoinRooms == null) {
         connection.autoJoinRooms = true;
+      } else {
+        connection.autoJoinRooms = data.autoJoinRooms == "1";
+      }
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
-
 
       //connection.isBeta = false;
       if(data.version != null && data.version != "") {
