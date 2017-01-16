@@ -3,13 +3,13 @@ const encoding = require('encoding');
 
 const logger = require('./logger');
 
-var check = function(ident, callback) {
+var check = function(ident, ip, callback) {
   if(ident.trim() == "") {
     callback(null, "No ident");
     return;
   }
 
-  var url = "http://api.blocklandglass.com/api/2/authCheck.php?ident=" + ident;
+  var url = "http://api.blocklandglass.com/api/3/authCheck.php?ident=" + ident + "&ip=" + ip;
   request(url, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       try {

@@ -10,8 +10,6 @@ const Icons = require('./icons.json');
 
 const moment = require('moment');
 
-const geoip = require('geoip-native');
-
 class ClientConnection extends EventEmitter {}
 
 var sendObjectAll = function(obj) {
@@ -110,7 +108,7 @@ var createNew = function(socket) {
       return;
     }*/
 
-    Auth.check(data.ident, function(res, error) {
+    Auth.check(data.ident, connection.socket.remoteAddress, function(res, error) {
       if(error) {
         logger.error('Unable to auth BL_ID ' + data.blid);
         connection.sendObject({
@@ -161,6 +159,9 @@ var createNew = function(socket) {
 
       connection.version = data.version;
       connection.privacy = {};
+
+      connection.countryCode = data.geoip_country_code;
+      connection.countryName = data.geoip_country_name;
 
       if(data.viewLocation == null)
         data.viewLocation = "me";
@@ -1518,24 +1519,12 @@ ClientConnection.prototype._didLeaveRoom = function(id) {
 
 ClientConnection.prototype.getCountryCode = function() {
   var client = this;
-  var ip = client.socket.remoteAddress;
-
-  if(client.geoip == null) {
-    client.geoip = geoip.lookup(ip);
-  }
-
-  return client.geoip.code;
+  return client.countryCode;
 }
 
 ClientConnection.prototype.getCountryName = function() {
   var client = this;
-  var ip = client.socket.remoteAddress;
-
-  if(client.geoip == null) {
-    client.geoip = geoip.lookup(ip);
-  }
-
-  return client.geoip.name;
+  return client.countryName;
 }
 
 module.exports = {createNew, getFromBlid, sendObjectAll, getAll};
