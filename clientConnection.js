@@ -10,6 +10,8 @@ const Icons = require('./icons.json');
 
 const moment = require('moment');
 
+const geoip = require('geoip-native');
+
 class ClientConnection extends EventEmitter {}
 
 var sendObjectAll = function(obj) {
@@ -218,6 +220,7 @@ var createNew = function(socket) {
         connection._permissionSet = Permissions.createSet(connection.persist);
         //connection.listPermissions();
 
+        connection.getCountryCode();
 
         if(!connection.hasPermission('service_use')) {
           logger.log("Insufficient Permission: service_use");
@@ -633,6 +636,55 @@ var createNew = function(socket) {
         connection.sendObject({
           type: "userAvatar",
           blid: data.blid,
+          private: true
+        });
+      }
+    }
+  });
+
+  connection.on('getLocation', (data) => {
+    if(module.clients[data.blid] != null) {
+      var user = module.clients[data.blid];
+      var perm = user.privacy.location;
+      var allowed = false;
+
+      switch(perm) {
+        case "anyone":
+          allowed = true;
+          break;
+
+        case "friends":
+          var idx = user.persist.friends.indexOf(connection.blid);
+          allowed = (idx > -1) || (data.blid == connection.blid);
+          break;
+
+        case "me":
+        default:
+          allowed = (data.blid == connection.blid);
+          break;
+      }
+
+      if(allowed) {
+        connection.sendObject({
+          type: "userLocation",
+
+          username: user.username,
+          blid: user.blid,
+
+          location: user.location,
+          address: user.locationAddress,
+
+          passworded: user.locationPassworded,
+          serverTitle: user.locationName,
+
+          countryCode: user.getCountryCode(),
+          country: user.getCountryName()
+        });
+      } else {
+        connection.sendObject({
+          type: "userLocation",
+          blid: data.blid,
+          location: "Private",
           private: true
         });
       }
@@ -1462,6 +1514,28 @@ ClientConnection.prototype._didLeaveRoom = function(id) {
   var idx = client.rooms.indexOf(parseInt(id));
   if(idx > -1)
     client.rooms.splice(idx, 1);
+}
+
+ClientConnection.prototype.getCountryCode = function() {
+  var client = this;
+  var ip = client.socket.remoteAddress;
+
+  if(client.geoip == null) {
+    client.geoip = geoip.lookup(ip);
+  }
+
+  return client.geoip.code;
+}
+
+ClientConnection.prototype.getCountryName = function() {
+  var client = this;
+  var ip = client.socket.remoteAddress;
+
+  if(client.geoip == null) {
+    client.geoip = geoip.lookup(ip);
+  }
+
+  return client.geoip.name;
 }
 
 module.exports = {createNew, getFromBlid, sendObjectAll, getAll};

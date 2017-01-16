@@ -10,6 +10,7 @@
     "cheerio" : "latest",
     "encoding" : "latest",
     "vorpal" : "latest",
-    "async" : "latest"
+    "async" : "latest",
+    "geoip-native" : "latest"
   }
 }
