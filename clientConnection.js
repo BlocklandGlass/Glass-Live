@@ -160,8 +160,8 @@ var createNew = function(socket) {
       connection.version = data.version;
       connection.privacy = {};
 
-      connection.countryCode = data.geoip_country_code;
-      connection.countryName = data.geoip_country_name;
+      connection.countryCode = res.geoip_country_code;
+      connection.countryName = res.geoip_country_name;
 
       if(data.viewLocation == null)
         data.viewLocation = "me";
