@@ -685,8 +685,12 @@ var createNew = function(socket) {
         connection.sendObject({
           type: "userLocation",
           blid: data.blid,
+          
           location: "Private",
-          private: true
+          private: true,
+
+          countryCode: user.getCountryCode(),
+          country: user.getCountryName()
         });
       }
     }
