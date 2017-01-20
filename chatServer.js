@@ -32,7 +32,10 @@ var start = function() {
     });
 
     socket.on('error', (error) => {
-
+      logger.log('Client socket error: ' + error.errno);
+      if(socket.clientConnection != null) {
+        socket.clientConnection.onDisconnect();
+      }
     });
 
     socket.on('close', () => {

@@ -6,6 +6,8 @@ const logger = require('./logger');
 const Database = require('./database');
 const Permissions = require('./permissions');
 
+const Groupchat = require('./groupChat');
+
 const Icons = require('./icons.json');
 
 const moment = require('moment');
@@ -685,7 +687,7 @@ var createNew = function(socket) {
         connection.sendObject({
           type: "userLocation",
           blid: data.blid,
-          
+
           location: "Private",
           private: true,
 
@@ -794,6 +796,51 @@ var createNew = function(socket) {
     }
   })
 
+  connection.on('groupCreate', (data) => {
+    var invites = data.invites;
+    var inviteClients = [];
+    for(i in invites) {
+      var inviteBlid = invites[i];
+      if(inviteBlid == connection.blid) {
+        continue;
+      }
+
+      if(module.client[inviteBlid] != null) {
+        inviteClients.push(module.clients[inviteBlid]);
+      }
+    }
+
+    if(inviteClients.length == 0) {
+      connection.sendObject({
+        type: 'messageBox',
+        title: "All Offline!",
+        text: "All the users you tried to start a groupchat with are offline!"
+      });
+      return;
+    }
+
+    var group = Groupchat.create(connection, inviteClients);
+  })
+
+  connection.on('groupMessage', (data) => {
+    var id = data.id;
+    var msg = data.message;
+
+    msg.trim();
+
+    if(msg == "") {
+      return;
+    }
+
+    var group = Groupchat.getFromId(id);
+
+    group.sendClientMessage(connection, msg);
+  });
+
+  connection.on('groupLeave', data => {
+
+  });
+
   return connection;
 }
 
@@ -891,8 +938,8 @@ ClientConnection.prototype.cleanUp = function() {
   if(client.disconnectReason == null)
     client.disconnectReason = -1;
 
-  var rooms = require('./chatRoom');
 
+  var rooms = require('./chatRoom');
   var roomsIn = client.rooms.slice(0);
 
   for(i in roomsIn) {
@@ -900,11 +947,13 @@ ClientConnection.prototype.cleanUp = function() {
     rooms.getFromId(id).removeClient(client, client.disconnectReason);
   }
 
+
   if(client.persist != null)
     client.setStatus('offline');
 
-  if(module.clients[client.blid] != null && module.clients[client.blid] == client && client.blid != null)
+  if(module.clients[client.blid] != null && module.clients[client.blid] == client && client.blid != null) {
     delete module.clients[client.blid];
+  }
 
   var idx = module.connections.indexOf(client);
   if(idx > -1)
