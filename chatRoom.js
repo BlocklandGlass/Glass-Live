@@ -227,8 +227,6 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
 
   msg = glassBot.filterString(msg);
 
-  msg = msg.replace(/@/g, "");
-
   var room = this;
   room.sendObject({
     type: "roomMessage",
