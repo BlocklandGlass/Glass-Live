@@ -38,7 +38,7 @@ var _getNextIndex = function() {
     }
   }
 
-  return modules.chats.length;
+  return module.chats.length;
 }
 
 var getFromId = function(id) {
