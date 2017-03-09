@@ -18,12 +18,16 @@ function Groupchat(owner, invites) {
 var create = function(owner, invites) {
   var group = new Groupchat(name, invites);
 
+  logger.log("Created group id " + group);
+
   module.chats[group.id] = group;
 
-  for(i in inviites) {
+  for(i in invites) {
     var invite = invites[i];
     group.inviteClient(invite);
   }
+
+  group.addClient(owner);
 
   return group;
 }
