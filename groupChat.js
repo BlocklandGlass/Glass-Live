@@ -16,7 +16,7 @@ function Groupchat(owner, invites) {
 }
 
 var create = function(owner, invites) {
-  var group = new Groupchat(name, invites);
+  var group = new Groupchat(owner, invites);
 
   logger.log("Created group id " + group);
 
@@ -26,8 +26,6 @@ var create = function(owner, invites) {
     var invite = invites[i];
     group.inviteClient(invite);
   }
-
-  group.addClient(owner);
 
   return group;
 }
