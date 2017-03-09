@@ -805,7 +805,7 @@ var createNew = function(socket) {
         continue;
       }
 
-      if(module.client[inviteBlid] != null) {
+      if(module.clients[inviteBlid] != null) {
         inviteClients.push(module.clients[inviteBlid]);
       }
     }
