@@ -50,7 +50,8 @@ var createNew = function(socket) {
   connection.status = "online";
   connection.socket = socket;
 
-  connection.rooms = [];
+  connection.rooms  = [];
+  connection.groups = [];
 
   if(module.connections == null)
     module.connections = [];
@@ -1555,6 +1556,7 @@ ClientConnection.prototype._notifyIconChange = function(to) {
   }
 }
 
+
 ClientConnection.prototype._didEnterRoom = function(id) {
   var client = this;
   if(client.rooms.indexOf(id) > -1)
@@ -1569,6 +1571,23 @@ ClientConnection.prototype._didLeaveRoom = function(id) {
   if(idx > -1)
     client.rooms.splice(idx, 1);
 }
+
+
+ClientConnection.prototype._didEnterGroup = function(id) {
+  var client = this;
+  if(client.groups.indexOf(id) > -1)
+    return;
+
+  client.groups.push(id);
+}
+
+ClientConnection.prototype._didLeaveGroup = function(id) {
+  var client = this;
+  var idx = client.groups.indexOf(parseInt(id));
+  if(idx > -1)
+    client.groups.splice(idx, 1);
+}
+
 
 ClientConnection.prototype.getCountryCode = function() {
   var client = this;

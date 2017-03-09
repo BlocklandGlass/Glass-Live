@@ -80,7 +80,7 @@ Groupchat.prototype.addClient = function(client) {
     icon: client.getIcon()
   });
 
-  client._didEntergroup(group.id);
+  client._didEnterGroup(group.id);
 }
 
 Groupchat.prototype.inviteClient = function(client, inviter) {
@@ -124,7 +124,7 @@ Groupchat.prototype.inviteClient = function(client, inviter) {
     icon: client.getIcon()
   });
 
-  client._didEntergroup(group.id);
+  client._didEnterGroup(group.id);
 }
 
 Groupchat.prototype.clientExit = function(client, reason) {
