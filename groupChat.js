@@ -18,7 +18,7 @@ function Groupchat(owner, invites) {
 var create = function(owner, invites) {
   var group = new Groupchat(owner, invites);
 
-  logger.log("Created group id " + group);
+  logger.log("Created group id " + group.id);
 
   module.chats[group.id] = group;
 
