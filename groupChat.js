@@ -32,7 +32,7 @@ var create = function(owner, invites) {
 
 var _getNextIndex = function() {
   for(i in module.chats) {
-    var chat = nodule.chats[i];
+    var chat = module.chats[i];
     if(chat == null) {
       return i;
     }
