@@ -19,7 +19,7 @@ vorpal.command('kickClient <blid> [reason...]', 'Kicks client from glass live').
 vorpal.command('listClients', 'Shows clients online').action(function(args, callback) {
   var clients = require('./clientConnection').getAll();
   var ct = 0;
-  for(i in clients) {
+  for(var i in clients) {
     ct++;
     var cl = clients[i];
     logger.log(cl.username + '\t' + cl.blid + '\t' + cl.socket.remoteAddress);

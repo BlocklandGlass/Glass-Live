@@ -2,7 +2,7 @@ var log = function (...args) {
   var date = new Date();
   var str = "";
 
-  for(i in args) {
+  for(var i in args) {
     str = str + "\t" + args[i];
   }
 
@@ -47,7 +47,7 @@ var error = function (...args) {
   var date = new Date();
   var str = "";
 
-  for(i in args) {
+  for(var i in args) {
     str = str + "\t" + args[i];
   }
 

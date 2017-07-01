@@ -75,7 +75,7 @@ var _percentDiscrimination = function(word) {
   var str = word.toLowerCase().replace(/[^A-Za-z]+/g,"");
   var highPct = 0;
 
-  for(i in module._racialSlurs) {
+  for(var i in module._racialSlurs) {
     var slur = module._racialSlurs[i];
     if(str.indexOf(slur) == 0) {
       var pct = slur.length/str.length;
@@ -93,7 +93,7 @@ var _percentDiscrimination = function(word) {
       "'z"
     ];
 
-    for(i in plurals) {
+    for(var i in plurals) {
       if(str.indexOf(slur+plurals[i]) == 0) {
         var pct = slur.length/str.length;
         if(pct > highPct) {
@@ -109,7 +109,7 @@ var _percentDiscrimination = function(word) {
 var filterString = function(str) {
   var words = str.split(' ');
   var str = "";
-  for(i in words) {
+  for(var i in words) {
     var word = words[i];
 
     var highPct = _percentDiscrimination(word);
@@ -154,7 +154,7 @@ var onRoomMessage = function(room, sender, message) {
   var didDisc = false;
   var didLength = false;
   var words = message.toLowerCase().split(/ /g);
-  for(i in words) {
+  for(var i in words) {
     var word = words[i];
     /*
     if(word == "@glassbot") {

@@ -1,5 +1,5 @@
 const moment = require('moment');
-
+const roomLog = require('./roomLog');
 const logger = require('./logger');
 
 module.roomCt = 0;
@@ -47,7 +47,7 @@ var getList = function(client) {
   if(module.rooms == null)
     module.rooms = {};
 
-  for(i in module.rooms) {
+  for(var i in module.rooms) {
     var room = module.rooms[i];
 
     if(client != null && room.requirement != null) {
@@ -103,6 +103,8 @@ Chatroom.prototype.setMOTD = function(motd) {
   var room = this;
   room.persist.motd = motd;
   room.savePersist();
+
+  roomLog.logEvent(room.id, 'motd', motd);
 }
 
 Chatroom.prototype.setDefault = function(bool) {
@@ -153,6 +155,9 @@ Chatroom.prototype.addClient = function(client, isAuto) {
   });
 
   client._didEnterRoom(room.id);
+
+
+  roomLog.logEvent(room.id, 'join', client.username + ' (' + client.blid + ')');
 }
 
 Chatroom.prototype.removeClient = function(client, reason) {
@@ -176,6 +181,8 @@ Chatroom.prototype.removeClient = function(client, reason) {
   });
 
   client._didLeaveRoom(room.id);
+
+  roomLog.logEvent(room.id, 'exit', client.username + ' (' + client.blid + ')');
 }
 
 Chatroom.prototype.kickClient = function(client, reason) {
@@ -188,12 +195,14 @@ Chatroom.prototype.kickClient = function(client, reason) {
     id: room.id,
     kickReason: reason
   });
+
+  roomLog.logEvent(room.id, 'kick', client.username + ' (' + client.blid + '), ' + reason);
 }
 
 Chatroom.prototype.getClientList = function() {
   var room = this;
   var clientList = [];
-  for(i in room.clients) {
+  for(var i in room.clients) {
     var client = room.clients[i];
     clientList.push(client.getReference());
   }
@@ -216,7 +225,7 @@ Chatroom.prototype.getClientList = function() {
 
 Chatroom.prototype.sendObject = function(obj) {
   var room = this;
-  for(i in room.clients) {
+  for(var i in room.clients) {
     var client = room.clients[i];
     client.sendObject(obj);
   }
@@ -242,6 +251,8 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
   });
 
   glassBot.onRoomMessage(room, client, msg);
+
+  roomLog.logEvent(room.id, 'msg', client.username + ' (' + client.blid + '): ' + msg);
 }
 
 Chatroom.prototype.findClientByName = function(name, exact) {
@@ -249,7 +260,7 @@ Chatroom.prototype.findClientByName = function(name, exact) {
 
   var closestMatch;
 
-  for(i in room.clients) {
+  for(var i in room.clients) {
     var cl = room.clients[i];
     if(cl.username.toLowerCase() == name.toLowerCase()) {
       return cl;

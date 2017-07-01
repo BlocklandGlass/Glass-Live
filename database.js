@@ -54,7 +54,7 @@ var _loadUserData = function(id) {
       logger.error('Database error getting ' + blid);
       logger.error(err);
       var callbacks = module.loadCallbacks[blid];
-      for(i in callbacks) {
+      for(var i in callbacks) {
         var cb = callbacks[i];
         if(typeof cb === "function")
           cb(null, 'Failed to connect');
@@ -72,7 +72,7 @@ var _loadUserData = function(id) {
         logger.error('Database error getting ' + blid);
         logger.error(err);
         var callbacks = module.loadCallbacks[blid];
-        for(i in callbacks) {
+        for(var i in callbacks) {
           var cb = callbacks[i];
           if(typeof cb === "function")
             cb(null, 'Failed to connect');
@@ -91,7 +91,7 @@ var _loadUserData = function(id) {
         module.userData[blid] = data.data;
 
         var callbacks = module.loadCallbacks[blid];
-        for(i in callbacks) {
+        for(var i in callbacks) {
           var cb = callbacks[i];
           if(typeof cb === "function")
             cb(data.data, null);

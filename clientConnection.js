@@ -16,7 +16,7 @@ var sendObjectAll = function(obj) {
   if(module.clients == null)
     module.clients = {};
 
-  for(blid in module.clients) {
+  for(var blid in module.clients) {
     if(module.clients[blid].socket == null || module.clients[blid].socket.destroyed)
       continue;
 
@@ -194,10 +194,10 @@ var createNew = function(socket) {
           logger.log('...running depreciated version ' + data.version);
         }
 
-        /*if(verParts[0] > 3 || data.version.indexOf("indev") > -1 || data.version.indexOf("beta") > -1) {
+        if(data.version.indexOf("indev") > -1 || data.version.indexOf("beta") > -1) {
           logger.log('...running Glass in-dev ' + data.version);
           connection.isBeta = true;
-        }*/
+        }
       } else {
         logger.log('...without a version field!');
       }
@@ -269,7 +269,7 @@ var createNew = function(socket) {
 
         if(connection.autoJoinRooms) {
           var rooms = require('./chatRoom').getAll();
-          for(i in rooms) {
+          for(var i in rooms) {
             var room = rooms[i];
             if(!connection.hasPermission('rooms_join'))
               break;
@@ -685,7 +685,7 @@ var createNew = function(socket) {
         connection.sendObject({
           type: "userLocation",
           blid: data.blid,
-          
+
           location: "Private",
           private: true,
 
@@ -716,10 +716,10 @@ var createNew = function(socket) {
     connection.location = data.location;
     connection.locationAddress = data.address;
 
-    logger.log(connection.username + " is now " + data.location);
+    //logger.log(connection.username + " is now " + data.location);
 
     if(connection.privacy.location == "me" && connection.locationPrivateSent !== true) {
-      for(i in connection.persist.friends) {
+      for(var i in connection.persist.friends) {
         var friendId = connection.persist.friends[i];
         if(module.clients[friendId] != null) {
           module.clients[friendId].sendObject({
@@ -754,9 +754,34 @@ var createNew = function(socket) {
         connection.locationName = title;
         connection.locationPassworded = data.passworded;
 
-        logger.log(connection.username + " is now " + connection.location + " " + title);
+        //logger.log(connection.username + " is now " + connection.location + " " + title);
 
-        for(i in connection.persist.friends) {
+        if(connection.privacy.location != "me") {
+          for(var i in connection.persist.friends) {
+            var friendId = connection.persist.friends[i];
+            if(module.clients[friendId] != null) {
+              module.clients[friendId].sendObject({
+                type: "friendLocation",
+
+                username: connection.username,
+                blid: connection.blid,
+
+                location: data.location,
+                address: data.address,
+
+                passworded: data.passworded,
+                serverTitle: title
+              });
+            }
+          }
+        }
+      })
+    } else {
+      connection.locationName = "";
+      connection.locationAddress = "";
+
+      if(connection.privacy.location != "me") {
+        for(var i in connection.persist.friends) {
           var friendId = connection.persist.friends[i];
           if(module.clients[friendId] != null) {
             module.clients[friendId].sendObject({
@@ -765,30 +790,9 @@ var createNew = function(socket) {
               username: connection.username,
               blid: connection.blid,
 
-              location: data.location,
-              address: data.address,
-
-              passworded: data.passworded,
-              serverTitle: title
+              location: data.location
             });
           }
-        }
-      })
-    } else {
-      connection.locationName = "";
-      connection.locationAddress = "";
-
-      for(i in connection.persist.friends) {
-        var friendId = connection.persist.friends[i];
-        if(module.clients[friendId] != null) {
-          module.clients[friendId].sendObject({
-            type: "friendLocation",
-
-            username: connection.username,
-            blid: connection.blid,
-
-            location: data.location
-          });
         }
       }
     }
@@ -895,7 +899,7 @@ ClientConnection.prototype.cleanUp = function() {
 
   var roomsIn = client.rooms.slice(0);
 
-  for(i in roomsIn) {
+  for(var i in roomsIn) {
     var id = roomsIn[i];
     rooms.getFromId(id).removeClient(client, client.disconnectReason);
   }
@@ -939,7 +943,7 @@ ClientConnection.prototype.setStatus = function(status) {
 
   client.status = status;
 
-  for(i in client.rooms) {
+  for(var i in client.rooms) {
     var id = client.rooms[i];
     rooms.getFromId(id).sendObject({
       type: "roomUserStatus",
@@ -949,7 +953,7 @@ ClientConnection.prototype.setStatus = function(status) {
     });
   }
 
-  for(i in client.persist.friends) {
+  for(var i in client.persist.friends) {
     var friendId = client.persist.friends[i];
     if(module.clients[friendId] != null) {
       module.clients[friendId].sendObject({
@@ -1383,7 +1387,7 @@ ClientConnection.prototype.listPermissions = function() {
 
   logger.log(client.username + " (" + client.blid + ") permissions:");
 
-  for(i in perms) {
+  for(var i in perms) {
     var perm = perms[i];
     var val = client.hasPermission(perm);
     if(client.isTempPermission(perm)) {
@@ -1451,7 +1455,7 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
   });
 
   var rooms = client.rooms.slice();
-  for(i in rooms) {
+  for(var i in rooms) {
     require('./chatRoom').getFromId(rooms[i]).removeClient(client, 2);
   }
 }
@@ -1484,7 +1488,7 @@ ClientConnection.prototype._notifyIconChange = function(to) {
     icon = client.getIcon();
   }
 
-  for(i in client.rooms) {
+  for(var i in client.rooms) {
     var id = client.rooms[i];
     rooms.getFromId(id).sendObject({
       type: "roomUserIcon",
@@ -1494,7 +1498,7 @@ ClientConnection.prototype._notifyIconChange = function(to) {
     });
   }
 
-  for(i in client.persist.friends) {
+  for(var i in client.persist.friends) {
     var friendId = client.persist.friends[i];
     if(module.clients[friendId] != null) {
       module.clients[friendId].sendObject({

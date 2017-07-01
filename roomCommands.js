@@ -58,7 +58,7 @@ var newCommandSet = function(room) {
 
     var msg = "<color:444444><br>Public Commands:";
     var i = 0;
-    for(cmd in command) {
+    for(var cmd in command) {
       if(msg != "")
         msg = msg + '<br>';
 
@@ -94,7 +94,7 @@ var newCommandSet = function(room) {
     ]
 
     var str = "<br>Rules:";
-    for(i in rules) {
+    for(var i in rules) {
       str = str + "<br>" + rules[i];
     }
 
@@ -553,7 +553,7 @@ var newCommandSet = function(room) {
     var msg = '<color:54d98c> * ' + args.join(' ');
 
     var rooms = require('./chatRoom').getAll();
-    for(i in rooms) {
+    for(var i in rooms) {
       var room = rooms[i];
       room.sendObject({
         type: 'roomText',

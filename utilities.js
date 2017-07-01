@@ -3,13 +3,13 @@ var printIconList = function() {
   var Icons = require('./icons');
 
   var txt = "";
-  for(i in Icons.allowed) {
+  for(var i in Icons.allowed) {
     txt = txt + "\n" + Icons.allowed[i];
   }
   fs.writeFileSync('./icon_allowed.txt', txt.substr(1));
 
   txt = "";
-  for(i in Icons.restricted) {
+  for(var i in Icons.restricted) {
     txt = txt + "\n" + Icons.restricted[i];
   }
   fs.writeFileSync('./icon_restricted.txt', txt.substr(1));

@@ -5,7 +5,7 @@ var getAll = function() {
     module.permission = {};
 
   var perms = [];
-  for(perm in module.permission) {
+  for(var perm in module.permission) {
     perms.push(perm);
   }
   return perms;
@@ -118,7 +118,7 @@ PermissionSet.prototype.checkTemps = function() {
   var set = this;
 
   var temps = set.temp;
-  for(perm in temps) {
+  for(var perm in temps) {
     var obj = temps[perm];
     if(moment().diff(moment.unix(obj.startTime), 'seconds') > obj.duration) {
       //expired

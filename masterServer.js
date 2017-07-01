@@ -44,6 +44,10 @@ var queryMasterServer = function(cb) {
     var rawData = '';
     res.on('data', (chunk) => rawData += chunk)
 
+    res.on('error', () => {
+      logger.log("Error querying master server!");
+    });
+
     res.on('end', () => {
       try {
         var servers = {};
@@ -51,7 +55,7 @@ var queryMasterServer = function(cb) {
 
         var start = false;
         var lines = rawData.toString().split('\n');
-        for(i in lines) {
+        for(var i in lines) {
           var line = lines[i].trim();
           if(line == "START") {
             start = true;
@@ -78,7 +82,7 @@ var queryMasterServer = function(cb) {
           servers[server.getAddress()] = server;
         }
 
-        for(i in module.servers) {
+        for(var i in module.servers) {
           if(servers[i] != undefined) {
             module.servers[i] = null;
           } else {

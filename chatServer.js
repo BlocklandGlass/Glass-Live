@@ -13,7 +13,7 @@ var start = function() {
     socket.on('data', (raw) => {
       var rawStr = raw.toString().trim();
       var lines = rawStr.split('\n');
-      for(i in lines) {
+      for(var i in lines) {
         var line = lines[i];
         try {
           var obj = JSON.parse(line);
