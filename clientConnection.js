@@ -126,13 +126,24 @@ var createNew = function(socket) {
       }
 
       if(res.status != "success") {
-        logger.log('authCheck returned non-success: ' + res.status);
-        connection.sendObject({
-          type: "auth",
-          status: "failed",
-          action: "reident", //general solution is to just get a new ident
-          timeout: 5000
-        });
+        if(res.status == "barred") {
+          connection.sendObject({
+            type: "barred",
+            reason: "You've been permanently barred from Glass Live",
+            duration: -1,
+            remaining: -1
+          });
+          logger.log("Barred!");
+        } else {
+          logger.log('authCheck returned non-success: ' + res.status);
+          connection.sendObject({
+            type: "auth",
+            status: "failed",
+            action: "reident", //general solution is to just get a new ident
+            timeout: 5000
+          });
+        }
+        connection.disconnect();
         return;
       }
 
@@ -146,6 +157,22 @@ var createNew = function(socket) {
           type: "auth",
           status: "failed"
         });
+        connection.disconnect();
+        return;
+      }
+
+      if(res.username.trim().length == 0) {
+        connection.sendObject({
+          type: 'error',
+          message: "You need a username!",
+          showDialog: true
+        });
+        connection.sendObject({
+          type: "auth",
+          status: "failed"
+        });
+        logger.log("Username \"" + data.username + "\" (remote: \"" + res.username + "\") is not valid");
+        connection.disconnect();
         return;
       }
 

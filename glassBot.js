@@ -147,7 +147,8 @@ var onRoomMessage = function(room, sender, message) {
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
   if(_percentUpper(message) >= 0.75 && message.length > 5) {
-    sendRoomMessage(room, "Avoid using all caps.");
+    //sendRoomMessage(room, "Avoid using all caps.");
+    sendDirectMessage(sender, "Don't use all caps.", room);
     issueWarning(sender, 1, room);
   }
 
@@ -183,7 +184,8 @@ var onRoomMessage = function(room, sender, message) {
 
     if(word.length > 35 && !didLength && word.indexOf("http://") != 0 && word.indexOf("https://") != 0) {
       didLength = true;
-      sendRoomMessage(room, "Is that a word? Seems a little long.");
+      //sendRoomMessage(room, "Is that a word? Seems a little long.");
+      sendDirectMessage(sender, "Please use real words.", room);
       issueWarning(sender, 1, room);
     }
   }
@@ -207,12 +209,35 @@ var sendRoomMessage = function(room, message) {
   });
 }
 
+var sendDirectMessage = function(cl, message, room) {
+  /*cl.sendDirectMessage(
+    {
+      username: "GlassBot",
+      blid: 10
+    },
+    message
+  );*/
+  cl.sendObject({
+    type: "roomMessage",
+    room: room.id,
+
+    sender: "GlassBot",
+    sender_id: -1,
+
+    msg: message,
+
+    timestamp: moment().unix(),
+    datetime: moment().format('h:mm:ss a')
+  });
+}
+
 var checkMessageHistory = function(sender, message, room) {
   var hist = sender.roomMessageHistory.slice(0).reverse();
 
   if(hist[4] != null) {
     if(moment().diff(moment.unix(hist[4].time), 'seconds') < 5) {
-      sendRoomMessage(room, "Slow down.");
+      //sendRoomMessage(room, "Slow down.");
+      sendDirectMessage(sender, "Slow down, don't spam.", room);
       issueWarning(sender, 1, room);
     }
   }
@@ -229,7 +254,8 @@ var checkMessageHistory = function(sender, message, room) {
     }
 
     if(repCount >= 2) {
-      sendRoomMessage(room, "Don't spam.");
+      //sendRoomMessage(room, "Don't spam.");
+      sendDirectMessage(sender, "Don't spam.", room);
       issueWarning(sender, 1, room);
       break;
     }
@@ -260,13 +286,20 @@ var doMute = function(cl, duration, room) {
     cl._notifyIconChange();
   }, duration*1000);
 
-  if(duration > 5) {
+  var strDur = "";
+  if(duration > 60) {
+    strDur = Math.floor(duration/60) + " minutes";
+  } else {
+    strDur = duration + " seconds";
+  }
+
+  //if(duration > 5) {
     room.sendObject({
       type: 'roomText',
       id: room.id,
-      text: "<color:9b59b6> * GlassBot has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
+      text: "<color:9b59b6> * GlassBot has muted " + cl.username + " (" + cl.blid + ") for " + strDur
     })
-  }
+  //}
 }
 
 var issueWarning = function(client, amt, room) {
@@ -301,15 +334,15 @@ var issueWarning = function(client, amt, room) {
 
 var _warningPunishment = function(client, amt, room) {
   if(amt == 1) {
-    doMute(client, 5, room);
+    doMute(client, 10, room);
   }
 
   if(amt == 2) {
-    doMute(client, 30, room);
+    doMute(client, 60, room);
   }
 
   if(amt == 3) {
-    doMute(client, 60, room);
+    doMute(client, 300, room);
   }
 
   if(amt == 4) {
