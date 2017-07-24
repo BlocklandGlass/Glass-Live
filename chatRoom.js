@@ -17,6 +17,8 @@ function Chatroom(name, icon) {
 
   this.commandSet = require('./roomCommands').newCommandSet(this);
 
+  this.hasGlassBot = true;
+
   this.loadPersist();
 }
 
@@ -117,6 +119,11 @@ Chatroom.prototype.setRequirement = function(key) {
   return this;
 }
 
+Chatroom.prototype.setGlassBot = function(bool) {
+  this.hasGlassBot = bool;
+  return this;
+}
+
 Chatroom.prototype.addClient = function(client, isAuto) {
   var room = this;
 
@@ -207,18 +214,22 @@ Chatroom.prototype.getClientList = function() {
     clientList.push(client.getReference());
   }
 
-  clientList.push({
-    username: "GlassBot",
-    blid: -1,
+  if(room.hasGlassBot) {
 
-    admin: true,
-    mod: true,
+    clientList.push({
+      username: "GlassBot",
+      blid: -1,
 
-    online: true, // depreciated
+      admin: true,
+      mod: true,
 
-    status: "online",
-    icon: "balance"
-  });
+      online: true, // depreciated
+
+      status: "online",
+      icon: "balance"
+    });
+
+  }
 
   return clientList;
 }
@@ -250,7 +261,8 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
     datetime: moment().format('h:mm:ss a')
   });
 
-  glassBot.onRoomMessage(room, client, msg);
+  if(room.hasGlassBot)
+    glassBot.onRoomMessage(room, client, msg);
 
   roomLog.logEvent(room.id, 'msg', client.username + ' (' + client.blid + '): ' + msg);
 }

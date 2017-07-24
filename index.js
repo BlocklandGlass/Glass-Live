@@ -13,9 +13,11 @@ chatroom.create("Help", "help");
 chatroom.create("Servers", "server");
 
 chatroom.create("Quality Assurance", "tree_red")
-  .setRequirement('isBeta');
+  .setRequirement('isBeta')
+  .setGlassBot(false);
 
 chatroom.create("Staff", "balance_unbalance")
-  .setRequirement('isMod');
+  .setRequirement('isMod')
+  .setGlassBot(false);
 
 masterServer.queryMasterServer();

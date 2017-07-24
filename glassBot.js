@@ -132,7 +132,7 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory == null)
     sender.roomMessageHistory = [];
 
-  if(room.name == "Staff")
+  if(sender.isMod || sender.isAdmin)
     return;
 
   checkMessageHistory(sender, message, room);
@@ -146,7 +146,7 @@ var onRoomMessage = function(room, sender, message) {
   if(sender.roomMessageHistory.length > 100)
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
-  if(_percentUpper(message) >= 0.75 && message.length > 5) {
+  if(_percentUpper(message) >= 0.75 && message.length > 5 && message != "Oh, I") {
     //sendRoomMessage(room, "Avoid using all caps.");
     sendDirectMessage(sender, "Don't use all caps.", room);
     issueWarning(sender, 1, room);
