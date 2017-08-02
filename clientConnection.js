@@ -207,6 +207,7 @@ var createNew = function(socket) {
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
 
+      connection.canPing = false;
       //connection.isBeta = false;
       if(data.version != null && data.version != "") {
         var verParts = connection.version.split(/\./g);
@@ -224,6 +225,10 @@ var createNew = function(socket) {
         if(data.version.indexOf("indev") > -1 || data.version.indexOf("beta") > -1) {
           logger.log('...running Glass in-dev ' + data.version);
           connection.isBeta = true;
+        }
+
+        if(verParts[0] == 4 && verParts[1] >= 2) {
+          connection.canPing = true;
         }
       } else {
         logger.log('...without a version field!');
@@ -311,6 +316,31 @@ var createNew = function(socket) {
               }
             }
           }
+        }
+
+        if(connection.canPing) {
+          //logger.log("Starting ping interval...");
+          connection.pingInterval = setInterval(function() {
+            if(!connection.disconnected) {
+
+              if(connection.lastPingPending) {
+                //timed out!
+                logger.log("Detected timeout");
+                connection.disconnect();
+              } else {
+                //logger.log("Sending ping");
+                connection.lastPingPending = true;
+                connection.sendObject({
+                  type: "ping",
+                  key: "keepalive"
+                });
+              }
+
+            } else {
+              //logger.log("Disconnected ping!");
+            }
+          },
+          10000);
         }
       })
     })
@@ -626,6 +656,17 @@ var createNew = function(socket) {
     connection.unblock(data.blid);
   });
 
+  connection.on('ping', (data) => {
+    connection.sendObject({
+      type: 'pong',
+      key: data.key
+    });
+  })
+
+  connection.on('pong', (data) => {
+    connection.lastPingPending = false;
+  })
+
   connection.on('avatar', (data) => {
     delete data['type'];
     connection.avatarData = data;
@@ -887,6 +928,8 @@ ClientConnection.prototype.onDisconnect = function(code) {
     }
   }
 
+  client.disconnected = true;
+
   client.cleanUp();
 }
 
@@ -918,6 +961,7 @@ ClientConnection.prototype.cleanUp = function() {
   var client = this;
 
   clearInterval(client._warningDecay);
+  clearInterval(client.pingInterval);
 
   if(client.disconnectReason == null)
     client.disconnectReason = -1;
