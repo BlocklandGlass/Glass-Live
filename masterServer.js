@@ -44,6 +44,10 @@ var queryMasterServer = function(cb) {
     var rawData = '';
     res.on('data', (chunk) => rawData += chunk)
 
+	 res.on('error', (e) => {
+		cb(e);
+	 });
+
     res.on('end', () => {
       try {
         var servers = {};
