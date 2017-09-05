@@ -15,9 +15,6 @@ var check = function(ident, ip, daa, callback) {
 
   if(daa != undefined) {
 	  url += "&daa=1";
-	  logger.log("Is DAA!");
-  } else {
-	  logger.log("Not DAA!");
   }
 
   var options = {
@@ -28,7 +25,7 @@ var check = function(ident, ip, daa, callback) {
   };
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-		 
+
       callback(body, null);
 
     } else {
