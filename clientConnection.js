@@ -130,11 +130,6 @@ var createNew = function(socket) {
         return;
       }
 
-      if(data.blid != res.blid) {
-        logger.log('Ident BLID and Auth BLID do not match!');
-        return;
-      }
-
       if(res.status != "success") {
         if(res.status == "barred") {
           connection.sendObject({
@@ -146,6 +141,7 @@ var createNew = function(socket) {
           logger.log("Barred!");
         } else {
           logger.log('authCheck returned non-success: ' + res.status);
+			 logger.log(res.failure);
           connection.sendObject({
             type: "auth",
             status: "failed",
@@ -154,6 +150,17 @@ var createNew = function(socket) {
           });
         }
         connection.disconnect();
+        return;
+      }
+
+      if(data.blid != res.blid) {
+        logger.log('Ident BLID and Auth BLID do not match!');
+        connection.sendObject({
+          type: "auth",
+          status: "failed",
+          action: "reident",
+          timeout: 5000
+        });
         return;
       }
 
