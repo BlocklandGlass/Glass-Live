@@ -46,7 +46,8 @@ var queryMasterServer = function(cb) {
 
     res.on('error', () => {
       logger.log("Error querying master server!");
-    });
+		cb(e);
+	 });
 
     res.on('end', () => {
       try {

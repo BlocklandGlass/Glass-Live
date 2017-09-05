@@ -85,9 +85,8 @@ var createNew = function(socket) {
   module.connections.push(connection);
 
   connection.on('auth', (data) => {
-
-    if(data.blid == undefined) {
-      //pre 3.2.0 client!
+	 var major = data.version.charAt(0);
+    if(major == undefined || major < 4) {
       connection.sendObject({
         type: 'messageBox',
         title: 'Blockland Glass Outdated!',
@@ -108,7 +107,18 @@ var createNew = function(socket) {
       return;
     }*/
 
-    Auth.check(data.ident, connection.socket.remoteAddress, function(res, error) {
+	 var daa = undefined;
+	 if(data.authType == "daa")
+	 	daa = data.digest;
+
+    Auth.check(data.ident, connection.socket.remoteAddress, daa, function(res, error) {
+		if(data.authType == "daa") {
+			var root = data;
+			data = data.digest.data;
+			data.version = root.version;
+			data.ident   = root.ident;
+		}
+
       if(error) {
         logger.error('Unable to auth BL_ID ' + data.blid);
         connection.sendObject({
