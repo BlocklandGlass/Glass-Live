@@ -1,9 +1,14 @@
 const fs = require('fs');
 
-var logRoomEvent = function(id, type, body) {
+var logRoomEvent = function(id, ...args) {
   var line = Date.now();
-  line    += "\t" + type;
-  line    += "\t" + body.replace("\n", "\\n").replace("\t", "\\t");
+  for(var i in args) {
+    var arg = String(args[i]);
+    arg.replace('\t', '\\t');
+    arg.replace('\n', '\\n');
+
+    line = line + '\t' + args[i]
+  }
 
   var file = getRoomWriteFile(id);
 
