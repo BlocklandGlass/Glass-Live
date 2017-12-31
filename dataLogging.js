@@ -27,7 +27,7 @@ var logUserEvent = function(blid, ...args) {
   var line = Date.now();
 
   for(var i in args) {
-    var arg = args[i];
+    var arg = String(args[i]);
     arg.replace('\t', '\\t');
     arg.replace('\n', '\\n');
 
