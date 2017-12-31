@@ -991,7 +991,7 @@ ClientConnection.prototype.cleanUp = function() {
 
   if(client.persist != null) {
     client.setStatus('offline');
-    client.persist = null;
+    //client.persist = null;
   }
 
   if(module.clients[client.blid] != null && module.clients[client.blid] == client && client.blid != null)
