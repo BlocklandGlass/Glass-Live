@@ -106,7 +106,7 @@ Chatroom.prototype.setMOTD = function(motd) {
   room.persist.motd = motd;
   room.savePersist();
 
-  logging.logEvent(room.id, 'motd', motd);
+  logging.logRoomEvent(room.id, 'motd', motd);
 }
 
 Chatroom.prototype.setDefault = function(bool) {
@@ -164,7 +164,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
   client._didEnterRoom(room.id);
 
 
-  logging.logRoomEvent(room.id, 'join', client.username + ' (' + client.blid + ')');
+  logging.logRoomEvent(room.id, 'join', client.blid, client.username);
 }
 
 Chatroom.prototype.removeClient = function(client, reason) {
@@ -189,7 +189,7 @@ Chatroom.prototype.removeClient = function(client, reason) {
 
   client._didLeaveRoom(room.id);
 
-  logging.logRoomEvent(room.id, 'exit', client.username + ' (' + client.blid + ')');
+  logging.logRoomEvent(room.id, 'exit', client.blid, client.username);
 }
 
 Chatroom.prototype.kickClient = function(client, reason) {
@@ -203,7 +203,8 @@ Chatroom.prototype.kickClient = function(client, reason) {
     kickReason: reason
   });
 
-  logging.logRoomEvent(room.id, 'kick', client.username + ' (' + client.blid + '), ' + reason);
+  logging.logRoomEvent(room.id, 'kick', client.blid, client.username, reason);
+  logging.logUserEvent(client.blid, 'room.kick', room.id, reason);
 }
 
 Chatroom.prototype.getClientList = function() {
@@ -264,7 +265,8 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
   if(room.hasGlassBot)
     glassBot.onRoomMessage(room, client, msg);
 
-  logging.logRoomEvent(room.id, 'msg', client.username + ' (' + client.blid + '): ' + msg);
+  logging.logRoomEvent(room.id, 'msg', client.blid, msg);
+  logging.logUserEvent(client.blid, 'room.message', room.id, msg);
 }
 
 Chatroom.prototype.findClientByName = function(name, exact) {
@@ -304,6 +306,9 @@ Chatroom.prototype.handleCommand = function(client, command, args) {
   } catch (e) {
     logger.error("Error handling command " + command, e);
   }
+
+  logging.logUserEvent(client.blid, 'room.command', command, args);
 }
+
 
 module.exports = {create, getFromId, getList, getAll};

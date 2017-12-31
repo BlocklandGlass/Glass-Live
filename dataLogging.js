@@ -14,11 +14,10 @@ var logRoomEvent = function(id, type, body) {
 
 var logUserEvent = function(blid, ...args) {
   //types
-  // connection.auth.start <ip> <version>
-  // connection.auth.result <result> <username>
+  // connection.auth.result <result> <username> <ip> <version>
   // connection.close <message?>
   //
-  // room.join <id>
+  // room.enter <id>
   // room.message <id> <message>
   // room.leave <id>
   // room.kicked <id> <reason>

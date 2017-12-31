@@ -102,7 +102,6 @@ var createNew = function(socket) {
     if(data.authType == "daa")
       daa = data.digest;
 
-    logging.logUserEvent(data.blid, 'connection.auth.start', connection.socket.remoteAddress, data.version);
     Auth.check(data.ident, connection.socket.remoteAddress, daa, function(res, error) {
       if(data.authType == "daa") {
         var root = data;
@@ -122,7 +121,7 @@ var createNew = function(socket) {
         return;
       }
 
-      logging.logUserEvent(data.blid, 'connection.auth.result', res.status, res.username);
+      logging.logUserEvent(data.blid, 'connection.auth', res.status, res.username, connection.socket.remoteAddress, data.version);
 
       if(res.status != "success") {
         if(res.status == "barred") {
