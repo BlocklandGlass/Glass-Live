@@ -5,6 +5,7 @@ const Auth = require('./authCheck');
 const logger = require('./logger');
 const Database = require('./database');
 const Permissions = require('./permissions');
+const logging = require('./dataLogging');
 
 const Icons = require('./icons.json');
 
@@ -14,11 +15,11 @@ class ClientConnection extends EventEmitter {}
 
 var sendObjectAll = function(obj) {
   if(module.clients == null)
-    module.clients = {};
+  module.clients = {};
 
   for(var blid in module.clients) {
     if(module.clients[blid].socket == null || module.clients[blid].socket.destroyed)
-      continue;
+    continue;
 
     try {
       module.clients[blid].sendObject(obj);
@@ -34,12 +35,12 @@ var getAll = function() {
 
 var getFromBlid = function(blid) {
   if(module.clients == null)
-    module.clients = {};
+  module.clients = {};
 
   if(module.clients[blid] != null)
-    return module.clients[blid];
+  return module.clients[blid];
   else
-    return false;
+  return false;
 }
 
 var createNew = function(socket) {
@@ -51,17 +52,17 @@ var createNew = function(socket) {
   connection.rooms = [];
 
   if(module.connections == null)
-    module.connections = [];
+  module.connections = [];
 
   if(module.clients == null)
-    module.clients = {};
+  module.clients = {};
 
   if(module.connectionHistory == null)
-    module.connectionHistory = {};
+  module.connectionHistory = {};
 
   var remoteAddress = socket.remoteAddress;
   if(module.connectionHistory[remoteAddress] == null)
-    module.connectionHistory[remoteAddress] = [];
+  module.connectionHistory[remoteAddress] = [];
 
   var connectHistory = module.connectionHistory[remoteAddress];
   if(connectHistory[2] != null) {
@@ -85,7 +86,7 @@ var createNew = function(socket) {
   module.connections.push(connection);
 
   connection.on('auth', (data) => {
-	 var major = data.version.charAt(0);
+    var major = data.version.charAt(0);
     if(major == undefined || major < 4) {
       connection.sendObject({
         type: 'messageBox',
@@ -96,28 +97,19 @@ var createNew = function(socket) {
       return; //leave the connection in limbo as to not cause a reconnect
     }
 
-    /*if(data.username.trim() == "") {
-      connection.sendObject({
-        type: "auth",
-        status: "failed",
-        action: "reident",
-        debug: "Username was blank!",
-        timeout: 5000
-      });
-      return;
-    }*/
 
-	 var daa = undefined;
-	 if(data.authType == "daa")
-	 	daa = data.digest;
+    var daa = undefined;
+    if(data.authType == "daa")
+      daa = data.digest;
 
+    logging.logUserEvent(data.blid, 'connection.auth.start', connection.socket.remoteAddress, data.version);
     Auth.check(data.ident, connection.socket.remoteAddress, daa, function(res, error) {
-		if(data.authType == "daa") {
-			var root = data;
-			data = data.digest.data;
-			data.version = root.version;
-			data.ident   = root.ident;
-		}
+      if(data.authType == "daa") {
+        var root = data;
+        data = data.digest.data;
+        data.version = root.version;
+        data.ident   = root.ident;
+      }
 
       if(error) {
         logger.error('Unable to auth BL_ID ' + data.blid);
@@ -130,6 +122,8 @@ var createNew = function(socket) {
         return;
       }
 
+      logging.logUserEvent(data.blid, 'connection.auth.result', res.status, res.username);
+
       if(res.status != "success") {
         if(res.status == "barred") {
           connection.sendObject({
@@ -141,7 +135,7 @@ var createNew = function(socket) {
           logger.log("Barred!");
         } else {
           logger.log('authCheck returned non-success: ' + res.status);
-			 logger.log(res.failure);
+          logger.log(res.failure);
           connection.sendObject({
             type: "auth",
             status: "failed",
@@ -208,10 +202,10 @@ var createNew = function(socket) {
       connection.countryName = res.geoip_country_name;
 
       if(data.viewLocation == null)
-        data.viewLocation = "me";
+      data.viewLocation = "me";
 
       if(data.viewAvatar == null)
-        data.viewAvatar = "me";
+      data.viewAvatar = "me";
 
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
@@ -321,7 +315,7 @@ var createNew = function(socket) {
           for(var i in rooms) {
             var room = rooms[i];
             if(!connection.hasPermission('rooms_join'))
-              break;
+            break;
 
             if(room.default) {
               room.addClient(connection, true);
@@ -448,7 +442,7 @@ var createNew = function(socket) {
     var msg = data.message;
 
     if(msg == null || msg.trim() == "")
-      return;
+    return;
 
     if(room != false) {
       var args = msg.split(' ');
@@ -647,9 +641,9 @@ var createNew = function(socket) {
     if(module.clients[target] != null) {
       module.clients[target].sendObject({
         type: "messageNotification",
-          chat_blid: target,
-          chat_username: connection.username,
-          message: "This user does not accept messages from strangers or has their status set to 'busy'."
+        chat_blid: target,
+        chat_username: connection.username,
+        message: "This user does not accept messages from strangers or has their status set to 'busy'."
       });
     }
   });
@@ -696,19 +690,19 @@ var createNew = function(socket) {
 
       switch(perm) {
         case "anyone":
-          allowed = true;
-          break;
+        allowed = true;
+        break;
 
         case "friends":
-          var cl = module.clients[data.blid];
-          var idx = cl.persist.friends.indexOf(connection.blid);
-          allowed = (idx > -1) || (data.blid == connection.blid);
-          break;
+        var cl = module.clients[data.blid];
+        var idx = cl.persist.friends.indexOf(connection.blid);
+        allowed = (idx > -1) || (data.blid == connection.blid);
+        break;
 
         case "me":
         default:
-          allowed = (data.blid == connection.blid);
-          break;
+        allowed = (data.blid == connection.blid);
+        break;
       }
 
       if(allowed) {
@@ -736,18 +730,18 @@ var createNew = function(socket) {
 
       switch(perm) {
         case "anyone":
-          allowed = true;
-          break;
+        allowed = true;
+        break;
 
         case "friends":
-          var idx = user.persist.friends.indexOf(connection.blid);
-          allowed = (idx > -1) || (data.blid == connection.blid);
-          break;
+        var idx = user.persist.friends.indexOf(connection.blid);
+        allowed = (idx > -1) || (data.blid == connection.blid);
+        break;
 
         case "me":
         default:
-          allowed = (data.blid == connection.blid);
-          break;
+        allowed = (data.blid == connection.blid);
+        break;
       }
 
       if(allowed) {
@@ -910,6 +904,8 @@ ClientConnection.prototype.kick = function(reason) {
     reason: str
   });
 
+  logging.logUserEvent(client.blid, 'connection.kick', str);
+
   client.disconnect();
 }
 
@@ -929,6 +925,8 @@ ClientConnection.prototype.bar = function(duration, reason) {
     duration: duration
   });
 
+  logging.logUserEvent(client.blid, 'connection.bar', str);
+
   client.disconnect();
 }
 
@@ -940,7 +938,7 @@ ClientConnection.prototype.onDisconnect = function(code) {
     }
 
     if(!client.socket.destroyed) {
-      client.socket.end();
+      client.socket.destroy();
       client.socket = undefined;
     }
   }
@@ -953,7 +951,7 @@ ClientConnection.prototype.onDisconnect = function(code) {
 ClientConnection.prototype.disconnect = function(code) {
   var client = this;
   if(code == null)
-    code = -1;
+  code = -1;
 
   if(client.socket != null) {
     client.sendObject({
@@ -992,8 +990,10 @@ ClientConnection.prototype.cleanUp = function() {
     rooms.getFromId(id).removeClient(client, client.disconnectReason);
   }
 
-  if(client.persist != null)
+  if(client.persist != null) {
     client.setStatus('offline');
+    client.persist = null;
+  }
 
   if(module.clients[client.blid] != null && module.clients[client.blid] == client && client.blid != null)
     delete module.clients[client.blid];
@@ -1005,6 +1005,9 @@ ClientConnection.prototype.cleanUp = function() {
   if(client.socket != null && !client.socket.destroyed) {
     client.socket.destroy();
   }
+
+  if(client.blid != null)
+    logging.logUserEvent(client.blid, 'connection.close');
 
   delete client.socket;
   delete client;
@@ -1077,7 +1080,7 @@ ClientConnection.prototype.sendFriendList = function() {
           var name = data.username;
           var icon = data.icon;
           if(icon == null)
-            icon = "user";
+          icon = "user";
 
           if(err != null) {
             logger.error('Error loading friend BLID ' + blid + ' for ' + client.blid + ':', err);
@@ -1240,7 +1243,7 @@ ClientConnection.prototype.sendFriendRequest = function(to) {
 ClientConnection.prototype.onFriendRequest = function(sender) {
   var client = this;
   if(client.persist.requests.indexOf(sender.blid) > -1)
-    return;
+  return;
 
   client.persist.requests.push(sender.blid);
   client.savePersist();
@@ -1271,11 +1274,11 @@ ClientConnection.prototype.acceptFriendRequest = function(blid) {
         }
 
         if(data.friends.indexOf(client.blid) == -1)
-          data.friends.push(client.blid);
+        data.friends.push(client.blid);
 
         var index = data.requests.indexOf(client.blid);
         if(index > -1)
-          data.requests.splice(index, 1);
+        data.requests.splice(index, 1);
 
         Database.saveUserData(blid, data);
       });
@@ -1294,7 +1297,7 @@ ClientConnection.prototype.declineFriendRequest = function(blid) {
   var idx = client.persist.requests.indexOf(blid);
 
   if(idx == -1)
-    return;
+  return;
 
   client.persist.requests.splice(idx, 1);
   client.savePersist();
@@ -1305,7 +1308,7 @@ ClientConnection.prototype.addFriend = function(blid, wasAccepted) {
 
   var idx = client.persist.friends.indexOf(blid);
   if(idx > -1)
-    return;
+  return;
 
   client.persist.friends.push(blid);
   client.savePersist();
@@ -1339,7 +1342,7 @@ ClientConnection.prototype.removeFriend = function(blid) {
   var client = this;
   var idx = client.persist.friends.indexOf(blid);
   if(idx == -1)
-    return;
+  return;
 
   client.persist.friends.splice(idx, 1);
   client.savePersist();
@@ -1356,7 +1359,7 @@ ClientConnection.prototype.removeFriend = function(blid) {
 
     var idx = module.clients[blid].persist.friends.indexOf(client.blid);
     if(idx == -1)
-      return;
+    return;
 
     module.clients[blid].persist.friends.splice(idx, 1);
     module.clients[blid].savePersist();
@@ -1380,7 +1383,7 @@ ClientConnection.prototype.removeFriend = function(blid) {
 
       var idx = data.friends.indexOf(client.blid);
       if(idx > -1)
-        data.friends.splice(idx, 1);
+      data.friends.splice(idx, 1);
 
       Database.saveUserData(blid, data);
     })
@@ -1500,18 +1503,18 @@ ClientConnection.prototype.getBlocked = function() {
 ClientConnection.prototype.isBlocked = function(blid) {
   var client = this;
   if(client.getBlocked().indexOf(blid) > -1)
-    return true;
+  return true;
 
   return false;
 }
 
 ClientConnection.prototype.block = function(blid) {
   if(blid < 0 || Math.floor(blid) != blid)
-    return;
+  return;
 
   var client = this;
   if(client.getBlocked().indexOf(blid) > -1)
-    return;
+  return;
 
   client.getBlocked().push(blid);
   client.savePersist();
@@ -1522,7 +1525,7 @@ ClientConnection.prototype.unblock = function(blid) {
   var idx = client.getBlocked().indexOf(blid);
 
   if(idx == -1)
-    return;
+  return;
 
   client.persist.blocked.splice(idx, 1);
   client.savePersist();
@@ -1542,6 +1545,8 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
     reason: reason
   });
 
+  logging.logUserEvent(client.blid, 'rooms.banned', duration, reason);
+
   var rooms = client.rooms.slice();
   for(var i in rooms) {
     require('./chatRoom').getFromId(rooms[i]).removeClient(client, 2);
@@ -1551,7 +1556,7 @@ ClientConnection.prototype.roomBan = function(duration, reason) {
 ClientConnection.prototype.reduceWarnings = function() {
   var client = this;
   if(client.persist.warnings == null)
-    client.persist.warnings = 0;
+  client.persist.warnings = 0;
 
   if(client.persist.warnings > 0) {
     client.persist.warnings--;
@@ -1603,6 +1608,8 @@ ClientConnection.prototype._didEnterRoom = function(id) {
   if(client.rooms.indexOf(id) > -1)
     return;
 
+  logging.logUserEvent(client.blid, 'room.enter', id);
+
   client.rooms.push(id);
 }
 
@@ -1611,6 +1618,8 @@ ClientConnection.prototype._didLeaveRoom = function(id) {
   var idx = client.rooms.indexOf(parseInt(id));
   if(idx > -1)
     client.rooms.splice(idx, 1);
+
+  logging.logUserEvent(client.blid, 'room.leave', id);
 }
 
 ClientConnection.prototype.getCountryCode = function() {

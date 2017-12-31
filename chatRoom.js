@@ -1,5 +1,5 @@
 const moment = require('moment');
-const roomLog = require('./roomLog');
+const logging = require('./dataLogging');
 const logger = require('./logger');
 
 module.roomCt = 0;
@@ -106,7 +106,7 @@ Chatroom.prototype.setMOTD = function(motd) {
   room.persist.motd = motd;
   room.savePersist();
 
-  roomLog.logEvent(room.id, 'motd', motd);
+  logging.logEvent(room.id, 'motd', motd);
 }
 
 Chatroom.prototype.setDefault = function(bool) {
@@ -164,7 +164,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
   client._didEnterRoom(room.id);
 
 
-  roomLog.logEvent(room.id, 'join', client.username + ' (' + client.blid + ')');
+  logging.logRoomEvent(room.id, 'join', client.username + ' (' + client.blid + ')');
 }
 
 Chatroom.prototype.removeClient = function(client, reason) {
@@ -189,7 +189,7 @@ Chatroom.prototype.removeClient = function(client, reason) {
 
   client._didLeaveRoom(room.id);
 
-  roomLog.logEvent(room.id, 'exit', client.username + ' (' + client.blid + ')');
+  logging.logRoomEvent(room.id, 'exit', client.username + ' (' + client.blid + ')');
 }
 
 Chatroom.prototype.kickClient = function(client, reason) {
@@ -203,7 +203,7 @@ Chatroom.prototype.kickClient = function(client, reason) {
     kickReason: reason
   });
 
-  roomLog.logEvent(room.id, 'kick', client.username + ' (' + client.blid + '), ' + reason);
+  logging.logRoomEvent(room.id, 'kick', client.username + ' (' + client.blid + '), ' + reason);
 }
 
 Chatroom.prototype.getClientList = function() {
@@ -264,7 +264,7 @@ Chatroom.prototype.sendClientMessage = function(client, msg) {
   if(room.hasGlassBot)
     glassBot.onRoomMessage(room, client, msg);
 
-  roomLog.logEvent(room.id, 'msg', client.username + ' (' + client.blid + '): ' + msg);
+  logging.logRoomEvent(room.id, 'msg', client.username + ' (' + client.blid + '): ' + msg);
 }
 
 Chatroom.prototype.findClientByName = function(name, exact) {
