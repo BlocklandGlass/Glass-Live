@@ -48,8 +48,11 @@ var getUserData = function(blid, callback) {
 
 var _loadUserData = function(id) {
   var blid = id;
-  var url = 'mongodb://blocklandglass.com:27017/glassLive';
-  MongoClient.connect(url, function(err, db) {
+  var user = Config.username;
+  var pass = Config.password;
+
+  var url = 'mongodb://' + user + ':' + pass + '@blocklandglass.com:27017/glassLive';
+  MongoClient.connect(url, function(err, client) {
     if(err != null) {
       logger.error('Database error getting ' + blid);
       logger.error(err);
@@ -60,47 +63,31 @@ var _loadUserData = function(id) {
           cb(null, 'Failed to connect');
       }
       module.loadCallbacks[blid] = null;
+      client.close();
       return;
     }
 
-    db.authenticate(Config.username, Config.password, function(err, result) {
-      if(result !== true) {
-        logger.error('Database authentication failed (_loadUserData)');
+    const db = client.db('glassLive');
+
+    db.collection('users').findOne({"blid":blid}, function(err, data) {
+      assert.equal(null, err);
+
+      if(data == null || data.data == null) {
+        data = _createNewData(blid);
       }
 
-      if(err != null) {
-        logger.error('Database error getting ' + blid);
-        logger.error(err);
-        var callbacks = module.loadCallbacks[blid];
-        for(var i in callbacks) {
-          var cb = callbacks[i];
-          if(typeof cb === "function")
-            cb(null, 'Failed to connect');
-        }
-        module.loadCallbacks[blid] = null;
-        return;
+      module.userData[blid] = data.data;
+
+      var callbacks = module.loadCallbacks[blid];
+      for(var i in callbacks) {
+        var cb = callbacks[i];
+        if(typeof cb === "function")
+          cb(data.data, null);
       }
 
-      db.collection('users').findOne({"blid":blid}, function(err, data) {
-        assert.equal(null, err);
-
-        if(data == null || data.data == null) {
-          data = _createNewData(blid);
-        }
-
-        module.userData[blid] = data.data;
-
-        var callbacks = module.loadCallbacks[blid];
-        for(var i in callbacks) {
-          var cb = callbacks[i];
-          if(typeof cb === "function")
-            cb(data.data, null);
-        }
-
-        module.loadCallbacks[blid] = null;
-      });
-      db.close();
+      module.loadCallbacks[blid] = null;
     });
+    client.close();
   });
 }
 
@@ -116,29 +103,27 @@ var saveUserData = function(blid, data, callback) {
 
   module.userData[blid] = data;
 
-  var url = 'mongodb://blocklandglass.com:27017/glassLive';
-  MongoClient.connect(url, function(err, db) {
+  var user = Config.username;
+  var pass = Config.password;
+
+  var url = 'mongodb://' + user + ':' + pass + '@blocklandglass.com:27017/glassLive';
+
+  MongoClient.connect(url, function(err, client) {
     if(err != null) {
       callback(err);
       return;
     }
+    
+    const db = client.db('glassLive');
 
-    db.authenticate(Config.username, Config.password, function(err, result) {
-      if(result !== true) {
-        logger.error('Database authentication failed');
-        callback('Auth failed');
+    db.collection('users').update({"blid": blid}, {"blid": blid, "data": data}, {upsert: true}, function(err, result) {
+      if(err != null) {
+        callback(err);
         return;
       }
-
-      db.collection('users').update({"blid": blid}, {"blid": blid, "data": data}, {upsert: true}, function(err, result) {
-        if(err != null) {
-          callback(err);
-          return;
-        }
-        callback(null);
-      });
-      db.close();
+      callback(null);
     });
+    client.close();
   });
 }
 
