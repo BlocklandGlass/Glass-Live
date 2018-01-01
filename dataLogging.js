@@ -45,45 +45,7 @@ var logUserEvent = function(blid, ...args) {
   });
 }
 
-var getDateString = function() {
-  var date = new Date();
-
-  var h = String(date.getHours());
-  var m = String(date.getMinutes());
-  var s = String(date.getSeconds());
-
-  var fy = String(date.getFullYear());
-  var mo = String((date.getMonth()+1));
-  var da = String(date.getDate());
-
-  if(h.length == 1) {
-    h = "0" + h;
-  }
-
-  if(m.length == 1) {
-    m = "0" + m;
-  }
-
-  if(s.length == 1) {
-    s = "0" + s;
-  }
-
-  if(mo.length == 1) {
-    mo = "0" + mo;
-  }
-
-  if(da.length == 1) {
-    da = "0" + da;
-  }
-
-  return "[" +
-    h + ":" + m + ":" + s + " " +
-    fy + "-" + mo + "-" + da +
-  "]";
-}
-
-var getRoomWriteFile = function(id, time = null) {
-  //gets the appropriate write file based on date
+var getDateString = function(time = null) {
   var date;
   if(time == null) {
     date = new Date();
@@ -95,7 +57,20 @@ var getRoomWriteFile = function(id, time = null) {
   var mo = String((date.getMonth()+1));
   var da = String(date.getDate());
 
-  var dateStr = fy + '-' + mo + '-' + da;
+  if(mo.length == 1) {
+    mo = "0" + mo;
+  }
+
+  if(da.length == 1) {
+    da = "0" + da;
+  }
+
+  return fy + "-" + mo + "-" + da;
+}
+
+var getRoomWriteFile = function(id, time = null) {
+  //gets the appropriate write file based on date
+  var dateStr = getDateString(time);
 
   var folder = __dirname + '/log/room/' + id + '/';
   var file  = folder + dateStr + '.log';
@@ -106,18 +81,7 @@ var getRoomWriteFile = function(id, time = null) {
 
 var getUserWriteFile = function(id, time = null) {
   //gets the appropriate write file based on date
-  var date;
-  if(time == null) {
-    date = new Date();
-  } else {
-    date = new Date(time);
-  }
-
-  var fy = String(date.getFullYear());
-  var mo = String((date.getMonth()+1));
-  var da = String(date.getDate());
-
-  var dateStr = fy + '-' + mo + '-' + da;
+  var dateStr = getDateString(time);
 
   var folder = __dirname + '/log/user/' + id + '/';
   var file  = folder + dateStr + '.log';
