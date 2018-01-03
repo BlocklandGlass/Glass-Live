@@ -44,6 +44,11 @@ var getFromBlid = function(blid) {
 }
 
 var createNew = function(socket) {
+  if(socket == null) {
+    logger.log("New client connection with null socket?");
+    return;
+  }
+
   var connection = new ClientConnection();
 
   connection.status = "online";
