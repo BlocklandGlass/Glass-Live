@@ -15,6 +15,9 @@ var start = function() {
       var lines = rawStr.split('\n');
       for(var i in lines) {
         var line = lines[i];
+        if(line.trim() == "")
+          continue;
+
         try {
           var obj = JSON.parse(line);
           if(obj.type == null) {
@@ -36,6 +39,12 @@ var start = function() {
     });
 
     socket.on('close', () => {
+      if(socket.clientConnection != null) {
+        socket.clientConnection.onDisconnect();
+      }
+    });
+
+    socket.on('end', () => {
       if(socket.clientConnection != null) {
         socket.clientConnection.onDisconnect();
       }

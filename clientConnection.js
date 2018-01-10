@@ -126,6 +126,11 @@ var createNew = function(socket) {
         return;
       }
 
+      if(connection.socket == undefined) {
+        logger.log("Socket undefined");
+        return;
+      }
+
       logging.logUserEvent(data.blid, 'connection.auth', res.status, res.username, connection.socket.remoteAddress, data.version);
 
       if(res.status != "success") {
@@ -217,10 +222,11 @@ var createNew = function(socket) {
       if(data.autoJoinRooms == null) {
         connection.autoJoinRooms = true;
       } else {
-        connection.autoJoinRooms = data.autoJoinRooms == "1";
+        connection.autoJoinRooms = (data.autoJoinRooms == "1");
       }
 
       logger.log(connection.username + ' (' + connection.blid + ') connected.');
+      //logger.log("Auto Join Rooms: " + data.autoJoinRooms + " " + connection.autoJoinRooms);
 
       connection.canPing = false;
       //connection.isBeta = false;
