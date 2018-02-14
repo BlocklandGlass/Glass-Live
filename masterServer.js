@@ -97,7 +97,7 @@ var queryMasterServer = function(cb) {
           cb(null);
         }
 
-        logger.log("Master Server query done (" + Object.keys(servers).length + " servers, " + playerSum +  " players)");
+        //logger.log("Master Server query done (" + Object.keys(servers).length + " servers, " + playerSum +  " players)");
         startQueryTimer();
 
       } catch (e) {
@@ -107,7 +107,11 @@ var queryMasterServer = function(cb) {
         logger.error(e.message);
       }
     });
-  });
+  }).on('error', function(e) {
+    logger.error("Master Server Query Failed: " + e);
+    startQueryTimer();
+    cb(e.message)
+  })
 }
 
 function ServerInfo(ip, port, title, dedicated, passworded, players, maxPlayers, gamemode) {
