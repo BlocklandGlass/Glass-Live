@@ -110,7 +110,8 @@ var queryMasterServer = function(cb) {
   }).on('error', function(e) {
     logger.error("Master Server Query Failed: " + e);
     startQueryTimer();
-    cb(e.message)
+    if(cb != null)
+      cb(e.message)
   })
 }
 
