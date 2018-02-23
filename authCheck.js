@@ -30,10 +30,10 @@ var check = function(ident, ip, daa, callback) {
 
     } else {
       if(error) {
-        logger.error('Auth error for ident ' + ident);
+        //logger.error('Auth error for ident ' + ident);
         callback(null, error);
       } else {
-        logger.error('Auth error for ident ' + ident + ', received ' + response.statusCode);
+        //logger.error('Auth error for ident ' + ident + ', received ' + response.statusCode);
         callback(null, "Status: " + response.statusCode);
       }
     }

@@ -116,7 +116,7 @@ var createNew = function(socket) {
       }
 
       if(error) {
-        logger.error('Unable to auth BL_ID ' + data.blid);
+        logger.error('Error attempting to auth BL_ID ' + data.blid + ' [' + error + ']');
         connection.sendObject({
           type: "auth",
           status: "failed",
@@ -143,8 +143,7 @@ var createNew = function(socket) {
           });
           logger.log("Barred!");
         } else {
-          logger.log('authCheck returned non-success: ' + res.status);
-          logger.log(res.failure);
+          logger.log('Authentication returned ' + res.status + ' for ' + data.blid + ': ' + res.failure);
           connection.sendObject({
             type: "auth",
             status: "failed",
@@ -886,6 +885,11 @@ var createNew = function(socket) {
       }
     }
   })
+
+
+  connection.on('disconnect', (data) => {
+
+  });
 
   return connection;
 }
