@@ -360,7 +360,7 @@ var createNew = function(socket) {
               //logger.log("Disconnected ping!");
             }
           },
-          60000);
+          30000);
         }
       })
     })
