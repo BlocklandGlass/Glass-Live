@@ -22,14 +22,10 @@ var newCommandSet = function(room) {
     command['uptime'] = "How long the Live server has been online";
     command['time'] = "The server's local time";
     command['seticon'] = "<icon>\tSets your icon";
-    command['getid'] = "<username...>\tReturns BLID of user";
+    command['getid'] = "<username...>\tReturns BL_ID of user";
     var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
-      command['announce'] = "<message...>\tBroadcasts a message in all rooms";
-
-      command['setmotd'] = "<motd...>\tSets the room's MOTD";
-
       command['mute'] = "<seconds> <username...>\tMutes user for the duration";
       command['muteid'] = "<seconds> <blid>\tMutes user for the duration";
 
@@ -44,6 +40,8 @@ var newCommandSet = function(room) {
       command['resetwarnings'] = "<username...>\tResets user's warnings";
       command['resetwarningsid'] = "<blid>\tResets user's warnings";
 
+      command['getperm'] = "<blid>\tGet user's permissions";
+      command['getpermid'] = "<blid>\tGet online/offline user's permissions";
       command['resetperm'] = "<username...>\tResets user's permissions";
       command['resetpermid'] = "<blid>\tResets online/offline user's permissions";
     }
@@ -51,6 +49,10 @@ var newCommandSet = function(room) {
     var modCmdCt = Object.keys(command).length;
 
     if(client.isAdmin) {
+      command['announce'] = "<message...>\tBroadcasts a message in all rooms";
+
+      command['setmotd'] = "<motd...>\tSets the room's MOTD";
+
       command['ping'] = "pong";
 
       command['glassupdate'] = "<version>\tNotifies clients an update is available";
@@ -404,7 +406,7 @@ var newCommandSet = function(room) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:e74c3c> * ' + client.username + ' banned offline user "' + data.username + '" (' + args[1] + '): ' + reason
+          text: '<color:e74c3c> * ' + client.username + ' banned offline user ' + data.username + ' (' + args[1] + ') from public rooms for ' + duration/60 + ': ' + reason
         });
       })
     }
@@ -430,7 +432,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * Unbanned " + cl.username + " (" + cl.blid + ")"
+        text: "<color:e74c3c> * " + client.username + " has unbanned " + cl.username + " (" + cl.blid + ")"
       })
     } else {
       Database.getUserData(args[0], function(data, err) {
@@ -456,7 +458,7 @@ var newCommandSet = function(room) {
         client.sendObject({
           type: 'roomText',
           id: room.id,
-          text: "<color:e74c3c> * Unbanned " + data.username + " (" + args[0] + ")"
+          text: "<color:e74c3c> * " + client.username + " has unbanned " + data.username + " (" + args[0] + ")"
         })
       })
     }
@@ -527,14 +529,14 @@ var newCommandSet = function(room) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:e74c3c> * ' + client.username + ' barred offline user "' + data.username + '" (' + args[1] + '): ' + reason
+          text: '<color:e74c3c> * ' + client.username + ' barred offline user ' + data.username + ' (' + args[1] + ') from Glass Live for ' + duration/60 + ' minutes: ' + reason
         });
       })
     }
   })
 
   commandSet.on('setmotd', (client, args) => {
-    if(!client.isMod) return;
+    if(!client.isAdmin) return;
 
     room.setMOTD(args.join(' '));
     room.sendObject({
@@ -545,7 +547,7 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('announce', (client, args) => {
-    if(!client.isMod) return;
+    if(!client.isAdmin) return;
 
     if(args.length == 0)
       return;
@@ -612,7 +614,7 @@ var newCommandSet = function(room) {
         client.sendObject({
           type: 'roomText',
           id: room.id,
-          text: ' * Reset permissions for ' + data.username + ' (offline)'
+          text: ' * Reset permissions for offline user ' + data.username
         });
       });
     } else {
@@ -658,11 +660,10 @@ var newCommandSet = function(room) {
       });
     }
   });
-  
+
   commandSet.on('resetwarningsid', (client, args) => {
-    if(!client.isMod)
-      return;
-    
+    if(!client.isMod) return;
+
     var blid = args[0];
     var cl = clientConnection.getFromBlid(args[0]);
     if(cl != false) {
@@ -678,11 +679,11 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * Unable to find blid "' + args[0] + '"'
+        text: ' * Unable to find blid "' + blid + '"'
       });
     }
   });
-  
+
   commandSet.on('glassupdate', (client, args) => {
     if(!client.isAdmin) return;
 
@@ -698,6 +699,195 @@ var newCommandSet = function(room) {
     clientConnection.sendObjectAll({
       type: 'glassUpdate',
       version: args[0]
+    });
+  });
+
+  commandSet.on('getperm', (client, args) => {
+    if(!client.isMod) return;
+
+    var cl = room.findClientByName(args.join(' '));
+    var blid = cl.blid;
+
+    Database.getUserData(blid, function(data, err) {
+      if(err != null) {
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: '* Unable to find user "' + args.join(' ') + '"'
+        });
+        return;
+      }
+
+      connection.persist = data;
+      connection.persist.username = res.username;
+
+      connection._permissionSet = Permissions.createSet(connection.persist);
+
+      var msg = "* User permissions for blid " + blid + "<br>";
+
+      msg = msg + "   Barred";
+
+      if(connection.hasPermission('service_use')) {
+        msg = msg + ": NO<br>";
+      } else {
+        msg = msg + ": YES<br>";
+
+        if(connection.isTempPermission('service_use')) {
+          var tempData = connection.getTempPermData('service_use');
+          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+
+          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Reason: " + tempData.reason + "<br>";
+          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+        } else {
+          msg = msg + "    Duration: Permanent<br>";
+          msg = msg + "    Expires: Never<br>";
+        }
+      }
+
+      msg = msg + "   Banned";
+
+      if(connection.hasPermission('rooms_join')) {
+        msg = msg + ": NO<br>";
+      } else {
+        msg = msg + ": YES<br>";
+
+        if(connection.isTempPermission('rooms_join')) {
+          var tempData = connection.getTempPermData('rooms_join');
+          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+
+          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Reason: " + tempData.reason + "<br>";
+          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+        } else {
+          msg = msg + "    Duration: Permanent<br>";
+          msg = msg + "    Expires: Never<br>";
+        }
+      }
+
+      msg = msg + "   Muted";
+
+      if(connection.hasPermission('rooms_talk')) {
+        msg = msg + ": NO<br>";
+      } else {
+        msg = msg + ": YES<br>";
+
+        if(connection.isTempPermission('rooms_talk')) {
+          var tempData = connection.getTempPermData('rooms_talk');
+          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+
+          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+        } else {
+          msg = msg + "    Duration: Permanent<br>";
+          msg = msg + "    Expires: Never<br>";
+        }
+      }
+
+      msg = msg + "End of user permissions";
+
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* ' + msg
+      });
+    });
+  });
+
+  commandSet.on('getpermid', (client, args) => {
+    if(!client.isMod) return;
+
+    var blid = args[0];
+
+    Database.getUserData(blid, function(data, err) {
+      if(err != null) {
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: '* Unable to find blid "' + blid + '"'
+        });
+        return;
+      }
+
+      connection.persist = data;
+      connection.persist.username = res.username;
+
+      connection._permissionSet = Permissions.createSet(connection.persist);
+
+      var msg = "* User permissions for BL_ID: " + blid + "<br>";
+
+      msg = msg + "   Barred";
+
+      if(connection.hasPermission('service_use')) {
+        msg = msg + ": NO<br>";
+      } else {
+        msg = msg + ": YES<br>";
+
+        if(connection.isTempPermission('service_use')) {
+          var tempData = connection.getTempPermData('service_use');
+          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+
+          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Reason: " + tempData.reason + "<br>";
+          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+        } else {
+          msg = msg + "    Duration: Permanent<br>";
+          msg = msg + "    Expires: Never<br>";
+        }
+      }
+
+      msg = msg + "   Banned";
+
+      if(connection.hasPermission('rooms_join')) {
+        msg = msg + ": NO<br>";
+      } else {
+        msg = msg + ": YES<br>";
+
+        if(connection.isTempPermission('rooms_join')) {
+          var tempData = connection.getTempPermData('rooms_join');
+          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+
+          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Reason: " + tempData.reason + "<br>";
+          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+        } else {
+          msg = msg + "    Duration: Permanent<br>";
+          msg = msg + "    Expires: Never<br>";
+        }
+      }
+
+      msg = msg + "   Muted";
+
+      if(connection.hasPermission('rooms_talk')) {
+        msg = msg + ": NO<br>";
+      } else {
+        msg = msg + ": YES<br>";
+
+        if(connection.isTempPermission('rooms_talk')) {
+          var tempData = connection.getTempPermData('rooms_talk');
+          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+
+          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+        } else {
+          msg = msg + "    Duration: Permanent<br>";
+          msg = msg + "    Expires: Never<br>";
+        }
+      }
+
+      msg = msg + "End of user permissions";
+
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* ' + msg
+      });
     });
   });
 
