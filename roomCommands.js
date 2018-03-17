@@ -706,6 +706,16 @@ var newCommandSet = function(room) {
     if(!client.isMod) return;
 
     var cl = room.findClientByName(args.join(' '));
+
+    if(cl == false) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* Unable to find user "' + args.join(' ') + '"'
+      });
+      return;
+    }
+
     var blid = cl.blid;
 
     Database.getUserData(blid, function(data, err) {
@@ -713,7 +723,7 @@ var newCommandSet = function(room) {
         client.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '* Unable to find user "' + args.join(' ') + '"'
+          text: '* Error getting user data for blid "' + blid + '"'
         });
         return;
       }
@@ -792,7 +802,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: '* ' + msg
+        text: msg
       });
     });
   });
@@ -886,7 +896,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: '* ' + msg
+        text: msg
       });
     });
   });
