@@ -401,8 +401,8 @@ var newCommandSet = function(room) {
         permSet.newTempPermission('rooms_talk', false, duration, reason);
 
         /* copied from ClientConnection.prototype.savePersist */
-        data.permissons = permSet.perms;
-        data.tempPermissons = permSet.temp;
+        data.permissions = permSet.perms;
+        data.tempPermissions = permSet.temp;
 
         Database.saveUserData(args[1], data);
 
@@ -453,8 +453,8 @@ var newCommandSet = function(room) {
         permSet.newTempPermission('rooms_join', true, 1, "");
 
         /* copied from ClientConnection.prototype.savePersist */
-        data.permissons = permSet.perms;
-        data.tempPermissons = permSet.temp;
+        data.permissions = permSet.perms;
+        data.tempPermissions = permSet.temp;
 
         Database.saveUserData(args[0], data);
 
@@ -524,8 +524,8 @@ var newCommandSet = function(room) {
         permSet.newTempPermission('service_use', false, duration, reason);
 
         /* copied from ClientConnection.prototype.savePersist */
-        data.permissons = permSet.perms;
-        data.tempPermissons = permSet.temp;
+        data.permissions = permSet.perms;
+        data.tempPermissions = permSet.temp;
 
         Database.saveUserData(args[1], data);
 
