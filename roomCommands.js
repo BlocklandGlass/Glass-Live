@@ -960,8 +960,12 @@ var newCommandSet = function(room) {
 
     var cl = clientConnection.getFromBlid(blid);
 
+    var success = false;
+
     if(cl != false) {
       cl.setIcon(icon, true);
+
+      success = true;
     } else {
       Database.getUserData(blid, function(data, err) {
         if(err != null) {
@@ -976,11 +980,15 @@ var newCommandSet = function(room) {
         data.icon = icon;
         Database.saveUserData(blid, data);
 
-        client.sendObject({
-          type: 'roomText',
-          id: room.id,
-          text: '* Forced icon change for blid ' + blid
-        });
+        success = true;
+      });
+    }
+
+    if(success) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* Forced icon change for blid ' + blid
       });
     }
   });
