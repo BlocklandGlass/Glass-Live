@@ -901,6 +901,20 @@ var newCommandSet = function(room) {
   commandSet.on('forceicon', (client, args) => {
     if(!client.isAdmin) return;
 
+    const Icons = require('./icons.json');
+
+    var icon = args[0];
+    icon.trim();
+
+    if(Icons.allowed.indexOf(icon) == -1 && Icons.restricted.indexOf(icon) == -1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: "* Icon doesn't exist!"
+      });
+      return;
+    }
+
     var username = args.slice(1).join(' ');
     username.trim();
     var cl = room.findClientByName(username);
@@ -915,12 +929,8 @@ var newCommandSet = function(room) {
     }
 
     var blid = cl.blid;
-    
-    var icon = args[0];
 
-    var str = args.join(' ');
-    str.trim();
-    cl.setIcon(str, true);
+    cl.setIcon(icon, true);
 
     client.sendObject({
       type: 'roomText',
@@ -932,41 +942,47 @@ var newCommandSet = function(room) {
   commandSet.on('forceiconid', (client, args) => {
     if(!client.isAdmin) return;
 
-    var blid = args[1];
+    const Icons = require('./icons.json');
 
-    Database.getUserData(blid, function(data, err) {
-      if(err != null) {
-        client.sendObject({
-          type: 'roomText',
-          id: room.id,
-          text: '* Unable to find blid "' + blid + '"'
-        });
-        return;
-      }
+    var icon = args[0];
+    icon.trim();
 
-      const Icons = require('./icons.json');
-
-      var icon = args[0];
-      icon.trim();
-
-      if(Icons.allowed.indexOf(icon) > -1 || Icons.restricted.indexOf(icon) > -1) {
-        data.icon = icon;
-        Database.saveUserData(blid, data);
-      } else {
-        client.sendObject({
-          type: 'roomText',
-          id: room.id,
-          text: "* Icon doesn't exist!"
-        });
-        return;
-      }
-
+    if(Icons.allowed.indexOf(icon) == -1 && Icons.restricted.indexOf(icon) == -1) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: '* Forced icon change for blid ' + blid
+        text: "* Icon doesn't exist!"
       });
-    });
+      return;
+    }
+
+    var blid = args[1];
+
+    var cl = clientConnection.getFromBlid(blid);
+
+    if(cl != false) {
+      cl.setIcon(icon, true);
+    } else {
+      Database.getUserData(blid, function(data, err) {
+        if(err != null) {
+          client.sendObject({
+            type: 'roomText',
+            id: room.id,
+            text: '* Unable to find blid "' + blid + '"'
+          });
+          return;
+        }
+
+        data.icon = icon;
+        Database.saveUserData(blid, data);
+
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: '* Forced icon change for blid ' + blid
+        });
+      });
+    }
   });
 
   return commandSet;
