@@ -18,8 +18,8 @@ var newCommandSet = function(room) {
     command['help'] = "Shows available commands";
     command['warnings'] = "Shows how many temporary warnings you have";
     command['rules'] = "Shows the rules";
-    command['motd'] = "Prints room's message of the day";
-    command['uptime'] = "How long the Live server has been online";
+    command['motd'] = "Prints current room's message of the day for yourself";
+    command['uptime'] = "How long the Glass Live server has been online";
     command['time'] = "The server's local time";
     command['seticon'] = "<icon>\tSets your icon";
     command['getid'] = "<username...>\tReturns BL_ID of user";
@@ -35,7 +35,7 @@ var newCommandSet = function(room) {
       command['banid'] = "<minutes> <blid> <reason...>\tBans user from all rooms";
       command['unbanid'] = "<blid>\tUnbans user from all rooms";
 
-      command['barid'] = "<minutes> <blid> <reason...>\tBans user from Glass Live";
+      command['barid'] = "<minutes> <blid> <reason...>\tBars user from all Glass Live services";
 
       command['resetwarnings'] = "<username...>\tResets user's warnings";
       command['resetwarningsid'] = "<blid>\tResets user's warnings";
@@ -56,6 +56,9 @@ var newCommandSet = function(room) {
       command['ping'] = "pong";
 
       command['glassupdate'] = "<version>\tNotifies clients an update is available";
+
+      command['forceicon'] = "<icon> <username...>\tForces an icon change for a user";
+      command['forceiconid'] = "<icon> <blid>\tForces an icon change for an online/offline user";
     }
 
     var msg = "<color:444444><br>Public Commands:";
@@ -429,7 +432,7 @@ var newCommandSet = function(room) {
 
       cl.setTempPerm('rooms_join', true, 1, "");
 
-      client.sendObject({
+      room.sendObject({
         type: 'roomText',
         id: room.id,
         text: "<color:e74c3c> * " + client.username + " has unbanned " + cl.username + " (" + cl.blid + ")"
@@ -455,7 +458,7 @@ var newCommandSet = function(room) {
 
         Database.saveUserData(args[0], data);
 
-        client.sendObject({
+        room.sendObject({
           type: 'roomText',
           id: room.id,
           text: "<color:e74c3c> * " + client.username + " has unbanned " + data.username + " (" + args[0] + ")"
@@ -728,22 +731,19 @@ var newCommandSet = function(room) {
         return;
       }
 
-      connection.persist = data;
-      connection.persist.username = res.username;
-
-      connection._permissionSet = Permissions.createSet(connection.persist);
+      var permSet = require('./permissions').createSet(data);
 
       var msg = "* User permissions for blid " + blid + "<br>";
 
       msg = msg + "   Barred";
 
-      if(connection.hasPermission('service_use')) {
+      if(permSet.hasPermission('service_use')) {
         msg = msg + ": NO<br>";
       } else {
         msg = msg + ": YES<br>";
 
-        if(connection.isTempPermission('service_use')) {
-          var tempData = connection.getTempPermData('service_use');
+        if(permSet.isTempPermission('service_use')) {
+          var tempData = permSet.getTempData('service_use');
           var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
 
           msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
@@ -758,13 +758,13 @@ var newCommandSet = function(room) {
 
       msg = msg + "   Banned";
 
-      if(connection.hasPermission('rooms_join')) {
+      if(permSet.hasPermission('rooms_join')) {
         msg = msg + ": NO<br>";
       } else {
         msg = msg + ": YES<br>";
 
-        if(connection.isTempPermission('rooms_join')) {
-          var tempData = connection.getTempPermData('rooms_join');
+        if(permSet.isTempPermission('rooms_join')) {
+          var tempData = permSet.getTempData('rooms_join');
           var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
 
           msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
@@ -779,13 +779,13 @@ var newCommandSet = function(room) {
 
       msg = msg + "   Muted";
 
-      if(connection.hasPermission('rooms_talk')) {
+      if(permSet.hasPermission('rooms_talk')) {
         msg = msg + ": NO<br>";
       } else {
         msg = msg + ": YES<br>";
 
-        if(connection.isTempPermission('rooms_talk')) {
-          var tempData = connection.getTempPermData('rooms_talk');
+        if(permSet.isTempPermission('rooms_talk')) {
+          var tempData = permSet.getTempData('rooms_talk');
           var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
 
           msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
@@ -822,22 +822,19 @@ var newCommandSet = function(room) {
         return;
       }
 
-      connection.persist = data;
-      connection.persist.username = res.username;
-
-      connection._permissionSet = Permissions.createSet(connection.persist);
+      var permSet = require('./permissions').createSet(data);
 
       var msg = "* User permissions for BL_ID: " + blid + "<br>";
 
       msg = msg + "   Barred";
 
-      if(connection.hasPermission('service_use')) {
+      if(permSet.hasPermission('service_use')) {
         msg = msg + ": NO<br>";
       } else {
         msg = msg + ": YES<br>";
 
-        if(connection.isTempPermission('service_use')) {
-          var tempData = connection.getTempPermData('service_use');
+        if(permSet.isTempPermission('service_use')) {
+          var tempData = permSet.getTempData('service_use');
           var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
 
           msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
@@ -852,13 +849,13 @@ var newCommandSet = function(room) {
 
       msg = msg + "   Banned";
 
-      if(connection.hasPermission('rooms_join')) {
+      if(permSet.hasPermission('rooms_join')) {
         msg = msg + ": NO<br>";
       } else {
         msg = msg + ": YES<br>";
 
-        if(connection.isTempPermission('rooms_join')) {
-          var tempData = connection.getTempPermData('rooms_join');
+        if(permSet.isTempPermission('rooms_join')) {
+          var tempData = permSet.getTempData('rooms_join');
           var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
 
           msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
@@ -873,13 +870,13 @@ var newCommandSet = function(room) {
 
       msg = msg + "   Muted";
 
-      if(connection.hasPermission('rooms_talk')) {
+      if(permSet.hasPermission('rooms_talk')) {
         msg = msg + ": NO<br>";
       } else {
         msg = msg + ": YES<br>";
 
-        if(connection.isTempPermission('rooms_talk')) {
-          var tempData = connection.getTempPermData('rooms_talk');
+        if(permSet.isTempPermission('rooms_talk')) {
+          var tempData = permSet.getTempData('rooms_talk');
           var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
 
           msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
@@ -897,6 +894,77 @@ var newCommandSet = function(room) {
         type: 'roomText',
         id: room.id,
         text: msg
+      });
+    });
+  });
+
+  commandSet.on('forceicon', (client, args) => {
+    if(!client.isAdmin) return;
+
+    var username = args.slice(1).join(' ');
+    username.trim();
+    var cl = room.findClientByName(username);
+
+    if(cl == false) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* Unable to find user "' + username + '"'
+      });
+      return;
+    }
+
+    var blid = cl.blid;
+    
+    var icon = args[0];
+
+    var str = args.join(' ');
+    str.trim();
+    cl.setIcon(str, true);
+
+    client.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: '* Forced icon change for user "' + username + '"'
+    });
+  });
+
+  commandSet.on('forceiconid', (client, args) => {
+    if(!client.isAdmin) return;
+
+    var blid = args[1];
+
+    Database.getUserData(blid, function(data, err) {
+      if(err != null) {
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: '* Unable to find blid "' + blid + '"'
+        });
+        return;
+      }
+
+      const Icons = require('./icons.json');
+
+      var icon = args[0];
+      icon.trim();
+
+      if(Icons.allowed.indexOf(icon) > -1 || Icons.restricted.indexOf(icon) > -1) {
+        data.icon = icon;
+        Database.saveUserData(blid, data);
+      } else {
+        client.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: "* Icon doesn't exist!"
+        });
+        return;
+      }
+
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: '* Forced icon change for blid ' + blid
       });
     });
   });
