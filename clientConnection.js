@@ -801,6 +801,17 @@ var createNew = function(socket) {
       data.address = connection.socket.remoteAddress.substr(idx+1) + ":" + data.port;
     }
 
+    // remove duplicates
+    if(connection.location == data.location) {
+      if(data.location == "menus" || data.location == "singleplayer") {
+        return; // duplicate
+      }
+
+      if(connection.locationAddress == data.address) {
+        return; // duplicate
+      }
+    }
+
     connection.location = data.location;
     connection.locationAddress = data.address;
 
