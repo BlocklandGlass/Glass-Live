@@ -250,7 +250,7 @@ var newCommandSet = function(room) {
     if(duration <= 0 || duration == NaN)
       return; //inavlid
 
-    if(args.length != 2) {
+    if(args.length < 2) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
