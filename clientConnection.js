@@ -788,8 +788,23 @@ var createNew = function(socket) {
     connection.privacy.avatar = data.viewAvatar.toLowerCase();
     connection.privacy.location = data.viewLocation.toLowerCase();
 
-
     connection.locationPrivateSent = false;
+
+    if(connection.privacy.location == "me") {
+      connection.location = "private";
+      for(var i in connection.persist.friends) {
+        var friendId = connection.persist.friends[i];
+        if(module.clients[friendId] != null) {
+          module.clients[friendId].sendObject({
+            type: "friendLocation",
+            username: connection.username,
+            blid: connection.blid,
+
+            location: "private"
+          });
+        }
+      }
+    }
   })
 
   connection.on('updateLocation', (data) => {
