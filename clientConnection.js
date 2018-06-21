@@ -218,6 +218,10 @@ var createNew = function(socket) {
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
 
+      if(connection.privacy.location == "me") {
+        connection.location = "private";
+      }
+
       if(data.autoJoinRooms == null) {
         connection.autoJoinRooms = true;
       } else {
