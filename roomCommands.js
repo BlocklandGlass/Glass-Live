@@ -470,6 +470,15 @@ var newCommandSet = function(room) {
   commandSet.on('barid', (client, args) => {
     if(!client.isMod) return;
 
+    if(args.length < 2) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
+
     var duration = parseInt(args[0])*60;
 
     if(duration <= 0 || duration == NaN)
@@ -571,6 +580,15 @@ var newCommandSet = function(room) {
   commandSet.on('resetperm', (client, args) => {
     if(!client.isMod) return;
 
+    if(args.length < 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
+
     var cl = room.findClientByName(args.join(' '));
     if(cl != false) {
       cl.persist.permissions = {};
@@ -597,6 +615,15 @@ var newCommandSet = function(room) {
 
   commandSet.on('resetpermid', (client, args) => {
     if(!client.isMod) return;
+
+    if(args.length < 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
 
     var blid = args[0];
     var cl = clientConnection.getFromBlid(args[0]);
@@ -708,6 +735,15 @@ var newCommandSet = function(room) {
   commandSet.on('getperm', (client, args) => {
     if(!client.isMod) return;
 
+    if(args.length < 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
+
     var cl = room.findClientByName(args.join(' '));
 
     if(cl == false) {
@@ -810,6 +846,15 @@ var newCommandSet = function(room) {
   commandSet.on('getpermid', (client, args) => {
     if(!client.isMod) return;
 
+    if(args.length < 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
+
     var blid = args[0];
 
     Database.getUserData(blid, function(data, err) {
@@ -903,6 +948,15 @@ var newCommandSet = function(room) {
 
     const Icons = require('./icons.json');
 
+    if(args.length < 2) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
+
     var icon = args[0];
     icon.trim();
 
@@ -941,6 +995,15 @@ var newCommandSet = function(room) {
 
   commandSet.on('forceiconid', (client, args) => {
     if(!client.isAdmin) return;
+
+    if(args.length < 2) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Too few arguments!'
+      });
+      return;
+    }
 
     const Icons = require('./icons.json');
 
