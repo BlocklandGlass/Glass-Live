@@ -97,8 +97,9 @@ var _percentDiscrimination = function(word) {
     ];
 
     for(var i in plurals) {
-      if(str.indexOf(slur+plurals[i]) == 0) {
-        var pct = slur.length/str.length;
+      var pslur = slur+plurals[i];
+      if(str.indexOf(pslur) == 0) {
+        var pct = pslur.length/str.length;
         if(pct > highPct) {
           highPct = pct;
         }
