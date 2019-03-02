@@ -5,6 +5,8 @@ const Database = require('./database');
 
 const clientConnection = require('./clientConnection');
 
+const logging = require('./dataLogging');
+
 class RoomCommands extends EventEmitter {}
 
 global.startTime = moment();
@@ -22,7 +24,7 @@ var newCommandSet = function(room) {
     command['uptime'] = "How long the Glass Live server has been online";
     command['time'] = "The server's local time";
     command['seticon'] = "<icon>\tSets your icon";
-    command['getid'] = "<username...>\tReturns BL_ID of user";
+    command['getid'] = "<username...>\tReturns blid of user";
     var pubCmdCt = Object.keys(command).length;
 
     if(client.isMod) {
@@ -36,14 +38,13 @@ var newCommandSet = function(room) {
       command['unbanid'] = "<blid>\tUnbans user from all rooms";
 
       command['barid'] = "<minutes> <blid> <reason...>\tBars user from all Glass Live services";
+      command['unbarid'] = "<blid>\tUnbars user from all Glass Live services";
 
       command['resetwarnings'] = "<username...>\tResets user's warnings";
       command['resetwarningsid'] = "<blid>\tResets user's warnings";
 
       command['getperm'] = "<blid>\tGet user's permissions";
       command['getpermid'] = "<blid>\tGet online/offline user's permissions";
-      command['resetperm'] = "<username...>\tResets user's permissions";
-      command['resetpermid'] = "<blid>\tResets online/offline user's permissions";
     }
 
     var modCmdCt = Object.keys(command).length;
@@ -53,12 +54,15 @@ var newCommandSet = function(room) {
 
       command['setmotd'] = "<motd...>\tSets the room's MOTD";
 
-      command['ping'] = "pong";
+      command['ping'] = "<args...>\tPong";
 
       command['glassupdate'] = "<version>\tNotifies clients an update is available";
 
       command['forceicon'] = "<icon> <username...>\tForces an icon change for a user";
       command['forceiconid'] = "<icon> <blid>\tForces an icon change for an online/offline user";
+
+      command['resetperm'] = "<username...>\tResets user's permissions";
+      command['resetpermid'] = "<blid>\tResets online/offline user's permissions";
     }
 
     var msg = "<color:444444><br>Public Commands:";
@@ -91,11 +95,16 @@ var newCommandSet = function(room) {
   });
 
   commandSet.on('rules', (client, args) => {
+    // var rules = [
+      // "1. Be respectful.",
+      // "2. Do not spam.",
+      // "3. Do not type in all caps.",
+      // "4. Do not use derogatory/discriminatory words or statements."
+    // ]
     var rules = [
       "1. Be respectful.",
       "2. Do not spam.",
-      "3. Do not type in all caps.",
-      "4. Do not use derogatory/discriminatory words or statements."
+      "3. Do not use derogatory/discriminatory words or statements."
     ]
 
     var str = "<br>Rules:";
@@ -175,7 +184,7 @@ var newCommandSet = function(room) {
       client.sendObject({
         type: 'roomText',
         id: room.id,
-        text: ' * ' + cl.username + '\'s BL_ID is ' + cl.blid
+        text: ' * ' + cl.username + '\'s blid is ' + cl.blid
       });
     } else {
       client.sendObject({
@@ -200,6 +209,15 @@ var newCommandSet = function(room) {
   commandSet.on('mute', (client, args) => {
     if(!client.isMod) return;
 
+    if(args[0] == -1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Permanent duration is not supported yet.'
+      });
+      return;
+    }
+
     var duration = parseInt(args[0]);
     args.splice(0, 1);
 
@@ -208,12 +226,6 @@ var newCommandSet = function(room) {
 
     var cl = room.findClientByName(args.join(' '));
     if(cl != false) {
-      client.sendObject({
-        type: 'roomText',
-        id: room.id,
-        text: ' * Muted ' + cl.username + ' for ' + duration + ' seconds'
-      });
-
       cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
 
       room.sendObject({
@@ -221,6 +233,8 @@ var newCommandSet = function(room) {
         id: room.id,
         text: "<color:e74c3c> * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds");
 
       cl._notifyIconChange("sound_mute");
 
@@ -245,6 +259,15 @@ var newCommandSet = function(room) {
   commandSet.on('muteid', (client, args) => {
     if(!client.isMod) return;
 
+    if(args[0] == -1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Permanent duration is not supported yet.'
+      });
+      return;
+    }
+
     var duration = parseInt(args[0]);
 
     if(duration <= 0 || duration == NaN)
@@ -261,12 +284,6 @@ var newCommandSet = function(room) {
 
     var cl = clientConnection.getFromBlid(args[1])
     if(cl != false) {
-      client.sendObject({
-        type: 'roomText',
-        id: room.id,
-        text: '<color:e74c3c> * Muted ' + cl.username + ' for ' + duration + ' seconds'
-      });
-
       cl.setTempPerm('rooms_talk', false, duration, "You're muted!");
 
       room.sendObject({
@@ -274,6 +291,8 @@ var newCommandSet = function(room) {
         id: room.id,
         text: " * " + client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds"
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has muted " + cl.username + " (" + cl.blid + ") for " + duration + " seconds");
 
       cl._notifyIconChange("sound_mute");
 
@@ -306,8 +325,10 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
+        text: "<color:e74c3c> * " + client.username + " has kicked " + cl.username + " (" + cl.blid + ")"
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has kicked " + cl.username + " (" + cl.blid + ")");
 
       cl.kick();
     } else {
@@ -330,8 +351,10 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " kicked " + cl.username + " (" + cl.blid + ")"
+        text: "<color:e74c3c> * " + client.username + " has kicked " + cl.username + " (" + cl.blid + ")"
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has kicked " + cl.username + " (" + cl.blid + ")");
 
       cl.kick();
     } else {
@@ -345,6 +368,15 @@ var newCommandSet = function(room) {
 
   commandSet.on('banid', (client, args) => {
     if(!client.isMod) return;
+
+    if(args[0] == -1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Permanent duration is not supported yet.'
+      });
+      return;
+    }
 
     var duration = parseInt(args[0])*60;
 
@@ -380,8 +412,10 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration/60 + " minutes: " + reason
+        text: "<color:e74c3c> * " + client.username + " has banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration/60 + " minutes: " + reason
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has banned " + cl.username + " (" + cl.blid + ") from public rooms for " + duration/60 + " minutes: " + reason);
 
       cl.roomBan(duration, reason);
     } else {
@@ -409,8 +443,10 @@ var newCommandSet = function(room) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:e74c3c> * ' + client.username + ' banned offline user ' + data.username + ' (' + args[1] + ') from public rooms for ' + duration/60 + ': ' + reason
+          text: '<color:e74c3c> * ' + client.username + ' has banned offline user ' + data.username + ' (' + args[1] + ') from public rooms for ' + duration/60 + ': ' + reason
         });
+
+        logging.logRoomEvent(room.id, 'mod', client.username + ' has banned offline user ' + data.username + ' (' + args[1] + ') from public rooms for ' + duration/60 + ': ' + reason);
       })
     }
   })
@@ -437,6 +473,8 @@ var newCommandSet = function(room) {
         id: room.id,
         text: "<color:e74c3c> * " + client.username + " has unbanned " + cl.username + " (" + cl.blid + ")"
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has unbanned " + cl.username + " (" + cl.blid + ")");
     } else {
       Database.getUserData(args[0], function(data, err) {
         if(err != null) {
@@ -463,6 +501,8 @@ var newCommandSet = function(room) {
           id: room.id,
           text: "<color:e74c3c> * " + client.username + " has unbanned " + data.username + " (" + args[0] + ")"
         })
+
+        logging.logRoomEvent(room.id, 'mod', client.username + " has unbanned " + data.username + " (" + args[0] + ")");
       })
     }
   })
@@ -475,6 +515,15 @@ var newCommandSet = function(room) {
         type: 'roomText',
         id: room.id,
         text: ' * Too few arguments!'
+      });
+      return;
+    }
+
+    if(args[0] == -1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Permanent duration is not supported yet.'
       });
       return;
     }
@@ -513,8 +562,10 @@ var newCommandSet = function(room) {
       room.sendObject({
         type: 'roomText',
         id: room.id,
-        text: "<color:e74c3c> * " + client.username + " barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration/60 + " minutes: " + reason
+        text: "<color:e74c3c> * " + client.username + " has barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration/60 + " minutes: " + reason
       })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has barred " + cl.username + " (" + cl.blid + ") from Glass Live for " + duration/60 + " minutes: " + reason);
 
       cl.bar(duration, reason);
     } else {
@@ -541,8 +592,66 @@ var newCommandSet = function(room) {
         room.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '<color:e74c3c> * ' + client.username + ' barred offline user ' + data.username + ' (' + args[1] + ') from Glass Live for ' + duration/60 + ' minutes: ' + reason
+          text: '<color:e74c3c> * ' + client.username + ' has barred offline user ' + data.username + ' (' + args[1] + ') from Glass Live for ' + duration/60 + ' minutes: ' + reason
         });
+
+        logging.logRoomEvent(room.id, 'mod', client.username + ' has barred offline user ' + data.username + ' (' + args[1] + ') from Glass Live for ' + duration/60 + ' minutes: ' + reason);
+      })
+    }
+  })
+
+  commandSet.on('unbarid', (client, args) => {
+    if(!client.isMod) return;
+
+    if(args.length < 1) {
+      client.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: ' * Format: /unbarid <blid>'
+      });
+      return;
+    }
+
+    var cl = clientConnection.getFromBlid(args[1])
+    if(cl != false) {
+
+      cl.setTempPerm('service_use', true, 1, "");
+
+      room.sendObject({
+        type: 'roomText',
+        id: room.id,
+        text: "<color:e74c3c> * " + client.username + " has unbarred " + cl.username + " (" + cl.blid + ")"
+      })
+
+      logging.logRoomEvent(room.id, 'mod', client.username + " has unbarred " + cl.username + " (" + cl.blid + ")");
+    } else {
+      Database.getUserData(args[0], function(data, err) {
+        if(err != null) {
+          client.sendObject({
+            type: 'roomText',
+            id: room.id,
+            text: ' * Unable to find blid "' + args[1] + '"'
+          });
+          return;
+        }
+
+        var permSet = require('./permissions').createSet(data);
+
+        permSet.newTempPermission('service_use', true, 1, "");
+
+        /* copied from ClientConnection.prototype.savePersist */
+        data.permissions = permSet.perms;
+        data.tempPermissions = permSet.temp;
+
+        Database.saveUserData(args[0], data);
+
+        room.sendObject({
+          type: 'roomText',
+          id: room.id,
+          text: "<color:e74c3c> * " + client.username + " has unbarred " + data.username + " (" + args[0] + ")"
+        })
+
+        logging.logRoomEvent(room.id, 'mod', client.username + " has unbarred " + data.username + " (" + args[0] + ")");
       })
     }
   })
@@ -550,11 +659,15 @@ var newCommandSet = function(room) {
   commandSet.on('setmotd', (client, args) => {
     if(!client.isAdmin) return;
 
-    room.setMOTD(args.join(' '));
+    var motd = args.join(' ');
+
+    logging.logRoomEvent(room.id, 'sys', client.username + " has set the MOTD to " + motd);
+
+    room.setMOTD(client, motd);
     room.sendObject({
       type: 'roomText',
       id: room.id,
-      text: "* " + client.username + " has set the MOTD to " + args.join(' ')
+      text: "* " + client.username + " has set the MOTD to: " + motd
     })
   });
 
@@ -564,7 +677,8 @@ var newCommandSet = function(room) {
     if(args.length == 0)
       return;
 
-    var msg = '<color:54d98c> * ' + args.join(' ');
+    var announcement = args.join(' ');
+    var msg = '<color:54d98c> * ' + announcement;
 
     var rooms = require('./chatRoom').getAll();
     for(var i in rooms) {
@@ -575,10 +689,12 @@ var newCommandSet = function(room) {
         text: msg
       })
     }
+
+    logging.logGlobalRoomEvent('sys', client.username + " announced: " + announcement);
   });
 
   commandSet.on('resetperm', (client, args) => {
-    if(!client.isMod) return;
+    if(!client.isAdmin) return;
 
     if(args.length < 1) {
       client.sendObject({
@@ -614,7 +730,7 @@ var newCommandSet = function(room) {
   })
 
   commandSet.on('resetpermid', (client, args) => {
-    if(!client.isMod) return;
+    if(!client.isAdmin) return;
 
     if(args.length < 1) {
       client.sendObject({
@@ -769,7 +885,7 @@ var newCommandSet = function(room) {
 
       var permSet = require('./permissions').createSet(data);
 
-      var msg = "* User permissions for blid " + blid + "<br>";
+      var msg = "<br>User permissions for blid: " + blid + "<br>";
 
       msg = msg + "   Barred";
 
@@ -780,12 +896,14 @@ var newCommandSet = function(room) {
 
         if(permSet.isTempPermission('service_use')) {
           var tempData = permSet.getTempData('service_use');
-          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+          var issued = moment.unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY');
+          var remaining = moment.unix(tempData.startTime + tempData.duration).format('HH:mm:ss MM/DD/YYYY');
+          var remainingHuman = moment.unix(tempData.startTime + tempData.duration).fromNow();
 
-          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
-          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Issued: " + issued + "<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + "m<br>";
           msg = msg + "    Reason: " + tempData.reason + "<br>";
-          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+          msg = msg + "    Expires: " + remaining + " (" + remainingHuman + ")<br>";
         } else {
           msg = msg + "    Duration: Permanent<br>";
           msg = msg + "    Expires: Never<br>";
@@ -801,12 +919,14 @@ var newCommandSet = function(room) {
 
         if(permSet.isTempPermission('rooms_join')) {
           var tempData = permSet.getTempData('rooms_join');
-          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+          var issued = moment.unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY');
+          var remaining = moment.unix(tempData.startTime + tempData.duration).format('HH:mm:ss MM/DD/YYYY');
+          var remainingHuman = moment.unix(tempData.startTime + tempData.duration).fromNow();
 
-          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
-          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Issued: " + issued + "<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + "m<br>";
           msg = msg + "    Reason: " + tempData.reason + "<br>";
-          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+          msg = msg + "    Expires: " + remaining + " (" + remainingHuman + ")<br>";
         } else {
           msg = msg + "    Duration: Permanent<br>";
           msg = msg + "    Expires: Never<br>";
@@ -822,18 +942,18 @@ var newCommandSet = function(room) {
 
         if(permSet.isTempPermission('rooms_talk')) {
           var tempData = permSet.getTempData('rooms_talk');
-          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+          var issued = moment.unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY');
+          var remaining = moment.unix(tempData.startTime + tempData.duration).format('HH:mm:ss MM/DD/YYYY');
+          var remainingHuman = moment.unix(tempData.startTime + tempData.duration).fromNow();
 
-          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
-          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
-          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+          msg = msg + "    Issued: " + issued + "<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + "m<br>";
+          msg = msg + "    Expires: " + remaining + " (" + remainingHuman + ")<br>";
         } else {
           msg = msg + "    Duration: Permanent<br>";
           msg = msg + "    Expires: Never<br>";
         }
       }
-
-      msg = msg + "End of user permissions";
 
       client.sendObject({
         type: 'roomText',
@@ -862,14 +982,14 @@ var newCommandSet = function(room) {
         client.sendObject({
           type: 'roomText',
           id: room.id,
-          text: '* Unable to find blid "' + blid + '"'
+          text: '* Error getting user data for blid "' + blid + '"'
         });
         return;
       }
 
       var permSet = require('./permissions').createSet(data);
 
-      var msg = "* User permissions for BL_ID: " + blid + "<br>";
+      var msg = "<br>User permissions for blid: " + blid + "<br>";
 
       msg = msg + "   Barred";
 
@@ -880,12 +1000,14 @@ var newCommandSet = function(room) {
 
         if(permSet.isTempPermission('service_use')) {
           var tempData = permSet.getTempData('service_use');
-          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+          var issued = moment.unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY');
+          var remaining = moment.unix(tempData.startTime + tempData.duration).format('HH:mm:ss MM/DD/YYYY');
+          var remainingHuman = moment.unix(tempData.startTime + tempData.duration).fromNow();
 
-          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
-          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Issued: " + issued + "<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + "m<br>";
           msg = msg + "    Reason: " + tempData.reason + "<br>";
-          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+          msg = msg + "    Expires: " + remaining + " (" + remainingHuman + ")<br>";
         } else {
           msg = msg + "    Duration: Permanent<br>";
           msg = msg + "    Expires: Never<br>";
@@ -901,12 +1023,14 @@ var newCommandSet = function(room) {
 
         if(permSet.isTempPermission('rooms_join')) {
           var tempData = permSet.getTempData('rooms_join');
-          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+          var issued = moment.unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY');
+          var remaining = moment.unix(tempData.startTime + tempData.duration).format('HH:mm:ss MM/DD/YYYY');
+          var remainingHuman = moment.unix(tempData.startTime + tempData.duration).fromNow();
 
-          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
-          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
+          msg = msg + "    Issued: " + issued + "<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + "m<br>";
           msg = msg + "    Reason: " + tempData.reason + "<br>";
-          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+          msg = msg + "    Expires: " + remaining + " (" + remainingHuman + ")<br>";
         } else {
           msg = msg + "    Duration: Permanent<br>";
           msg = msg + "    Expires: Never<br>";
@@ -922,18 +1046,18 @@ var newCommandSet = function(room) {
 
         if(permSet.isTempPermission('rooms_talk')) {
           var tempData = permSet.getTempData('rooms_talk');
-          var remaining = tempData.duration-moment().diff(tempData.startTime, 'seconds');
+          var issued = moment.unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY');
+          var remaining = moment.unix(tempData.startTime + tempData.duration).format('HH:mm:ss MM/DD/YYYY');
+          var remainingHuman = moment.unix(tempData.startTime + tempData.duration).fromNow();
 
-          msg = msg + "    Issued: " + moment().unix(tempData.startTime).format('HH:mm:ss MM/DD/YYYY') + " (" + tempData.startTime + ")<br>";
-          msg = msg + "    Duration: " + tempData.duration/60 + " minutes<br>";
-          msg = msg + "    Expires: " + remaining/60 + " minutes<br>";
+          msg = msg + "    Issued: " + issued + "<br>";
+          msg = msg + "    Duration: " + tempData.duration/60 + "m<br>";
+          msg = msg + "    Expires: " + remaining + " (" + remainingHuman + ")<br>";
         } else {
           msg = msg + "    Duration: Permanent<br>";
           msg = msg + "    Expires: Never<br>";
         }
       }
-
-      msg = msg + "End of user permissions";
 
       client.sendObject({
         type: 'roomText',

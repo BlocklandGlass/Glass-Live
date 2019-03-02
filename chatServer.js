@@ -2,8 +2,16 @@ const net = require('net');
 const EventEmitter = require('events');
 
 const logger = require('./logger');
+const logging = require('./dataLogging');
 
 const ClientConnection = require('./clientConnection');
+
+const Config = require('./config');
+if(Config.livePort == null && Config.port == null) {
+  console.log('config needs port');
+  process.exit(1);
+  return;
+}
 
 var start = function() {
   if(module.listening) return;
@@ -51,7 +59,11 @@ var start = function() {
     });
   });
 
-  var port = require('./config.json').port;
+  if(Config.livePort == null) {
+    var port = Config.port;
+  } else {
+    var port = Config.livePort;
+  }
 
   module.chatServer.listen(port);
   module.listening = true;
@@ -61,6 +73,7 @@ var start = function() {
 var shutdown = function() {
   if(module.chatServer != null && module.chatServer.listening) {
     module.chatServer.close(function(err) {
+      logging.logGlobalRoomEvent('sys', 'No longer accepting connections.');
       logger.log("No longer listening...");
     })
   }

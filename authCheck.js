@@ -3,15 +3,21 @@ const encoding = require('encoding');
 
 const logger = require('./logger');
 
+const Config = require('./config');
+
 var check = function(ident, ip, daa, callback) {
   if(ident.trim() == "") {
     callback(null, "No ident");
     return;
   }
 
-  var url  = "http://api.blocklandglass.com";
-  //var url  = "http://glass.local";
-      url += "/api/3/authCheck.php?ident=" + ident + "&ip=" + ip;
+  if(Config.siteURL == null) {
+    var url = "http://api.blocklandglass.com";
+  } else {
+    var url = Config.siteURL;
+  }
+
+  url += "/api/3/authCheck.php?ident=" + ident + "&ip=" + ip;
 
   if(daa != undefined) {
 	  url += "&daa=1";

@@ -137,13 +137,11 @@ var createNew = function(socket) {
         if(res.status == "barred") {
           connection.sendObject({
             type: "barred",
-            reason: "You've been permanently barred from Glass Live",
+            reason: "No reason specified.",
             duration: -1,
             remaining: -1
           });
-          logger.log("Barred!");
         } else {
-          logger.log('Authentication returned ' + res.status + ' for ' + data.blid + ': ' + res.failure);
           connection.sendObject({
             type: "auth",
             status: "failed",
@@ -151,6 +149,7 @@ var createNew = function(socket) {
             timeout: 5000
           });
         }
+        logger.log('Authentication returned ' + res.status + ' for ' + data.blid + ': ' + res.failure);
         connection.disconnect();
         return;
       }
@@ -166,7 +165,7 @@ var createNew = function(socket) {
         return;
       }
 
-      if(res.username.toLowerCase() == "glassbot") {
+      if(res.username.toLowerCase() == "glassbot" || res.username.toLowerCase() == "here" || res.username.toLowerCase() == "room" || res.username.toLowerCase() == "everyone") {
         connection.sendObject({
           type: 'error',
           message: "That username is not allowed!",
@@ -210,15 +209,15 @@ var createNew = function(socket) {
       connection.countryName = res.geoip_country_name;
 
       if(data.viewLocation == null)
-      data.viewLocation = "me";
+      data.viewLocation = "nobody";
 
       if(data.viewAvatar == null)
-      data.viewAvatar = "me";
+      data.viewAvatar = "nobody";
 
       connection.privacy.location = data.viewLocation.toLowerCase();
       connection.privacy.avatar = data.viewAvatar.toLowerCase();
 
-      if(connection.privacy.location == "me") {
+      if(connection.privacy.location == "me" || connection.privacy.location == "nobody") {
         connection.location = "private";
       }
 
@@ -263,7 +262,7 @@ var createNew = function(socket) {
           logger.error('Failed to load data for clientConnection ' + connection.blid + ':', err);
           connection.sendObject({
             type: 'error',
-            message: "Glass Live encountered an internal error and was unable to load your data.<br><br>This issue has been recorded. Sorry for any inconvenience",
+            message: "Glass Live encountered an internal error and was unable to load your data.<br><br>This issue has been recorded. Sorry for any inconvenience.",
             showDialog: true
           });
           connection.disconnect();
@@ -292,7 +291,7 @@ var createNew = function(socket) {
           } else {
             connection.sendObject({
               type: "barred",
-              reason: "You've been permanently barred from Glass Live",
+              reason: "You've been permanently barred from all Glass Live services.",
               duration: -1,
               remaining: -1
             });
@@ -1477,6 +1476,7 @@ ClientConnection.prototype.setIcon = function(icon, force) {
 
 ClientConnection.prototype.getIcon = function () {
   var client = this;
+
   if(client.persist.icon == null) {
     client.persist.icon = "user";
     client.savePersist();
@@ -1619,6 +1619,7 @@ ClientConnection.prototype._notifyIconChange = function(to) {
   var rooms = require('./chatRoom');
 
   var icon;
+
   if(to != null) {
     icon = to;
   } else {

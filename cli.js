@@ -28,7 +28,7 @@ vorpal.command('listClients', 'Shows clients online').action(function(args, call
   callback();
 });
 
-vorpal.command('shutdown <timeout> [reason...]', 'Issues a \'shutdown\' call to all clients. Timeout in seconds').action(function(args, callback) {
+vorpal.command('shutdown <timeout> [reason...]', 'Issues a \'shutdown\' call to all clients. Client reconnect timeout in seconds').action(function(args, callback) {
   var reason;
   if(args.reason == null) {
     reason = "";
@@ -46,6 +46,7 @@ vorpal.command('shutdown <timeout> [reason...]', 'Issues a \'shutdown\' call to 
     timeout: args.timeout*1000
   });
 
+  require('./dataLogging').logGlobalRoomEvent('sys', 'Planned shutdown initiated.');
   logger.log('Quitting...');
   setTimeout(function() {
     process.exit(0);

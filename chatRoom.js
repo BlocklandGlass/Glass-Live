@@ -105,8 +105,6 @@ Chatroom.prototype.setMOTD = function(motd) {
   var room = this;
   room.persist.motd = motd;
   room.savePersist();
-
-  logging.logRoomEvent(room.id, 'motd', motd);
 }
 
 Chatroom.prototype.setDefault = function(bool) {
@@ -158,7 +156,7 @@ Chatroom.prototype.addClient = function(client, isAuto) {
     online: true, // depreciated
 
     status: client.status,
-    icon: client.getIcon()
+    icon: (client.hasPermission('rooms_talk') ? client.getIcon() : "sound_mute")
   });
 
   client._didEnterRoom(room.id);

@@ -1,0 +1,7 @@
+{
+  "siteURL": "http://localhost",
+  "livePort": 27002,
+  "mongoUsername": "",
+  "mongoPassword": "",
+  "mongoURL": ""
+}

@@ -21,3 +21,5 @@ chatroom.create("Staff", "balance_unbalance")
   .setGlassBot(false);
 
 masterServer.queryMasterServer();
+
+require('./dataLogging').logGlobalRoomEvent('sys', 'Now accepting connections.');

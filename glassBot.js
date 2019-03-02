@@ -1,4 +1,5 @@
 const moment = require('moment');
+const logging = require('./dataLogging');
 const logger = require('./logger');
 
 /*
@@ -151,13 +152,12 @@ var onRoomMessage = function(room, sender, message) {
     sender.roomMessageHistory.splice(0, sender.roomMessageHistory.length-100);
 
 
-  var alphaOnly = message.replace(/[^A-Za-z]+/g," ").trim();
+  // var alphaOnly = message.replace(/[^A-Za-z]+/g," ").trim();
 
-  if(_percentUpper(message) >= 0.75 && alphaOnly.length > 5) {
-    //sendRoomMessage(room, "Avoid using all caps.");
-    sendDirectMessage(sender, "Don't use all caps.", room);
-    issueWarning(sender, 1, room);
-  }
+  // if(_percentUpper(message) >= 0.75 && alphaOnly.length > 5) {
+    // sendRoomMessage(room, "Don't use all caps.");
+    // issueWarning(sender, 1, room);
+  // }
 
   var didDisc = false;
   var didLength = false;
@@ -189,10 +189,9 @@ var onRoomMessage = function(room, sender, message) {
       }, 1100);
     }*/
 
-    if(word.length > 35 && !didLength && word.indexOf("http://") != 0 && word.indexOf("https://") != 0) {
+    if(word.length > 35 && !didLength && word.indexOf("http://") != 0 && word.indexOf("https://") != 0 && word.indexOf("glass://") != 0) {
       didLength = true;
-      //sendRoomMessage(room, "Is that a word? Seems a little long.");
-      sendDirectMessage(sender, "Please use real words.", room);
+      sendRoomMessage(room, "Please use real words.");
       issueWarning(sender, 1, room);
     }
   }
@@ -243,8 +242,7 @@ var checkMessageHistory = function(sender, message, room) {
 
   if(hist[4] != null) {
     if(moment().diff(moment.unix(hist[4].time), 'seconds') < 5) {
-      //sendRoomMessage(room, "Slow down.");
-      sendDirectMessage(sender, "Slow down, don't spam.", room);
+      sendRoomMessage(room, "Slow down, don't spam.");
       issueWarning(sender, 1, room);
     }
   }
@@ -261,8 +259,7 @@ var checkMessageHistory = function(sender, message, room) {
     }
 
     if(repCount >= 2) {
-      //sendRoomMessage(room, "Don't spam.");
-      sendDirectMessage(sender, "Don't spam.", room);
+      sendRoomMessage(room, "Don't spam.");
       issueWarning(sender, 1, room);
       break;
     }
@@ -271,6 +268,8 @@ var checkMessageHistory = function(sender, message, room) {
 
 var doRoomsBan = function(client, duration, reason) {
   client.roomBan(duration, reason);
+
+  logging.logGlobalRoomEvent('bot', "Banned " + client.username + " (" + client.blid + ")");
 }
 
 var doKick = function(cl, reason, room) {
@@ -280,6 +279,8 @@ var doKick = function(cl, reason, room) {
       id: room.id,
       text: "<color:9b59b6> * GlassBot kicked " + cl.username + " (" + cl.blid + ")"
     })
+
+    logging.logRoomEvent(room.id, 'bot', "Kicked " + cl.username + " (" + cl.blid + ")");
   }
   cl.kick(reason);
 }
@@ -291,6 +292,11 @@ var doMute = function(cl, duration, room) {
 
   setTimeout(function() {
     cl._notifyIconChange();
+    cl.sendObject({
+      type: 'roomText',
+      id: room.id,
+      text: ' * Your mute has expired'
+    })
   }, duration*1000);
 
   var strDur = "";
@@ -306,6 +312,8 @@ var doMute = function(cl, duration, room) {
       id: room.id,
       text: "<color:9b59b6> * GlassBot has muted " + cl.username + " (" + cl.blid + ") for " + strDur
     })
+
+    logging.logRoomEvent(room.id, 'bot', "Muted " + cl.username + " (" + cl.blid + ") for " + strDur);
   //}
 }
 
@@ -336,6 +344,8 @@ var issueWarning = function(client, amt, room) {
     });
   }
 
+  logging.logRoomEvent(room.id, 'bot', "Issued a warning to " + client.username + " (" + client.blid + ")");
+
   _warningPunishment(client, warnings, room);
 }
 
@@ -350,14 +360,16 @@ var _warningPunishment = function(client, amt, room) {
 
   if(amt == 3) {
     doMute(client, 300, room);
+    doKick(client, "You've reached 3 warnings.", room);
   }
 
   if(amt == 4) {
-    doKick(client, "You've reached 4 warnings", room);
+    doMute(client, 600, room);
+    doKick(client, "You've reached 4 warnings.", room);
   }
 
   if(amt >= 5) {
-    doRoomsBan(client, 60*Math.pow(5, amt-4), "Greater than 5 warnings");
+    doRoomsBan(client, 60*Math.pow(5, amt-4), "Greater than 4 warnings issued.");
   }
 }
 

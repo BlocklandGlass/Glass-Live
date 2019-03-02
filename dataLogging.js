@@ -1,5 +1,27 @@
 const fs = require('fs');
 
+var logGlobalRoomEvent = function(...args) {
+  var line = Date.now();
+  for(var i in args) {
+    var arg = String(args[i]);
+    arg.replace('\t', '\\t');
+    arg.replace('\n', '\\n');
+
+    line = line + '\t' + args[i]
+  }
+
+  var rooms = require('./chatRoom').getAll();
+
+  for(var i in rooms) {
+    var room = rooms[i];
+    var file = getRoomWriteFile(room.id);
+
+    fs.appendFile(file, line + '\n', function (err) {
+      //if (err) throw err;
+    });
+  }
+}
+
 var logRoomEvent = function(id, ...args) {
   var line = Date.now();
   for(var i in args) {
@@ -97,4 +119,4 @@ try {
   fs.chmodSync(__dirname + '/log/', '0777');
 } catch(e) {}
 
-module.exports = {logRoomEvent, logUserEvent};
+module.exports = {logGlobalRoomEvent, logRoomEvent, logUserEvent};

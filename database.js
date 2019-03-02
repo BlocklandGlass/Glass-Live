@@ -6,10 +6,12 @@ const request = require('request');
 const logger = require('./logger');
 
 const Config = require('./config');
-if(Config.username == null || Config.password == null) {
-  console.log('config needs MongoDb auth');
-  process.exit(1);
-  return;
+if(Config.mongoUsername == null || Config.mongoPassword == null) {
+  if(Config.username == null || Config.password == null) {
+    console.log('config needs MongoDb auth');
+    process.exit(1);
+    return;
+  }
 }
 
 var getUsername = function(blid, cb) {
@@ -48,11 +50,21 @@ var getUserData = function(blid, callback) {
 
 var _loadUserData = function(id) {
   var blid = id;
-  var user = Config.username;
-  var pass = Config.password;
 
-  var url = 'mongodb://' + user + ':' + pass + '@blocklandglass.com:27017/glassLive';
-  MongoClient.connect(url, function(err, client) {
+  if(Config.username != null || Config.password != null) {
+    var user = Config.username;
+    var pass = Config.password;
+
+    var srv = 'mongodb://' + user + ':' + pass + '@blocklandglass.com:27017/glassLive';
+  } else {
+    var user = Config.mongoUsername;
+    var pass = Config.mongoPassword;
+    var url = Config.mongoURL;
+
+    var srv = 'mongodb://' + user + ':' + pass + '@' + url;
+  }
+
+  MongoClient.connect(srv, function(err, client) {
     if(err != null) {
       logger.error('Database error getting ' + blid);
       logger.error(err);
@@ -103,20 +115,28 @@ var saveUserData = function(blid, data, callback) {
 
   module.userData[blid] = data;
 
-  var user = Config.username;
-  var pass = Config.password;
+  if(Config.username != null || Config.password != null) {
+    var user = Config.username;
+    var pass = Config.password;
 
-  var url = 'mongodb://' + user + ':' + pass + '@blocklandglass.com:27017/glassLive';
+    var srv = 'mongodb://' + user + ':' + pass + '@blocklandglass.com:27017/glassLive';
+  } else {
+    var user = Config.mongoUsername;
+    var pass = Config.mongoPassword;
+    var url = Config.mongoURL;
 
-  MongoClient.connect(url, function(err, client) {
+    var srv = 'mongodb://' + user + ':' + pass + '@' + url;
+  }
+
+  MongoClient.connect(srv, function(err, client) {
     if(err != null) {
       callback(err);
       return;
     }
-    
+
     const db = client.db('glassLive');
 
-    db.collection('users').update({"blid": blid}, {"blid": blid, "data": data}, {upsert: true}, function(err, result) {
+    db.collection('users').updateOne({"blid": blid}, {$set: {"blid": blid, "data": data}}, {upsert: true}, function(err, result) {
       if(err != null) {
         callback(err);
         return;
