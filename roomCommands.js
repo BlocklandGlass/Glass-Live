@@ -104,7 +104,7 @@ var newCommandSet = function(room) {
     var rules = [
       "1. Be respectful.",
       "2. Do not spam.",
-      "3. Do not use derogatory/discriminatory words or statements."
+      "3. Do not post or link to NSFW content."
     ]
 
     var str = "<br>Rules:";
